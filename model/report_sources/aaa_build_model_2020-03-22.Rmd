@@ -238,7 +238,7 @@ plot(0:50, los_critical$d(0:50),
 
 ## Illustration
 
-As an illustration, we forecast bed occupancy for 3 weeks in a hypothetical location which
+As an illustration, we forecast bed occupancy for 2 weeks in a hypothetical location which
 would have reported 65 admissions on the current day, with an assumed reporting
 of 80% and an assumed R of 2.
 
@@ -249,8 +249,10 @@ R <- 2
 reporting <- 0.8
 date_start <- Sys.Date()
 n_start <- 65
-n_sim <- 1000
-duration <- 21
+n_sim <- 50
+duration <- 14
+last_date <- date_start + duration
+los_r <- los_critical$r
 
 ## make case forecasting, assuming R = 2
 ## we simulate 1000 trajectories from a Poisson model
@@ -266,6 +268,71 @@ plot(proj_admissions) +
   labs(y = "Daily admissions",
        title = "Forecast of daily admissions")
 
+
+## simulate durations of hospitalisation
+list_dates_admissions <- lapply(
+    seq_len(ncol(proj_admissions)),
+    function(n_cases) rep(get_dates(proj_admissions), n_cases))
+
+
+## this function takes as input a vector of dates of admissions, and outputs a
+## projections object counting daily bed requirements; `n_replicates` gives a handle on
+## the number of replicates to perform (as duration of hospitalisation itself is
+## stochastic)
+
+simulate_beds <- function(dates_admission,
+                          n_replicates = 1,
+                          last_date = NULL) {
+
+  n <- length(dates_admission)
+
+  out <- vector(n_replicates, mode = "list")
+
+  for (j in seq_len(n_replicates)) {
+    durations <- los_r(n)
+    list_dates_beds <- lapply(seq_len(n),
+                              function(i) seq(dates_admission[i],
+                                              length.out = durations[i],
+                                              by = 1L))
+    dates_beds <- do.call(c, list_dates_beds)
+    beds_days <- incidence(dates_beds)
+    if (!is.null(last_date)) {
+      to_keep <- get_dates(beds_days) <= last_date
+      beds_days <- beds_days[to_keep, ]
+    }
+
+    out[[j]] <- build_projections(x = beds_days$counts,
+                                  dates = get_dates(beds_days))
+  }
+
+  merge_projections(out)
+  
+}
+
+
+## simulate beds for each epicurve
+list_sims <- lapply(list_dates_admissions,
+                    simulate_beds,
+                    n_replicates = 5,
+                    last_date = last_date)
+
+## merge results
+beds <- merge_projections(list_sims)
+
+## plot results
+plot(beds,
+     quantiles = FALSE,
+     ribbon = FALSE,
+     boxplots = TRUE,
+     boxplots_fill = "#a3a3c2",
+     boxplots_color = "#3d3d5c") +
+  theme_bw() +
+  large_txt +
+  scale_x_date(date_label = "%d %b %y") +
+  rotate_x +
+  labs(title = "Predicted bed occupancy",
+       x = NULL,
+       y = "Daily numbers of beds")
 
 ```
 
