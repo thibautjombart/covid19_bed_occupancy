@@ -1,0 +1,38 @@
+body{ /* Normal  */
+    font-size: 18px;
+}
+td {  /* Table  */
+    font-size: 14px;
+}
+h1.title {
+    padding-top: 10px;
+    font-size: 40px;
+    /* color: DarkRed; */
+}
+h1 { /* Header 1 */
+    padding-top: 60px;
+    font-size: 28px;
+    /* color: DarkBlue; */
+}
+h2 { /* Header 2 */
+    font-size: 28px;
+    /* color: DarkBlue; */
+}
+h3 { /* Header 3 */
+    padding-top: 25px;
+   font-size: 24px;
+    /* font-family: "Times New Roman", Times, serif; */
+    /* color: DarkBlue; */
+}
+h4 { /* Header 3 */
+    font-size: 18px;
+    font-weight: bold;
+    /* font-family: "Times New Roman", Times, serif; */
+    /* color: DarkBlue; */
+}
+code.r{ /* Code block */
+    font-size: 14px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 14px;
+}

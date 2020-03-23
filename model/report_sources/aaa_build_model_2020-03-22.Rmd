@@ -1,0 +1,641 @@
+---
+title: "Forecasting bed occupancy from current admissions"
+author: "Thibaut Jombart, Emily S Nightingale, Mark Jit, Olivier le Polain de Waroux, Gwen Knight, Stefan Flasche, Rosalind Eggo, Adam J Kucharski, Carl A.B. Pearson, Simon R Procter, CMMID nCov working group & W John Edmunds."
+date: "`r format(Sys.time(), '%A %d %B %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    highlight: zenburn
+    number_sections: yes
+    theme: spacelab
+    toc: yes
+    toc_collapse: no
+    toc_depth: 4
+    toc_float: yes
+    css: !expr here::here('css', 'style.css')
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      collapse = TRUE,
+                      fig.width = 8,
+                      fig.height = 6,
+                      dpi = 150,
+                      warning = FALSE,
+                      message = FALSE)
+```
+
+
+
+### What's in this document
+
+This document provides an outline of the model and its implementation. It
+returns a self-contained simulator as an `rds` object which can then be used as
+backend in other systems (including the app provided in this repository).
+
+
+### Rationale
+
+This report outlines a model for forecasting bed occupancy from recent data on
+admissions. In short, the process is as follows:
+
+1. use a recent number of admissions at a given date as a point of reference
+
+2. simulate growth in admissions from this point of reference using a branching
+   process model, using recent estimates of the serial interval to model delay
+   between generations of infections
+   
+3. for each simulated admission, simulate duration of hospitalisation from
+   recent estimate of the duration of hospitalisation
+   
+4. derive daily numbers of bed needs
+
+
+
+### Caveats
+
+* The serial interval marks the delay between symptom onsets in successive
+  cases. Using it as a proxy for the delay between generations of admissions, we
+  implicitely assume a fixed, constant delay from onset to admission. This
+  likely results in an under-estimation of the uncertainty in the bed needs
+  predicted.
+
+* Default distributions for the duration of stay are provided by matching results of 
+[Zhou et al 2020](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext). 
+These distributions may need changing under some settings.
+
+
+
+
+<!-- ======================================================= -->
+<!-- ======================================================= -->
+<!-- ======================================================= -->
+
+# Data preparation {.tabset .tabset-fade .tabset-pills}
+
+## Outline
+
+* **Load scripts**: loads libraries and useful scripts used in the analyses; all
+`.R` files contained in `scripts` at the root of the factory are automatically
+loaded
+
+* **Load data**: imports datasets, and may contain some *ad hoc* changes to the
+data such as specific data cleaning (not used in other reports), new variables
+used in the analyses, etc.
+
+
+
+## Load packages
+
+```{r libraries}
+
+library(here)
+library(reportfactory)
+library(incidence)
+library(distcrete)
+library(epitrix)
+library(tidyverse)
+library(projections)
+
+```
+
+
+
+## Load scripts
+
+These scripts will load:
+
+* all local scripts, stored as `.R` filesinside `/scripts/`
+* all global scripts, i.e. stored outside the factory in `../scripts/`
+
+```{r read_scripts}
+
+rfh_load_scripts()
+
+```
+
+
+
+
+
+
+
+
+<!-- ======================================================= -->
+<!-- ======================================================= -->
+<!-- ======================================================= -->
+
+# Proof of concept {.tabset .tabset-fade .tabset-pills}
+
+## Model description
+
+We aim to estimate the number of currently circulating cases on a
+given day given a number of deaths reported recently. 
+
+The principle of the estimation is:
+
+1. augment the number of admissions using the reporting; currently this is just 
+$n_{aug} = n_{reported} / reporting$
+
+2. use a branching process with a Poisson distribution to simulate epidemic
+   trajectories; see for instance 
+   [Jombart et al 2020](https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2020.25.2.1900735); this is implemented by the RECON package [projections](http://www.repidemicsconsortium.org/projections/)
+   
+3. for each admission, simulate duration of hospitalisation from provided distribution
+
+4. count beds for each day and simulation
+
+
+ 
+
+
+## Parameters of the model
+
+This section contain information on the various parameters. We use these
+data to generate distribution, with discretisation when needed.
+
+* **serial interval**: 
+    + mean of 4.7 days, s.d. of 2.9 days (log normal distribution fit)
+    + [source](https://www.medrxiv.org/content/10.1101/2020.02.03.20019497v2.full.pdf.)
+
+```{r serial_interval}
+
+serial_interval <- distcrete("lnorm", w = 0, interval = 1,
+                             meanlog = log(4.7),
+                             sdlog = log(2.9))
+
+```
+* **Duration of hospitalisation**:
+    + non critical care: discretised Weibull(shape:, scale:) to aim for a median of 11
+      days, IQR 7-14
+    + critical care: discretised Weibull(shape:2, scale:10) to aim for a median of 8
+      days, IQR 4-12
+    + See table 2 in 
+	[source](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext)
+
+```{r los}
+
+## los = "length of stay"
+## los_critical for critical care
+los_critical <- distcrete("weibull", shape = 2, scale = 10, w = 0, interval = 1)
+
+## los_normal for non critical care hospitalisation
+los_normal <- distcrete("weibull", shape = 2, scale = 13, w = 0, interval = 1)
+
+## ## auxiliary function for manual exploration of distributions
+## try <- function(shape, scale) {
+##   x <- distcrete("weibull", shape = shape, scale = scale, w = 0, interval = 1)$r(1e5)
+##   hist(x)
+##   summary(x)
+## }
+
+```
+
+
+
+## Serial interval
+
+We visualise the probabiliy mass function for the first 50 days:
+
+```{r serial_interval_plot}
+
+plot(0:50, serial_interval$d(0:50),
+     type = "h", col = "#5E9281", lwd = 8, lend = 2,
+     xlab = "Days from primary to secondary admission",
+     ylab = "Probability",
+     main = "Delay between generations of admissions",
+     cex.lab = 1.3, cex.main = 1.5)
+
+```
+
+
+
+## Duration of hospitalisation
+
+We visualise the probabiliy mass functions for the first 50 days:
+
+```{r los_plot}
+
+plot(0:50, los_normal$d(0:50),
+     type = "h", col = "#e6b800", lwd = 8, lend = 2,
+     xlab = "Days in hospital",
+     ylab = "Probability",
+     main = "Duration of non-critical hospitalisation",
+     cex.lab = 1.3, cex.main = 1.5)
+
+
+plot(0:50, los_critical$d(0:50),
+     type = "h", col = "#ff944d", lwd = 8, lend = 2,
+     xlab = "Days in hospital",
+     ylab = "Probability",
+     main = "Duration of critical care hospitalisation",
+     cex.lab = 1.3, cex.main = 1.5)
+
+```
+
+
+
+
+## Illustration
+
+As an illustration, we forecast bed occupancy for 3 weeks in a hypothetical location which
+would have reported 65 admissions on the current day, with an assumed reporting
+of 80% and an assumed R of 2.
+
+```{r illustration}
+
+## input parameters
+R <- 2
+reporting <- 0.8
+date_start <- Sys.Date()
+n_start <- 65
+n_sim <- 1000
+duration <- 21
+
+## make case forecasting, assuming R = 2
+## we simulate 1000 trajectories from a Poisson model
+proj_admissions <- rep(date_start, n_start) %>%
+  incidence() %>%
+  project(R = 2, si = serial_interval, n_sim = n_sim, n_days = duration)
+
+plot(proj_admissions) +
+  theme_bw() +
+  large_txt +
+  scale_x_date(date_labels = "%d %b %Y") +
+  rotate_x +
+  labs(y = "Daily admissions",
+       title = "Forecast of daily admissions")
+
+
+```
+
+
+
+
+
+
+
+
+<!-- ======================================================= -->
+<!-- ======================================================= -->
+<!-- ======================================================= -->
+
+# Simulator {.tabset .tabset-fade .tabset-pills}
+
+## Outline
+
+We re-refactor the code of the illustration provided in the previous section,
+and create a function which will perform these simulations from the following
+inputs:
+
+* `date_death`: a vector of dates provided as `Date` object; by default assumed
+  to be the dates of deaths, but could also be the date of onset, if available
+  (see `infer_onset`)
+
+* `R`: reproduction number, defaults to 2
+
+* *`cfr`: case fatality ratio, defaults to 0.02 (2%); different values can be
+  provided for each case
+
+* `n_sim`: the number of simulations to perform, default to 1000
+
+* `duration`: the number of days after the last death to run simulations for
+
+* `infer_onset`: a `logical` indicating whether dates of onset should be
+  inferred, which should be `TRUE` (default) if `date_death` is the date of
+  deaths; if `date_death` corresponds to `onset`, should be `FALSE`
+
+
+Outputs will be a list including:
+
+* `$date_death`: the date of death used as inputs
+
+* `$incidence`: the epicurve simulated from the CFR, by date of onset
+
+* `$projections`: the projections of cases
+
+
+Additional inputs which will not be allowed to change would be stored using
+closures; they include:
+
+* the serial interval distribution
+* the onset to death distribution
+
+
+```{r simulate_cases, eval = FALSE}
+
+make_simulator <- function(serial_interval,
+                           r_onset_death,
+                           n_sim_per_iteration = 10) {
+  
+  function(date_death,
+           R = 2,
+           cfr = 0.02,
+           n_sim = 100,
+           duration = 1,
+           infer_onset = TRUE) {
+
+    ## TODO: add asserters and foolproofers here
+    if (R < 1) {
+      msg <- sprintf("invalid R requested (%d); setting `R = 1`",
+                     R)
+      message(msg)
+      R <- 1
+    }
+    
+    if (duration < 1) {
+      msg <- sprintf("invalid duration requested (%d); setting `duration = 1`",
+                     duration)
+      message(msg)
+      duration <- 1
+    }
+
+    if (n_sim < 10) {
+      msg <- sprintf("n_sim requested too low (%d); setting `n_sim = 10`",
+                     n_sim)
+      message(msg)
+      n_sim <- 10
+    }
+
+    if ((length(cfr) > 1) && (length(date_death) != length(cfr))) {
+      msg <- "Several values of `cfr` provided but need 1 cfr per case"
+      stop(msg)
+    }
+
+
+    ## Neutralise the onset -> death simulator if we have dates of onset already
+    if (!infer_onset) {
+      r_onset_death <- function(n = 1) rep(0, n)
+    }
+    
+
+    ## Procedure:
+
+    ## I) For each `nsim` simulation:
+    
+    ## 1. draw dates of onset for each deaths
+
+    ## 2. build `incidence` objects for each death, containing 1/CFR cases for
+    ## the respective onsets
+
+    ## 3. make separate projections for each incidence objects, making sure
+    ## simulation run until the day required
+
+    ## 4. add projected cases from the different deaths into a single
+    ## projection; this is now implemented by the external script
+    ## `merge_add_projections`, soon to be part of the projections package
+
+
+    ## II) merge projections from all iterations into a single projection object
+    ## collate all forecastings together; ; this is now implemented by the
+    ## external script `merge_projections`, soon to be part of the projections
+    ## package
+    
+    last_day_simul <- max(date_death) + duration
+    
+    ## step I
+    ## `proj` will contain forecasting output in a list of data.frame
+    ## `all_sim_onset` will contain all simulated onsets
+    proj <- vector(n_sim, mode = "list")
+    all_sim_onset <- vector(n_sim, mode = "list")
+    all_sim_n_cases <- vector(n_sim, mode = "list")
+    
+    for (i in seq_len(n_sim)) {
+
+      ## step 1
+      
+      ## infer number of cases based on CFR
+      n_death <- length(date_death)
+      
+      
+      ## infer corresponding dates of onset, probabilistically; in a given
+      ## iteration of the for loop, all dates of onset are the same for a given
+      ## death; we keep these data in a list with one item per death, which
+      ## allows the creation of separate incidence objects and separate
+      ## projections for each death
+      ## 
+      all_sim_onset[[i]] <- date_death - r_onset_death(n_death)
+      all_sim_n_cases[[i]] <- 1 + rgeom(n = n_death, prob = cfr)
+      
+      sim_onset <- lapply(seq_len(n_death),
+                          function(j) rep(all_sim_onset[[i]][j],
+                                          all_sim_n_cases[[i]][j]))
+
+      
+      ## step 2
+      ## make incidence object from simulated onsets
+      sim_i <- lapply(sim_onset, incidence)
+
+      
+      ## step 3
+      list_proj <- lapply(sim_i,
+                          function(e)
+                            project(e,
+                                    R = R,
+                                    si = serial_interval,
+                                    n_sim = n_sim_per_iteration,
+                                    n_days = as.integer(last_day_simul - max(get_dates(e)))))
+
+      ## step 4
+      proj[[i]] <- merge_add_projections(list_proj)
+
+    } # end of for loop
+
+
+    
+    ## step 5
+    proj <- merge_projections(proj)
+      
+  
+    ## reshape `all_sim_onset` into a single vector of dates
+    all_sim_onset <- Reduce(c, all_sim_onset)
+
+    ## reshape `all_sim_n_cases` into a vector
+    all_sim_n_cases <- unlist(all_sim_n_cases)
+
+    ## make plot for output
+    out_plot <- 
+      plot(proj, quantiles = FALSE,
+           ribbon_alpha = .5,
+           ribbon_quantiles = c(0.025, .975)) %>%
+      add_projections(proj,
+                      quantiles = FALSE,
+                      ribbon_alpha = .75,
+                      ribbon_quantiles = c(0.25, .75)) +
+      theme_bw() +
+      rotate_x +
+      large_txt +
+      geom_vline(data = data.frame(death = date_death),
+                 aes(xintercept = death),
+                 color = "#F13963", lwd = 1.5, alpha = .5) +
+      scale_x_date(date_label = "%d %b %y") +
+      labs(y = "New daily cases",
+           title = "Cases inferred from deaths: projections")
+
+    
+    ## make plot for output
+    out_plot_cumul <- 
+      plot(cumulate(proj),
+           quantiles = FALSE,
+           ribbon_alpha = .5,
+           ribbon_quantiles = c(0.025, .975)) %>%
+      add_projections(cumulate(proj),
+                      quantiles = FALSE,
+                      ribbon_alpha = .75,
+                      ribbon_quantiles = c(0.25, .75)) +
+      theme_bw() +
+      rotate_x +
+      large_txt +
+      geom_vline(data = data.frame(death = date_death),
+                 aes(xintercept = death),
+                 color = "#F13963", lwd = 1.5, alpha = .5) +
+      scale_x_date(date_label = "%d %b %y") +
+      labs(y = "Total number of cases",
+           title = "Cases inferred from deaths: cumulative projections")
+
+    
+    ## return output
+    out <- list(
+        date_death = date_death,
+        sim_onset = all_sim_onset,
+        sim_n_cases = all_sim_n_cases,
+        projections = proj,
+        plot_projections = out_plot,
+        plot_projections_cumul = out_plot_cumul
+    )
+
+    out
+  }  
+}
+
+
+## default simulator
+simulate_cases <- make_simulator(serial_interval,
+                                 r_onset_death,
+                                 50)
+
+
+## alternative simulator, using right-censored distribution for the onset->death
+## delay; this one creates longer delays and will tend to over-estimate cases
+simulate_cases_alternative <- make_simulator(serial_interval,
+                                             r_onset_death_alternative,
+                                             50)
+
+
+```
+
+
+
+
+## Basic example
+
+An example using default parameters, with a new cases today:
+
+```{r example_1}
+
+set.seed(1)
+today <- Sys.Date()
+x <- simulate_cases(today, n_sim = 50)
+x$plot_projections
+x$plot_projections_cumul
+
+```
+
+
+
+## More cases
+
+Another example with 5 cases over the last week:
+
+```{r example_2}
+
+set.seed(1)
+today <- Sys.Date()
+sim_death <- today - sample(0:6, 5, replace = TRUE)
+x <- simulate_cases(sim_death, R = 2, cfr = 0.02)
+x$plot_projections
+x$plot_projections_cumul
+
+```
+
+
+
+
+<!-- ======================================================= --> 
+<!-- ======================================================= --> 
+<!-- ======================================================= -->
+
+# Export {.tabset .tabset-fade .tabset-pills}
+
+## Simulator
+
+The simulator is exported as an `rds` file. Because it uses closure programming,
+it should be functional out-of-the box, without having to re-specify the
+delay distributions.
+
+```{r export_rds}
+
+if (!dir.exists("rds_outputs")) {
+  dir.create("rds_outputs")
+}
+
+## export to local folder
+rio::export(simulate_cases,
+            file = "rds_outputs/simulate_cases.rds")
+rio::export(simulate_cases_alternative,
+            file = "rds_outputs/simulate_cases_alternative.rds")
+
+## export to main rds folder
+rio::export(simulate_cases,
+            file = here("rds", "simulate_cases.rds"))
+rio::export(simulate_cases_alternative,
+            file = here("rds", "simulate_cases_alternative.rds"))
+
+## export to the app's folder
+rio::export(simulate_cases,
+            file = here("..", "app", "rds", "simulate_cases.rds"))
+rio::export(simulate_cases_alternative,
+            file = here("..", "app", "rds", "simulate_cases_alternative.rds"))
+
+```
+
+
+
+
+
+<!-- ======================================================= --> 
+<!-- ======================================================= --> 
+<!-- ======================================================= -->
+
+# System information {.tabset .tabset-fade .tabset-pills}
+
+## Outline
+
+The following information documents the system on which the document was
+compiled.
+
+
+## System 
+
+This provides information on the operating system.
+
+```{r system_info}
+Sys.info()
+```
+
+## R environment
+
+This provides information on the version of R used:
+
+```{r R_session}
+R.version
+```
+
+
+## R packages
+
+This provides information on the packages used:
+
+```{r R_pkg}
+sessionInfo()
+```
