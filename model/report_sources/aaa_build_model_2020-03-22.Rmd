@@ -255,7 +255,7 @@ last_date <- date_start + duration
 los_r <- los_critical$r
 
 ## make case forecasting, assuming R = 2
-## we simulate 1000 trajectories from a Poisson model
+## we simulate `n_sim` trajectories from a Poisson model
 proj_admissions <- rep(date_start, n_start) %>%
   incidence() %>%
   project(R = 2, si = serial_interval, n_sim = n_sim, n_days = duration)
@@ -310,10 +310,31 @@ simulate_beds <- function(dates_admission,
 }
 
 
+
+## simulator for ICU beds
+project_icu_beds <- function(dates, cases, r_duration) {
+  
+  sim_admission <- rep(dates, cases)
+  n <- length(sim_admission)
+  sim_duration <- r_duration(n)
+  
+  out <- lapply(seq_len(n), function(i) seq(sim_admission[i],
+                                            length.out = sim_duration[i],
+                                            by = 1L))
+  out <- do.call(c, out)
+  out <- incidence::incidence(out)
+
+  ## remove last days (artificial decrease)
+  last_day <- max(dates)
+  out[get_dates(out) <= last_day, ]
+}
+
+
+
 ## simulate beds for each epicurve
 list_sims <- lapply(list_dates_admissions,
                     simulate_beds,
-                    n_replicates = 5,
+                    n_replicates = 1,
                     last_date = last_date)
 
 ## merge results
@@ -343,291 +364,6 @@ plot(beds,
 
 
 
-<!-- ======================================================= -->
-<!-- ======================================================= -->
-<!-- ======================================================= -->
-
-# Simulator {.tabset .tabset-fade .tabset-pills}
-
-## Outline
-
-We re-refactor the code of the illustration provided in the previous section,
-and create a function which will perform these simulations from the following
-inputs:
-
-* `date_death`: a vector of dates provided as `Date` object; by default assumed
-  to be the dates of deaths, but could also be the date of onset, if available
-  (see `infer_onset`)
-
-* `R`: reproduction number, defaults to 2
-
-* *`cfr`: case fatality ratio, defaults to 0.02 (2%); different values can be
-  provided for each case
-
-* `n_sim`: the number of simulations to perform, default to 1000
-
-* `duration`: the number of days after the last death to run simulations for
-
-* `infer_onset`: a `logical` indicating whether dates of onset should be
-  inferred, which should be `TRUE` (default) if `date_death` is the date of
-  deaths; if `date_death` corresponds to `onset`, should be `FALSE`
-
-
-Outputs will be a list including:
-
-* `$date_death`: the date of death used as inputs
-
-* `$incidence`: the epicurve simulated from the CFR, by date of onset
-
-* `$projections`: the projections of cases
-
-
-Additional inputs which will not be allowed to change would be stored using
-closures; they include:
-
-* the serial interval distribution
-* the onset to death distribution
-
-
-```{r simulate_cases, eval = FALSE}
-
-make_simulator <- function(serial_interval,
-                           r_onset_death,
-                           n_sim_per_iteration = 10) {
-  
-  function(date_death,
-           R = 2,
-           cfr = 0.02,
-           n_sim = 100,
-           duration = 1,
-           infer_onset = TRUE) {
-
-    ## TODO: add asserters and foolproofers here
-    if (R < 1) {
-      msg <- sprintf("invalid R requested (%d); setting `R = 1`",
-                     R)
-      message(msg)
-      R <- 1
-    }
-    
-    if (duration < 1) {
-      msg <- sprintf("invalid duration requested (%d); setting `duration = 1`",
-                     duration)
-      message(msg)
-      duration <- 1
-    }
-
-    if (n_sim < 10) {
-      msg <- sprintf("n_sim requested too low (%d); setting `n_sim = 10`",
-                     n_sim)
-      message(msg)
-      n_sim <- 10
-    }
-
-    if ((length(cfr) > 1) && (length(date_death) != length(cfr))) {
-      msg <- "Several values of `cfr` provided but need 1 cfr per case"
-      stop(msg)
-    }
-
-
-    ## Neutralise the onset -> death simulator if we have dates of onset already
-    if (!infer_onset) {
-      r_onset_death <- function(n = 1) rep(0, n)
-    }
-    
-
-    ## Procedure:
-
-    ## I) For each `nsim` simulation:
-    
-    ## 1. draw dates of onset for each deaths
-
-    ## 2. build `incidence` objects for each death, containing 1/CFR cases for
-    ## the respective onsets
-
-    ## 3. make separate projections for each incidence objects, making sure
-    ## simulation run until the day required
-
-    ## 4. add projected cases from the different deaths into a single
-    ## projection; this is now implemented by the external script
-    ## `merge_add_projections`, soon to be part of the projections package
-
-
-    ## II) merge projections from all iterations into a single projection object
-    ## collate all forecastings together; ; this is now implemented by the
-    ## external script `merge_projections`, soon to be part of the projections
-    ## package
-    
-    last_day_simul <- max(date_death) + duration
-    
-    ## step I
-    ## `proj` will contain forecasting output in a list of data.frame
-    ## `all_sim_onset` will contain all simulated onsets
-    proj <- vector(n_sim, mode = "list")
-    all_sim_onset <- vector(n_sim, mode = "list")
-    all_sim_n_cases <- vector(n_sim, mode = "list")
-    
-    for (i in seq_len(n_sim)) {
-
-      ## step 1
-      
-      ## infer number of cases based on CFR
-      n_death <- length(date_death)
-      
-      
-      ## infer corresponding dates of onset, probabilistically; in a given
-      ## iteration of the for loop, all dates of onset are the same for a given
-      ## death; we keep these data in a list with one item per death, which
-      ## allows the creation of separate incidence objects and separate
-      ## projections for each death
-      ## 
-      all_sim_onset[[i]] <- date_death - r_onset_death(n_death)
-      all_sim_n_cases[[i]] <- 1 + rgeom(n = n_death, prob = cfr)
-      
-      sim_onset <- lapply(seq_len(n_death),
-                          function(j) rep(all_sim_onset[[i]][j],
-                                          all_sim_n_cases[[i]][j]))
-
-      
-      ## step 2
-      ## make incidence object from simulated onsets
-      sim_i <- lapply(sim_onset, incidence)
-
-      
-      ## step 3
-      list_proj <- lapply(sim_i,
-                          function(e)
-                            project(e,
-                                    R = R,
-                                    si = serial_interval,
-                                    n_sim = n_sim_per_iteration,
-                                    n_days = as.integer(last_day_simul - max(get_dates(e)))))
-
-      ## step 4
-      proj[[i]] <- merge_add_projections(list_proj)
-
-    } # end of for loop
-
-
-    
-    ## step 5
-    proj <- merge_projections(proj)
-      
-  
-    ## reshape `all_sim_onset` into a single vector of dates
-    all_sim_onset <- Reduce(c, all_sim_onset)
-
-    ## reshape `all_sim_n_cases` into a vector
-    all_sim_n_cases <- unlist(all_sim_n_cases)
-
-    ## make plot for output
-    out_plot <- 
-      plot(proj, quantiles = FALSE,
-           ribbon_alpha = .5,
-           ribbon_quantiles = c(0.025, .975)) %>%
-      add_projections(proj,
-                      quantiles = FALSE,
-                      ribbon_alpha = .75,
-                      ribbon_quantiles = c(0.25, .75)) +
-      theme_bw() +
-      rotate_x +
-      large_txt +
-      geom_vline(data = data.frame(death = date_death),
-                 aes(xintercept = death),
-                 color = "#F13963", lwd = 1.5, alpha = .5) +
-      scale_x_date(date_label = "%d %b %y") +
-      labs(y = "New daily cases",
-           title = "Cases inferred from deaths: projections")
-
-    
-    ## make plot for output
-    out_plot_cumul <- 
-      plot(cumulate(proj),
-           quantiles = FALSE,
-           ribbon_alpha = .5,
-           ribbon_quantiles = c(0.025, .975)) %>%
-      add_projections(cumulate(proj),
-                      quantiles = FALSE,
-                      ribbon_alpha = .75,
-                      ribbon_quantiles = c(0.25, .75)) +
-      theme_bw() +
-      rotate_x +
-      large_txt +
-      geom_vline(data = data.frame(death = date_death),
-                 aes(xintercept = death),
-                 color = "#F13963", lwd = 1.5, alpha = .5) +
-      scale_x_date(date_label = "%d %b %y") +
-      labs(y = "Total number of cases",
-           title = "Cases inferred from deaths: cumulative projections")
-
-    
-    ## return output
-    out <- list(
-        date_death = date_death,
-        sim_onset = all_sim_onset,
-        sim_n_cases = all_sim_n_cases,
-        projections = proj,
-        plot_projections = out_plot,
-        plot_projections_cumul = out_plot_cumul
-    )
-
-    out
-  }  
-}
-
-
-## default simulator
-simulate_cases <- make_simulator(serial_interval,
-                                 r_onset_death,
-                                 50)
-
-
-## alternative simulator, using right-censored distribution for the onset->death
-## delay; this one creates longer delays and will tend to over-estimate cases
-simulate_cases_alternative <- make_simulator(serial_interval,
-                                             r_onset_death_alternative,
-                                             50)
-
-
-```
-
-
-
-
-## Basic example
-
-An example using default parameters, with a new cases today:
-
-```{r example_1}
-
-set.seed(1)
-today <- Sys.Date()
-x <- simulate_cases(today, n_sim = 50)
-x$plot_projections
-x$plot_projections_cumul
-
-```
-
-
-
-## More cases
-
-Another example with 5 cases over the last week:
-
-```{r example_2}
-
-set.seed(1)
-today <- Sys.Date()
-sim_death <- today - sample(0:6, 5, replace = TRUE)
-x <- simulate_cases(sim_death, R = 2, cfr = 0.02)
-x$plot_projections
-x$plot_projections_cumul
-
-```
-
-
-
-
 <!-- ======================================================= --> 
 <!-- ======================================================= --> 
 <!-- ======================================================= -->
@@ -640,7 +376,7 @@ The simulator is exported as an `rds` file. Because it uses closure programming,
 it should be functional out-of-the box, without having to re-specify the
 delay distributions.
 
-```{r export_rds}
+```{r export_rds, eval = FALSE}
 
 if (!dir.exists("rds_outputs")) {
   dir.create("rds_outputs")
