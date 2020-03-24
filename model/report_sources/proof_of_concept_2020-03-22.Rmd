@@ -225,19 +225,75 @@ duration <- 14
 last_date <- date_start + duration
 los_r <- los_critical$r
 
-## make case forecasting, assuming R = 2
-## we simulate `n_sim` trajectories from a Poisson model
-proj_admissions <- rep(date_start, n_start) %>%
-  incidence() %>%
-  project(R = 2, si = serial_interval, n_sim = n_sim, n_days = duration)
 
-plot(proj_admissions) +
+## custom graphics
+scale_lines <- scale_linetype_manual("", values = c(low = 2, mean = 1, high = 2))
+
+predict_admissions <- function(date_start,
+                               n_start,
+                               doubling,
+                               doubling_error,
+                               duration,
+                               long = FALSE) {
+  ## Outline:
+
+  ## This function calculates future admissions using an exponential model. The
+  ## growth rate is calculated from the doubling time, using: r = log(2) / d
+  
+  ## future dates and initial conditions
+  future_dates <- seq(date_start, length.out = duration, by = 1L)
+  initial_admissions <- round(n_start / reporting)
+
+  ## calculate growth rate from doubling times
+  r <- log(2) / doubling
+  r_low <- log(2) / (doubling - doubling_error)
+  r_high <- log(2) / (doubling + doubling_error)
+
+  ## calculate future admissions
+  future_admissions <- initial_admissions * exp(r * (seq_len(duration) - 1))
+  future_admissions_low <- initial_admissions * exp(r_low * (seq_len(duration) - 1))
+  future_admissions_high <- initial_admissions * exp(r_high * (seq_len(duration) - 1))
+  future_admissions <- round(future_admissions)
+  future_admissions_low <- round(future_admissions_low)
+  future_admissions_high <- round(future_admissions_high)
+
+  ## build output
+  out <- data.frame(date = future_dates,
+                    mean = future_admissions,
+                    low = future_admissions_low,
+                    high = future_admissions_high)
+
+  if (long) {
+    out <- tidyr::pivot_longer(out, -1,
+                               names_to = "prediction",
+                               values_to = "n")
+    out$prediction <- factor(out$prediction,
+                             levels = c("low", "mean", "high"))
+  }
+  out
+}
+
+
+
+proj_admissions <- predict_admissions(date_start,
+                                      n_start,
+                                      doubling,
+                                      doubling_error,
+                                      duration,
+                                      TRUE)
+
+proj_admissions
+
+proj_admissions %>%
+  ggplot(aes(x = date, y = n)) +
+  geom_line(aes(linetype = prediction)) +
+  scale_lines +
   theme_bw() +
   large_txt +
-  scale_x_date(date_labels = "%d %b %Y") +
   rotate_x +
-  labs(y = "Daily admissions",
-       title = "Forecast of daily admissions")
+  scale_x_date(date_labels = "%d %b %Y") +
+    labs(y = "Daily admissions",
+         title = "Forecast of daily admissions")
 
 
 ## simulate durations of hospitalisation
