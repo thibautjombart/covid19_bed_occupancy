@@ -41,12 +41,14 @@ admissions. In short, the process is as follows:
 
 1. use a recent number of admissions at a given date as a point of reference
 
-2. simulate growth in admissions from this point of reference using a branching
-   process model, using recent estimates of the serial interval to model delay
-   between generations of infections
+2. simulate growth in admissions from this point of reference using a given
+   doubling time, feeding into a log-linear model, including user-specified
+   upper and lower bounds
    
-3. for each simulated admission, simulate duration of hospitalisation from
-   recent estimate of the duration of hospitalisation
+3. for each simulated admission, simulate the duration of hospitalisation from
+   recent estimate of the duration of hospitalisation; it may be required to
+   repeat this process many time for lower numbers of admission, to integrate
+   the uncertainty relating to duration of stay
    
 4. derive daily numbers of bed needs
 
@@ -54,11 +56,7 @@ admissions. In short, the process is as follows:
 
 ### Caveats
 
-* The serial interval marks the delay between symptom onsets in successive
-  cases. Using it as a proxy for the delay between generations of admissions, we
-  implicitely assume a fixed, constant delay from onset to admission. This
-  likely results in an under-estimation of the uncertainty in the bed needs
-  predicted.
+* The current model assumes exponential growth
 
 * Default distributions for the duration of stay are provided by matching results of 
 [Zhou et al 2020](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext). 
@@ -137,7 +135,7 @@ The principle of the estimation is:
 1. augment the number of admissions using the reporting; currently this is just 
 $n_{aug} = n_{reported} / reporting$
 
-2. use a branching process with a Poisson distribution to simulate epidemic
+2. use a log-linear model, parametrised through the doubling time, to simulate epidemic
    trajectories; see for instance 
    [Jombart et al 2020](https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2020.25.2.1900735); this is implemented by the RECON package [projections](http://www.repidemicsconsortium.org/projections/)
    
@@ -154,17 +152,6 @@ $n_{aug} = n_{reported} / reporting$
 This section contain information on the various parameters. We use these
 data to generate distribution, with discretisation when needed.
 
-* **serial interval**: 
-    + mean of 4.7 days, s.d. of 2.9 days (log normal distribution fit)
-    + [source](https://www.medrxiv.org/content/10.1101/2020.02.03.20019497v2.full.pdf.)
-
-```{r serial_interval}
-
-serial_interval <- distcrete("lnorm", w = 0, interval = 1,
-                             meanlog = log(4.7),
-                             sdlog = log(2.9))
-
-```
 * **Duration of hospitalisation**:
     + non critical care: discretised Weibull(shape:, scale:) to aim for a median of 11
       days, IQR 7-14
@@ -188,23 +175,6 @@ los_normal <- distcrete("weibull", shape = 2, scale = 13, w = 0, interval = 1)
 ##   hist(x)
 ##   summary(x)
 ## }
-
-```
-
-
-
-## Serial interval
-
-We visualise the probabiliy mass function for the first 50 days:
-
-```{r serial_interval_plot}
-
-plot(0:50, serial_interval$d(0:50),
-     type = "h", col = "#5E9281", lwd = 8, lend = 2,
-     xlab = "Days from primary to secondary admission",
-     ylab = "Probability",
-     main = "Delay between generations of admissions",
-     cex.lab = 1.3, cex.main = 1.5)
 
 ```
 
@@ -245,7 +215,8 @@ of 80% and an assumed R of 2.
 ```{r illustration}
 
 ## input parameters
-R <- 2
+doubling <- 4 # doubline time in days
+doubling_error <- 1 # +/- days for upper/lower bounds
 reporting <- 0.8
 date_start <- Sys.Date()
 n_start <- 65
