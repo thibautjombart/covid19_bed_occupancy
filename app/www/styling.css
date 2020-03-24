@@ -1,0 +1,57 @@
+body { padding-top: 70px; }
+
+.inline label.control-label, .inline .selectize-control.single {
+  display: table-cell;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.inline .form-group {
+  display: table-row;
+}
+
+.inline .selectize-control.single div.item {
+  padding-right: 15px;
+}
+
+.seroselect .selectize-control.single { width:10em; }
+.demoselect .selectize-control.single { width:15em; }
+.seroselect.inline label.control-label { width: 70px; }
+.demoselect.inline label.control-label { width: 70px; }
+.costs.inline label.control-label { width: 90px; }
+hr { margin:5px; border-top: 1px solid grey; }
+
+.navbar-default {
+  background-color: #0D5257 !important;
+}
+
+.navbar-default:hover {
+
+}
+
+.navbar-default .navbar-nav > .active > a {
+  color: white;
+  background-color: #00BF6F !important;
+}
+
+.navbar-default .navbar-nav > li > a:hover {
+  color: #00BF6F;
+}
+
+.navbar-default .navbar-nav > li > a {
+  color: white;
+}
+
+.navbar-default .navbar-toggle .icon-bar {
+  background-color: white;
+}
+
+.navbar-default .navbar-brand:hover {
+  color: white !important;
+}
+
+.navbar-default .navbar-brand {
+  color: white;
+  padding: 2.5px;
+  padding-right: 15px;
+}
