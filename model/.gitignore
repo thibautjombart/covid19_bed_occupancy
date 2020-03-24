@@ -1,0 +1,13 @@
+data/incoming/
+*~
+report_outputs
+.Rhistory
+*.Rproj
+.history
+.Rproj.user
+.compile_log.rds
+report_sources/*.html
+report_sources/produced_rds/
+.RData
+data/csv/pcodes/
+

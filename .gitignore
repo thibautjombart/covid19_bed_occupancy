@@ -2,3 +2,4 @@
 report_outputs
 .Rhistory
 *.Rproj
+.Rproj.user

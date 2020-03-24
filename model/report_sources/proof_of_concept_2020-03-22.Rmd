@@ -26,15 +26,16 @@ knitr::opts_chunk$set(echo = TRUE,
 ```
 
 
+# Introduction
 
-### What's in this document
+## What's in this document
 
-This document provides an outline of the model and its implementation. It
-returns a self-contained simulator as an `rds` object which can then be used as
-backend in other systems (including the app provided in this repository).
+This document provides an outline of the model and its implementation. Its code
+served as a basis for the app hosted in the same github repository (se `app/`
+folder).
 
 
-### Rationale
+## Rationale
 
 This report outlines a model for forecasting bed occupancy from recent data on
 admissions. In short, the process is as follows:
@@ -54,13 +55,21 @@ admissions. In short, the process is as follows:
 
 
 
-### Caveats
+## Caveats
 
 * The current model assumes exponential growth
 
 * Default distributions for the duration of stay are provided by matching results of 
 [Zhou et al 2020](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext). 
 These distributions may need changing under some settings.
+
+
+
+## Licensing
+
+* Copyright: Thibaut Jombart
+* License: [CC-BY](https://creativecommons.org/licenses/by/4.0/)
+
 
 
 
@@ -215,13 +224,12 @@ of 80% and an assumed R of 2.
 ```{r illustration}
 
 ## input parameters
-doubling <- 4 # doubline time in days
-doubling_error <- 1 # +/- days for upper/lower bounds
+doubling <- 5 # doubline time in days
+doubling_error <- 1.5 # +/- days for upper/lower bounds
 reporting <- 0.8
-date_start <- Sys.Date()
-n_start <- 65
-n_sim <- 50
-duration <- 14
+date_start <- Sys.Date() # date of reference
+n_start <- 65 # admissions on date_start
+duration <- 14 # days of forecasting
 last_date <- date_start + duration
 los_r <- los_critical$r
 
@@ -235,6 +243,17 @@ predict_admissions <- function(date_start,
                                doubling_error,
                                duration,
                                long = FALSE) {
+
+  ## Sanity checks
+  if (!is.finite(n_start)) stop("`n_start` is not a number")
+  if (n_start < 1) stop("`n_start` must be >= 1")
+
+  if (!is.finite(doubling)) stop("`doubling` is not a number")
+  if (!is.finite(doubling_error)) stop("`doubling_error` is not a number")
+
+  if (!is.finite(duration)) stop("`duration` is not a number")
+  if (duration < 1) stop("`duration` must be >= 1")
+
   ## Outline:
 
   ## This function calculates future admissions using an exponential model. The
@@ -302,9 +321,19 @@ proj_admissions %>%
 project_beds <- function(dates, n_admissions, r_los, n_sim = 10) {
 
   ## sanity checks
+  if (!length(dates)) stop("`dates` is empty")
+
+  if (!is.finite(n_admissions)) stop("`n_admissions` is not a number")
+  if (n_admissions < 1) stop("`n_admissions` must be >= 1")
+
   if (inherits(r_los, "distcrete")) {
     r_los <- r_los$r
   }
+  if (!is.function(r_los)) stop("`r_los` must be a function")
+
+  if (!is.finite(n_sim)) stop("`n_sim` is not a number")
+  if (n_sim < 1) stop("`n_sim` must be >= 1")
+
   
   ## Outline:
 
@@ -368,9 +397,6 @@ beds <- merge_projections(list_proj_beds)
 plot(beds,
      quantiles = c(.025, .5),
      ribbon = TRUE) +
-     ## boxplots = TRUE,
-     ## boxplots_fill = "#a3a3c2",
-     ## boxplots_color = "#3d3d5c") +
   theme_bw() +
   large_txt +
   scale_x_date(date_label = "%d %b %y") +
@@ -383,48 +409,6 @@ plot(beds,
 
 
 
-
-
-
-
-
-<!-- ======================================================= --> 
-<!-- ======================================================= --> 
-<!-- ======================================================= -->
-
-# Export {.tabset .tabset-fade .tabset-pills}
-
-## Simulator
-
-The simulator is exported as an `rds` file. Because it uses closure programming,
-it should be functional out-of-the box, without having to re-specify the
-delay distributions.
-
-```{r export_rds, eval = FALSE}
-
-if (!dir.exists("rds_outputs")) {
-  dir.create("rds_outputs")
-}
-
-## export to local folder
-rio::export(simulate_cases,
-            file = "rds_outputs/simulate_cases.rds")
-rio::export(simulate_cases_alternative,
-            file = "rds_outputs/simulate_cases_alternative.rds")
-
-## export to main rds folder
-rio::export(simulate_cases,
-            file = here("rds", "simulate_cases.rds"))
-rio::export(simulate_cases_alternative,
-            file = here("rds", "simulate_cases_alternative.rds"))
-
-## export to the app's folder
-rio::export(simulate_cases,
-            file = here("..", "app", "rds", "simulate_cases.rds"))
-rio::export(simulate_cases_alternative,
-            file = here("..", "app", "rds", "simulate_cases_alternative.rds"))
-
-```
 
 
 
