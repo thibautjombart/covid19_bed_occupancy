@@ -275,6 +275,7 @@ predict_admissions <- function(date_start,
 
 
 
+## try the function
 proj_admissions <- predict_admissions(date_start,
                                       n_start,
                                       doubling,
@@ -282,6 +283,7 @@ proj_admissions <- predict_admissions(date_start,
                                       duration,
                                       TRUE)
 
+## check outputs and make plots
 proj_admissions
 
 proj_admissions %>%
@@ -296,84 +298,79 @@ proj_admissions %>%
          title = "Forecast of daily admissions")
 
 
-## simulate durations of hospitalisation
-list_dates_admissions <- lapply(
-    seq_len(ncol(proj_admissions)),
-    function(n_cases) rep(get_dates(proj_admissions), n_cases))
+## simulator for ICU beds
+project_beds <- function(dates, n_admissions, r_los, n_sim = 10) {
 
+  ## sanity checks
+  if (inherits(r_los, "distcrete")) {
+    r_los <- r_los$r
+  }
+  
+  ## Outline:
 
-## this function takes as input a vector of dates of admissions, and outputs a
-## projections object counting daily bed requirements; `n_replicates` gives a handle on
-## the number of replicates to perform (as duration of hospitalisation itself is
-## stochastic)
+  ## We take a vector of dates and incidence of admissions, and turn this into a
+  ## vector of admission dates, whose length is sum(n_admissions). We will
+  ## simulate for each date of admission a duration of stay, and a corresponding
+  ## vector of dates at which this case occupies a bed. Used beds are then
+  ## counted (summing up all cases) for each day. To account for stochasticity
+  ## in duration of stay, this process can be replicated `n_sim` times,
+  ## resulting in `n_sim` predictions of bed needs over time.
 
-simulate_beds <- function(dates_admission,
-                          n_replicates = 1,
-                          last_date = NULL) {
+  
+  admission_dates <- rep(dates, n_admissions)
+  n <- length(admission_dates)
+  last_date <- max(dates)
+  out <- vector(n_sim, mode = "list")
+  
 
-  n <- length(dates_admission)
-
-  out <- vector(n_replicates, mode = "list")
-
-  for (j in seq_len(n_replicates)) {
-    durations <- los_r(n)
+  for (j in seq_len(n_sim)) {
+    los <- r_los(n)
     list_dates_beds <- lapply(seq_len(n),
-                              function(i) seq(dates_admission[i],
-                                              length.out = durations[i],
+                              function(i) seq(admission_dates[i],
+                                              length.out = los[i],
                                               by = 1L))
+    ## Note: unlist() doesn't work with Date objects
     dates_beds <- do.call(c, list_dates_beds)
-    beds_days <- incidence(dates_beds)
+    beds_days <- incidence::incidence(dates_beds)
     if (!is.null(last_date)) {
-      to_keep <- get_dates(beds_days) <= last_date
+      to_keep <- incidence::get_dates(beds_days) <= last_date
       beds_days <- beds_days[to_keep, ]
     }
 
-    out[[j]] <- build_projections(x = beds_days$counts,
-                                  dates = get_dates(beds_days))
+    out[[j]] <- projections::build_projections(
+                                 x = beds_days$counts,
+                                 dates = incidence::get_dates(beds_days))
   }
 
-  merge_projections(out)
-  
+  projections::merge_projections(out)
+ 
 }
 
 
 
-## simulator for ICU beds
-project_icu_beds <- function(dates, cases, r_duration) {
-  
-  sim_admission <- rep(dates, cases)
-  n <- length(sim_admission)
-  sim_duration <- r_duration(n)
-  
-  out <- lapply(seq_len(n), function(i) seq(sim_admission[i],
-                                            length.out = sim_duration[i],
-                                            by = 1L))
-  out <- do.call(c, out)
-  out <- incidence::incidence(out)
-
-  ## remove last days (artificial decrease)
-  last_day <- max(dates)
-  out[get_dates(out) <= last_day, ]
-}
+## split predicted admissions by type of prediction (low / mean / high)
+list_proj_admissions <- split(proj_admissions, proj_admissions$prediction)
 
 
 
 ## simulate beds for each epicurve
-list_sims <- lapply(list_dates_admissions,
-                    simulate_beds,
-                    n_replicates = 1,
-                    last_date = last_date)
+list_proj_beds <- lapply(list_proj_admissions,
+                         function(e)
+                           project_beds(e$date,
+                                        e$n,
+                                        los_normal$r))
+
 
 ## merge results
-beds <- merge_projections(list_sims)
+beds <- merge_projections(list_proj_beds)
 
 ## plot results
 plot(beds,
-     quantiles = FALSE,
-     ribbon = FALSE,
-     boxplots = TRUE,
-     boxplots_fill = "#a3a3c2",
-     boxplots_color = "#3d3d5c") +
+     quantiles = c(.025, .5),
+     ribbon = TRUE) +
+     ## boxplots = TRUE,
+     ## boxplots_fill = "#a3a3c2",
+     ## boxplots_color = "#3d3d5c") +
   theme_bw() +
   large_txt +
   scale_x_date(date_label = "%d %b %y") +
