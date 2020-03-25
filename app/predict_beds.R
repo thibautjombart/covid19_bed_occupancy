@@ -31,8 +31,6 @@
 #'                         duration = 14) 
 #' x
 #' 
-#' ## get forecast for beds
-#' 
 #' ## make toy duration of hospitalisation (exponential distribution)
 #' r_duration <- function(n = 1) rexp(n, .2)
 #'

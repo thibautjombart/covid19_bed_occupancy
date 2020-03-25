@@ -31,6 +31,29 @@
 #' 
 #' @author Thibaut Jombart
 #'
+#' @examples
+#' 
+
+#' ## get forecast for admissions
+#' x <- predict_admissions(Sys.Date(),
+#'                         n_start = 40,
+#'                         doubling = 5,
+#'                         doubling_error = 1,
+#'                         duration = 14) 
+#' x
+#' 
+#' ## make toy duration of hospitalisation (exponential distribution)
+#' r_duration <- function(n = 1) rexp(n, .2)
+#'
+#' x <- run_model(Sys.Date(),
+#'                n_start = 66,
+#'                doubling = 7,
+#'                doubling_error = 2,
+#'                duration = 14,
+#'                r_los = r_duration,
+#'                n_sim = 1)
+#' x
+#' plot(x)
 
 run_model <- function(date_start,
                       n_start,
@@ -48,7 +71,7 @@ run_model <- function(date_start,
                                         doubling_error = doubling_error,
                                         duration = duration,
                                         reporting = reporting,
-                                        long = long)
+                                        long = TRUE)
 
   ## split projections by type of prediction (low / mean / high)
   list_proj_admissions <- split(proj_admissions, proj_admissions$prediction)
@@ -57,13 +80,14 @@ run_model <- function(date_start,
   ## get projected bed needs for each type of prediction
   list_proj_beds <- lapply(list_proj_admissions,
                          function(e)
-                           project_beds(e$date,
-                                        e$n,
-                                        los_normal$r))
+                           predict_beds(dates = e$date,
+                                        n_admission = e$n,
+                                        r_los = r_los,
+                                        n_sim = n_sim))
 
   
   ## put results back together as a `projections` object
-  beds <- merge_projections(list_proj_beds)
+  beds <- projections::merge_projections(list_proj_beds)
 
   beds
 }
