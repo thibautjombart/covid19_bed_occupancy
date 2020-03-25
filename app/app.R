@@ -20,23 +20,54 @@ ui <- navbarPage(
     windowTitle = apptitle,
     theme = "styling.css",
     position="fixed-top", collapsible = TRUE,
-    tabPanel("Results", sidebarLayout(position = "right",
+    tabPanel("Results", sidebarLayout(position = "left",
       sidebarPanel(
-        numericInput("R",
-          "R:",
-          min = 0.5,
-          max = 10,
-          value = 2
+        dateInput("admissionDate",
+          "Date of admission:",
+          format = "dd/mm/yyyy"
         ),
-        numericInput("SI",
-                     "serial interval:",
-                     min = 1,
+        numericInput("numberAdmissions",
+                     "Number of admissions on that date:",
+                     min = 0,
+                     max = 10000,
+                     value = 1
+        ),
+        numericInput("assumedReporting",
+                     "Reporting rate (%):",
+                     min = 0,
+                     max = 100,
+                     value = 100
+        ),
+        numericInput("doublingTime",
+                     "Assumed doubling time (days):",
+                     min = 0,
                      max = 10,
-                     value = 5
+                     value = 2
+        ),
+        numericInput("uncertaintyDouiblingTime",
+                     "Uncertainty in doubling time (days):",
+                     min = 0,
+                     max = 10,
+                     value = 2
+        ),
+        radioButtons(inputId="distributionDuration", label="Distribution of duration of stay", 
+                     choices=c("non-critical hospitalization","critical hospitalization","user-defined")
+        ),
+        numericInput("simulationDuration",
+                     "Duration of the simulation (days):",
+                     min = 0,
+                     max = 50,
+                     value = 14
+        ),
+        numericInput("numberSimulations",
+                     "Number of simulations:",
+                     min = 0,
+                     max = 200,
+                     value = 50
         )
       ),
       mainPanel(
-        plotOutput("growthPlot")
+        
       )
     )),
     tabPanel("Event Time Distributions", sidebarLayout(position = "right",
