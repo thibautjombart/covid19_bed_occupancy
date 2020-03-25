@@ -57,10 +57,10 @@ admissions. In short, the process is as follows:
 3. for each simulated admission, simulate the duration of hospitalisation from
    recent estimate of the duration of hospitalisation; it may be required to
    repeat this process several times (e.g. 30-50) for lower numbers of
-   admission, to integrate the uncertainty relating to duration of stay, the
+   admissions, to integrate the uncertainty relating to duration of stay, the
    default number of replicates used is 10
    
-4. derive daily numbers of bed needs
+4. derive daily numbers of bed required
 
 
 
