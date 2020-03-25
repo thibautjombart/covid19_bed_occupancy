@@ -1,21 +1,24 @@
-### Model Description
+## Model Description
 
-## Summary
+This app implements a model to forecast COVID19 bed requirements based on a user-inputted epidemic growth rate, a
+starting point of admissions on a given date, and an assumed distribution of length of stay after admission. This forecast can be adjusted to accommodate a certain reporting percentage, if it is assumed that not all cases will be reported.
 
-The principle of the estimation is:
+### Summary
 
-1. Augment the number of admissions using the reporting. This is currently done by
+The forecasting approach can be summarised as follows:
+
+1. Augment the number of admissions by an assumed level of reporting. This is currently done by
 
  n<sub>aug</sub> = n<sub>reported</sub> / % reported
  
-2. Use a log-linear model, parametrised through the doubling time, to simulate epidemic trajectories; see for instance Jombart et al 2020; this is implemented by the RECON package projections.
+2. Use a log-linear model, parametrised through the doubling time, to simulate epidemic trajectories; see for instance [Jombart et al 2020](https://www.eurosurveillance.org/content/10.2807/1560-7917.ES.2020.25.2.1900735); this is implemented by the RECON package [projections](https://cran.r-project.org/web/packages/projections/index.html) .
 
 3. For each admission, simulate duration of hospitalisation from provided distribution.
 
 4. Count beds for each day and simulation.
 
 
-### Model Parameters
+## Model Parameters
 
 This section contain information on the various parameters. We use these
 data to generate a distribution, with discretisation when needed.
@@ -35,7 +38,7 @@ data to generate a distribution, with discretisation when needed.
 [Zhou et al 2020](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext). 
 These distributions may need changing under some settings.
 
-## References
+### References
 
 ### Acknowledgements
 
