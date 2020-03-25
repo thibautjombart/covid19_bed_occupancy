@@ -30,6 +30,14 @@ knitr::opts_chunk$set(echo = TRUE,
 
 ## What's in this document
 
+We provide a model for forecasting bed occupancy of COVID-19 patients,
+generalising our [initial post](https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html) 
+on critical bed capacity in England. The model currently
+accommodates *normal hospitalisation* as well as *critical care*, for which
+different distributions of the length of stay are provided. The model can be
+used at any geographic scale, e.g. a single hospital, a state, a country.
+
+
 This document provides an outline of the model and its implementation. Its code
 served as a basis for the app hosted in the same github repository (se `app/`
 folder).
@@ -43,15 +51,16 @@ admissions. In short, the process is as follows:
 1. use a recent number of admissions at a given date as a point of reference
 
 2. simulate growth in admissions from this point of reference using a given
-   doubling time, feeding into a log-linear model, including user-specified
-   upper and lower bounds
+   doubling time (with user-specified upper and lower bounds), feeding into a
+   log-linear model
    
 3. for each simulated admission, simulate the duration of hospitalisation from
    recent estimate of the duration of hospitalisation; it may be required to
-   repeat this process many time for lower numbers of admission, to integrate
-   the uncertainty relating to duration of stay
+   repeat this process several times (e.g. 30-50) for lower numbers of
+   admissions, to integrate the uncertainty relating to duration of stay, the
+   default number of replicates used is 10
    
-4. derive daily numbers of bed needs
+4. derive daily numbers of bed required
 
 
 
@@ -162,7 +171,7 @@ This section contain information on the various parameters. We use these
 data to generate distribution, with discretisation when needed.
 
 * **Duration of hospitalisation**:
-    + non critical care: discretised Weibull(shape:, scale:) to aim for a median of 11
+    + non critical care: discretised Weibull(shape:2, scale:13) to aim for a median of 11
       days, IQR 7-14
     + critical care: discretised Weibull(shape:2, scale:10) to aim for a median of 8
       days, IQR 4-12
@@ -237,11 +246,29 @@ los_r <- los_critical$r
 ## custom graphics
 scale_lines <- scale_linetype_manual("", values = c(low = 2, mean = 1, high = 2))
 
+#' @param date_start A single `Date` used as a starting point to model future
+#'   COVID-19 admissions
+#'
+#' @param n_start The number of COVID-19 admissions reported on `date_start`
+#'
+#' @param doubling The doubling time, in days.
+#' 
+#' @param doubling_error The uncertainty associated to the doubling time, in
+#'   days. Upper and lower bounds of the forecast will be `doubling +/-
+#'   doubling_error`.
+#'
+#' @param reporting The proportion of admissions reported; defaults to 1,
+#'   i.e. all admissions are reported.
+#'
+#' @param long A `logical` indicating whether output should have a `long`
+#'   format, e.g. for easier plotting with `ggplot2`.
+ 
 predict_admissions <- function(date_start,
                                n_start,
                                doubling,
                                doubling_error,
                                duration,
+                               reporting = 1,
                                long = FALSE) {
 
   ## Sanity checks
@@ -253,6 +280,11 @@ predict_admissions <- function(date_start,
 
   if (!is.finite(duration)) stop("`duration` is not a number")
   if (duration < 1) stop("`duration` must be >= 1")
+
+  if (!is.finite(reporting)) stop("`reporting` is not a number")
+  if (reporting <= 0) stop("`reporting` must be > 0")
+  if (reporting > 1) stop("`reporting` must be <= 1")
+  
 
   ## Outline:
 
@@ -300,7 +332,8 @@ proj_admissions <- predict_admissions(date_start,
                                       doubling,
                                       doubling_error,
                                       duration,
-                                      TRUE)
+                                      reporting,
+                                      long = TRUE)
 
 ## check outputs and make plots
 proj_admissions
@@ -317,7 +350,22 @@ proj_admissions %>%
          title = "Forecast of daily admissions")
 
 
-## simulator for ICU beds
+#' Simulator for projecting bed occupancy
+#'
+#' @param dates A vector of dates, ideally as `Date` but `integer` should work too.
+#'
+#' @param n_admissions An `integer` vector giving the number of admissions
+#'   predicted for each date in `dates`.
+#'
+#' @param r_los A `function` with a single parameter `n` returning `n` values of
+#'   lenth of hospital stay (LoS). Ideally, this should come from a discrete
+#'   random distribution, such as `rexp` or any `distcrete` object.
+#'
+#' @param n_sim The number of times duration of hospitalisation is simulated for
+#'   each admission. Defaults to 10. Only relevant for low (<30) numbers of
+#'   initial admissions, in which case it helps accounting for the uncertainty
+#'   in LoS.
+
 project_beds <- function(dates, n_admissions, r_los, n_sim = 10) {
 
   ## sanity checks
