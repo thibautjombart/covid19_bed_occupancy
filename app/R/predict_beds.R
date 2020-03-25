@@ -22,7 +22,7 @@
 #' @author Thibaut Jombart
 #'
 #' @examples
-
+#' 
 #' ## get forecast for admissions
 #' x <- predict_admissions(Sys.Date(),
 #'                         n_start = 40,
