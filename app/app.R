@@ -1,9 +1,9 @@
-# this provides a template for making CMMID-branded shiny apps
-# key points:
-#  - organized as a navbar page
-#  - show audience something first: sidebar layouts are all controls-right
-#    which means when viewed on mobile, the plot appears first rather than the controls
-#  - the notes markdown is the place to document any long form details.
+## This provides a template for making CMMID-branded shiny apps
+## key points:
+##  - organized as a navbar page
+##  - show audience something first: sidebar layouts are all controls-right
+##    which means when viewed on mobile, the plot appears first rather than the controls
+##  - the notes markdown is the place to document any long form details.
 
 library(shiny)
 
@@ -12,10 +12,12 @@ apptitle <- "Hospital Bed Occupancy Projections"
 source("old_faithful.R")
 source("exp_growth.R")
 
-# Define UI for application that draws a histogram
+## Define UI for application that draws a histogram
 ui <- navbarPage(
     title = div(
-        a(img(src="cmmid_newlogo.svg", height="45px"), href="https://cmmid.github.io/"), span(apptitle, style="line-height:45px")
+        a(img(src="cmmid_newlogo.svg", height="45px"),
+          href="https://cmmid.github.io/"),
+        span(apptitle, style="line-height:45px")
     ),
     windowTitle = apptitle,
     theme = "styling.css",
@@ -49,8 +51,9 @@ ui <- navbarPage(
                      max = 10,
                      value = 2
         ),
-        radioButtons(inputId="distribution_duration", label="Distribution of duration of stay", 
-                     choices=c("non-critical hospitalization","critical hospitalization")
+        radioButtons(inputId = "distribution_duration",
+                     label = "Distribution of duration of stay", 
+                     choices = c("non-critical hospitalization","critical hospitalization")
         ),
         numericInput("simulation_duration",
                      "Duration of the simulation (days):",
@@ -69,7 +72,8 @@ ui <- navbarPage(
         
       )
     )),
-    tabPanel("Event Time Distributions", sidebarLayout(position = "right",
+    tabPanel("Event Time Distributions",
+             sidebarLayout(position = "right",
         sidebarPanel(
             sliderInput("bins1",
                         "Number of bins 1:",
@@ -95,7 +99,9 @@ ui <- navbarPage(
     )),
     tabPanel("Notes", includeMarkdown("notes.md"))
 )
-# Define server logic required to draw a histogram
+
+
+## Define server logic required to draw a histogram
 server <- function(input, output) {
     output$growthPlot <- renderPlot(exp_growth(input$R, input$SI))
     output$distPlot1 <- renderPlot(old_faithful(input$bins1))
@@ -103,5 +109,5 @@ server <- function(input, output) {
     output$distPlot3 <- renderPlot(old_faithful(input$bins3))
 }
 
-# Run the application 
+## Run the application 
 shinyApp(ui = ui, server = server)
