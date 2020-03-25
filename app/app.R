@@ -37,13 +37,13 @@ ui <- navbarPage(
                      max = 100,
                      value = 100
         ),
-        numericInput("dblg_time",
+        numericInput("doubling_time",
                      "Assumed doubling time (days):",
                      min = 0,
                      max = 10,
                      value = 2
         ),
-        numericInput("uncertainty_dblg_time",
+        numericInput("uncertainty_doubling_time",
                      "Uncertainty in doubling time (days):",
                      min = 0,
                      max = 10,
@@ -60,7 +60,7 @@ ui <- navbarPage(
         ),
         numericInput("number_simulations",
                      "Number of simulations:",
-                     min = 0,
+                     min = 1,
                      max = 50,
                      value = 10
         )
