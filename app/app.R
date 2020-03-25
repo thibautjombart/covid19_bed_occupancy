@@ -53,7 +53,7 @@ ui <- navbarPage(
                      "Assumed doubling time (days):",
                      min = 0.5,
                      max = 10,
-                     value = 2
+                     value = 5
         ),
         numericInput("uncertainty_doubling_time",
                      "Uncertainty in doubling time (days):",
@@ -70,7 +70,7 @@ ui <- navbarPage(
                      "Duration of the simulation (days):",
                      min = 1,
                      max = 21,
-                     value = 14
+                     value = 7
         ),
         numericInput("number_simulations",
                      "Number of simulations:",
@@ -80,33 +80,9 @@ ui <- navbarPage(
         )
       ),
       mainPanel(
-          plotOutput("los_plot")
+          plotOutput("los_plot"),
+          plotOutput("main_plot")
       )
-    )),
-    tabPanel("Event Time Distributions",
-             sidebarLayout(position = "right",
-        sidebarPanel(
-            sliderInput("bins1",
-                        "Number of bins 1:",
-                        min = 1,
-                        max = 50,
-                        value = 30),
-            sliderInput("bins2",
-                        "Number of bins 2:",
-                        min = 1,
-                        max = 50,
-                        value = 30),
-            sliderInput("bins3",
-                        "Number of bins 3:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-        mainPanel(
-            plotOutput("distPlot1"),
-            plotOutput("distPlot2"),
-            plotOutput("distPlot3")
-        )
     )),
     tabPanel("Notes", includeMarkdown("notes.md"))
 )
@@ -114,12 +90,11 @@ ui <- navbarPage(
 
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
-  ## placeholder to remove
-  output$testplot <- renderPlot(hist(rnorm(1000), col = "grey", border = "white"))
 
-
-  ## graphs for the distributions
+  ## graphs for the distributions of length of hospital stay (LoS)
   output$los_plot <- renderPlot({
+    
+    ## select appropriate distribution
     if (input$distribution_duration == "normal") {
       los <- los_normal
       title <- "Duration of normal hospitalisation"
@@ -139,12 +114,33 @@ server <- function(input, output) {
          main = title,
          cex.lab = 1.3,
          cex.main = 1.5)
-  })
+  }, width = 600)
+
   
-  output$growthPlot <- renderPlot(exp_growth(input$R, input$SI))
-  output$distPlot1 <- renderPlot(old_faithful(input$bins1))
-  output$distPlot2 <- renderPlot(old_faithful(input$bins2))
-  output$distPlot3 <- renderPlot(old_faithful(input$bins3))
+  ## main plot: predictions of bed occupancy
+  output$main_plot <- renderPlot({
+
+    ## select appropriate distribution
+    if (input$distribution_duration == "normal") {
+      los <- los_normal
+      title <- "Duration of normal hospitalisation"
+    } else {
+      los <- los_critical
+      title <- "Duration of critical care hospitalisation"
+    }
+
+    ## run model
+    beds <- run_model(date = input$admission_date,
+                      n_start = as.integer(input$number_admissions),
+                      doubling = input$doubling_time,
+                      doubling_error = input$uncertainty_doubling_time,
+                      duration = input$simulation_duration,
+                      reporting = input$assumed_reporting / 100,
+                      r_los = los$r,
+                      n_sim = input$number_simulations)
+    plot_beds(beds, ribbon_color = cmmid_color)
+  })
+
 }
 
 ## Run the application 

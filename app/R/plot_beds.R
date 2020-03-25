@@ -3,6 +3,8 @@
 #' This function provides custom plots for the output of `predict_beds`.
 #'
 #' @param x the output of `predict_beds`
+#'
+#' @param ... further arguments passed to `plot.projections`
 #' 
 #' @author Thibaut Jombart
 #' 
@@ -24,15 +26,15 @@
 #' beds
 #' plot_beds(beds)
 
-plot_beds <- function(x) {
+plot_beds <- function(x, ...) {
   plot(x,
-     quantiles = c(.025, .5),
-     ribbon = TRUE) +
-    theme_bw() +
+       quantiles = c(.025, .5),
+       ribbon = TRUE, ...) +
+    ggplot2::theme_bw() +
     large_txt +
-    scale_x_date(date_label = "%d %b %y") +
+    ggplot2::scale_x_date(date_label = "%d %b %y") +
     rotate_x +
-    labs(title = "Predicted bed occupancy",
-         x = NULL,
-         y = "Daily numbers of beds")
+    ggplot2::labs(title = "Predicted bed occupancy",
+                  x = NULL,
+                  y = "Daily numbers of beds")
 }
