@@ -1,6 +1,6 @@
 ---
 title: "Forecasting bed occupancy from current admissions"
-author: "Thibaut Jombart, Emily S Nightingale, Mark Jit, Olivier le Polain de Waroux, Gwen Knight, Stefan Flasche, Rosalind Eggo, Adam J Kucharski, Carl A.B. Pearson, Simon R Procter, CMMID nCov working group & W John Edmunds."
+author: "Thibaut Jombart, Emily S Nightingale, Mark Jit, Olivier le Polain de Waroux, Gwenan M Knight, Stefan Flasche, Rosalind Eggo, Adam J Kucharski, Carl A.B. Pearson, Simon R Procter, CMMID nCov working group & W John Edmunds."
 date: "`r format(Sys.time(), '%A %d %B %Y')`"
 output:
   html_document:
