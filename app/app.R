@@ -29,27 +29,27 @@ ui <- navbarPage(
         ),
         numericInput("number_admissions",
                      "Number of admissions on that date:",
-                     min = 0,
+                     min = 1,
                      max = 10000,
                      value = 1
         ),
         numericInput("assumed_reporting",
                      "Reporting rate (%):",
-                     min = 0,
+                     min = 1,
                      max = 100,
                      value = 100
         ),
         numericInput("doubling_time",
                      "Assumed doubling time (days):",
-                     min = 0,
+                     min = 0.5,
                      max = 10,
                      value = 2
         ),
         numericInput("uncertainty_doubling_time",
                      "Uncertainty in doubling time (days):",
                      min = 0,
-                     max = 10,
-                     value = 2
+                     max = 5,
+                     value = 1
         ),
         radioButtons(inputId = "distribution_duration",
                      label = "Distribution of duration of stay", 
