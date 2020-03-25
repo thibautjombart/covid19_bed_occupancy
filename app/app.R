@@ -22,48 +22,47 @@ ui <- navbarPage(
     position="fixed-top", collapsible = TRUE,
     tabPanel("Results", sidebarLayout(position = "left",
       sidebarPanel(
-        dateInput("admissionDate",
-          "Date of admission:",
-          format = "dd/mm/yyyy"
+        dateInput("admission_date",
+          "Date of admission:"
         ),
-        numericInput("numberAdmissions",
+        numericInput("number_admissions",
                      "Number of admissions on that date:",
                      min = 0,
                      max = 10000,
                      value = 1
         ),
-        numericInput("assumedReporting",
+        numericInput("assumed_reporting",
                      "Reporting rate (%):",
                      min = 0,
                      max = 100,
                      value = 100
         ),
-        numericInput("doublingTime",
+        numericInput("dblg_time",
                      "Assumed doubling time (days):",
                      min = 0,
                      max = 10,
                      value = 2
         ),
-        numericInput("uncertaintyDouiblingTime",
+        numericInput("uncertainty_dblg_time",
                      "Uncertainty in doubling time (days):",
                      min = 0,
                      max = 10,
                      value = 2
         ),
-        radioButtons(inputId="distributionDuration", label="Distribution of duration of stay", 
-                     choices=c("non-critical hospitalization","critical hospitalization","user-defined")
+        radioButtons(inputId="distribution_duration", label="Distribution of duration of stay", 
+                     choices=c("non-critical hospitalization","critical hospitalization")
         ),
-        numericInput("simulationDuration",
+        numericInput("simulation_duration",
                      "Duration of the simulation (days):",
-                     min = 0,
-                     max = 50,
+                     min = 1,
+                     max = 21,
                      value = 14
         ),
-        numericInput("numberSimulations",
+        numericInput("number_simulations",
                      "Number of simulations:",
                      min = 0,
-                     max = 200,
-                     value = 50
+                     max = 50,
+                     value = 10
         )
       ),
       mainPanel(
