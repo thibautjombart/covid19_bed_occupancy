@@ -9,8 +9,10 @@ library(shiny)
 
 apptitle <- "Hospital Bed Occupancy Projections"
 
-source("old_faithful.R")
-source("exp_growth.R")
+
+## load R files
+R_files <- dir("R", pattern = "[.]R$", full.names = TRUE)
+for (e in R_files) source(e, local = TRUE)
 
 ## Define UI for application that draws a histogram
 ui <- navbarPage(
