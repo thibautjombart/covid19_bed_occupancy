@@ -20,15 +20,35 @@
 #'   in LoS.
 #'
 #' @author Thibaut Jombart
+#'
+#' @examples
+
+#' ## get forecast for admissions
+#' x <- predict_admissions(Sys.Date(),
+#'                         n_start = 40,
+#'                         doubling = 5,
+#'                         doubling_error = 1,
+#'                         duration = 14) 
+#' x
 #' 
+#' ## get forecast for beds
+#' 
+#' ## make toy duration of hospitalisation (exponential distribution)
+#' r_duration <- function(n = 1) rexp(n, .2)
+#'
+#' ## get daily bed needs predictions
+#' beds <- predict_beds(x$date, x$mean, r_duration)
+#' beds
+#' plot(beds)
+
 
 predict_beds <- function(dates, n_admissions, r_los, n_sim = 10) {
 
   ## sanity checks
   if (!length(dates)) stop("`dates` is empty")
 
-  if (!is.finite(n_admissions)) stop("`n_admissions` is not a number")
-  if (n_admissions < 1) stop("`n_admissions` must be >= 1")
+  if (!is.finite(n_admissions[1])) stop("`n_admissions` is not a number")
+  if (n_admissions[1] < 1) stop("`n_admissions` must be >= 1")
 
   if (inherits(r_los, "distcrete")) {
     r_los <- r_los$r
@@ -36,7 +56,7 @@ predict_beds <- function(dates, n_admissions, r_los, n_sim = 10) {
   if (!is.function(r_los)) stop("`r_los` must be a function")
 
   if (!is.finite(n_sim)) stop("`n_sim` is not a number")
-  if (n_sim < 1) stop("`n_sim` must be >= 1")
+  if (n_sim[1] < 1) stop("`n_sim` must be >= 1")
 
   
   ## Outline:

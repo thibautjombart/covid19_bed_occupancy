@@ -22,7 +22,17 @@
 #'
 #' @param long A `logical` indicating whether output should have a `long`
 #'   format, e.g. for easier plotting with `ggplot2`.
- 
+#'
+#' @examples
+#'
+#' x <- predict_admissions(Sys.Date(),
+#'                         n_start = 40,
+#'                         doubling = 5,
+#'                         doubling_error = 1,
+#'                         duration = 14) 
+#' x
+#' 
+
 predict_admissions <- function(date_start,
                                n_start,
                                doubling,
