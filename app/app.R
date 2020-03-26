@@ -81,12 +81,12 @@ ui <- navbarPage(
     windowTitle = app_title,
     theme = "styling.css",
     position="fixed-top", collapsible = TRUE,
+    admitsPanel(prefix="gen_", tabtitle="General"),
+    admitsPanel(prefix="icu_", tabtitle="ICU"),
     tabPanel("Overall", mainPanel(
       plotOutput("gen_over_plot"),
       plotOutput("icu_over_plot")
     )),
-    admitsPanel(prefix="gen_", tabtitle="General"),
-    admitsPanel(prefix="icu_", tabtitle="ICU"),
     tabPanel("Information", includeMarkdown("info.md"))
 )
 
