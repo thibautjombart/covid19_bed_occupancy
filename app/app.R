@@ -45,24 +45,28 @@ admitsPanel <- function(
                                           value = 100,
                                           step = 10
                              ),
-                             numericInput(fmtr("doubling_time"), "Assumed doubling time (days):",
+                             numericInput(fmtr("doubling_time"), 
+                                          "Assumed doubling time (days):",
                                           min = 0.5,
                                           max = 10,
                                           value = 5
                              ),
-                             numericInput(fmtr("uncertainty_doubling_time"), "Uncertainty in doubling time (%):",
+                             numericInput(fmtr("uncertainty_doubling_time"),
+                                          "Uncertainty in doubling time (%):",
                                           min = 0,
                                           max = 1,
                                           value = .2,
                                           step = 0.05
                              ),
-                             numericInput(fmtr("simulation_duration"), "Forecast interval (days):",
+                             numericInput(fmtr("simulation_duration"),
+                                          "Forecast interval (days):",
                                           min = 1,
                                           max = 21,
                                           value = 7,
                                           step = 1
                              ),
-                             numericInput(fmtr("number_simulations"), "Number of simulations:",
+                             numericInput(fmtr("number_simulations"),
+                                          "Number of simulations:",
                                           min = 10,
                                           max = 50,
                                           value = 10,
@@ -79,22 +83,22 @@ admitsPanel <- function(
 
 ## Define UI for application that draws a histogram
 ui <- navbarPage(
-  title = div(
-    a(img(src="cmmid_newlogo.svg", height="45px"),
-      href="https://cmmid.github.io/"),
-    span(app_title, style="line-height:45px")
-  ),
-  windowTitle = app_title,
-  theme = "styling.css",
-  position="fixed-top", collapsible = TRUE,
-  tabPanel("Overall", mainPanel(
-    plotOutput("gen_over_plot"),
-    br(),
-    plotOutput("icu_over_plot")
-  )),
-  admitsPanel(prefix="gen_", tabtitle="General"),
-  admitsPanel(prefix="icu_", tabtitle="ICU"),
-  tabPanel("Information", includeMarkdown("info.md"))
+    title = div(
+        a(img(src="cmmid_newlogo.svg", height="45px"),
+          href="https://cmmid.github.io/"),
+        span(app_title, style="line-height:45px")
+    ),
+    windowTitle = app_title,
+    theme = "styling.css",
+    position="fixed-top", collapsible = TRUE,
+    admitsPanel(prefix="gen_", tabtitle="General"),
+    admitsPanel(prefix="icu_", tabtitle="ICU"),
+    tabPanel("Overall", mainPanel(
+      plotOutput("gen_over_plot"),
+      br(),
+      plotOutput("icu_over_plot")
+    )),
+    tabPanel("Information", includeMarkdown("info.md"))
 )
 
 
