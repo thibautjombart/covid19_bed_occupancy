@@ -22,38 +22,42 @@ library(distcrete)
 app_title <- "Hospital Bed Occupancy Projections"
 cmmid_color <- "#134e51"
 
-admitsPanel <- function(prefix) tabPanel("Results", sidebarLayout(position = "left",
+admitsPanel <- function(
+  prefix, tabtitle
+) {
+  fmtr = function(inputId) sprintf("%s%s", prefix, inputId)
+return(tabPanel(tabtitle, sidebarLayout(position = "left",
   sidebarPanel(
-    dateInput("admission_date", "Date of admission:"),
-    numericInput("number_admissions", "Number of admissions on that date:",
+    dateInput(fmtr("admission_date"), "Date of admission:"),
+    numericInput(fmtr("number_admissions"), "Number of admissions on that date:",
       min = 1,
       max = 10000,
       value = 1
     ),
-    numericInput("assumed_reporting", "Reporting rate (%):",
+    numericInput(fmtr("assumed_reporting"), "Reporting rate (%):",
       min = 10,
       max = 100,
       value = 100,
       step = 10
     ),
-    numericInput("doubling_time", "Assumed doubling time (days):",
+    numericInput(fmtr("doubling_time"), "Assumed doubling time (days):",
       min = 0.5,
       max = 10,
       value = 5
     ),
-    numericInput("uncertainty_doubling_time", "Uncertainty in doubling time (%):",
+    numericInput(fmtr("uncertainty_doubling_time"), "Uncertainty in doubling time (%):",
       min = 0,
       max = 1,
       value = .2,
       step = 0.05
     ),
-    numericInput("simulation_duration", "Forecast interval (days):",
+    numericInput(fmtr("simulation_duration"), "Forecast interval (days):",
       min = 1,
       max = 21,
       value = 7,
       step = 1
     ),
-    numericInput("number_simulations", "Number of simulations:",
+    numericInput(fmtr("number_simulations"), "Number of simulations:",
       min = 10,
       max = 50,
       value = 10,
@@ -61,10 +65,11 @@ admitsPanel <- function(prefix) tabPanel("Results", sidebarLayout(position = "le
     )
   ),
   mainPanel(
-    plotOutput("los_plot"),
-    plotOutput("main_plot")
+    plotOutput(fmtr("los_plot")),
+    plotOutput(fmtr("main_plot"))
   )
-))
+)))
+}
 
 ## Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -76,7 +81,8 @@ ui <- navbarPage(
     windowTitle = app_title,
     theme = "styling.css",
     position="fixed-top", collapsible = TRUE,
-    admitsPanel(),
+    admitsPanel(prefix="gen_", tabtitle="General"),
+    admitsPanel(prefix="icu_", tabtitle="ICU"),
     tabPanel("Information", includeMarkdown("info.md"))
 )
 
@@ -85,17 +91,9 @@ ui <- navbarPage(
 server <- function(input, output) {
 
   ## graphs for the distributions of length of hospital stay (LoS)
-  output$los_plot <- renderPlot({
-    
-    ## select appropriate distribution
-#    if (input$distribution_duration == "normal") {
-      los <- los_normal
-      title <- "Duration of normal hospitalisation"
-#    } else {
-      los <- los_critical
-      title <- "Duration of critical care hospitalisation"
-#    }
-
+  output$gen_los_plot <- renderPlot({
+    los <- los_normal
+    title <- "Duration of normal hospitalisation"
     max_days <- max(1, los$q(.999))
     days <- 0:max_days
     plot(days,
@@ -109,31 +107,57 @@ server <- function(input, output) {
          cex.main = 1.5)
   }, width = 600)
 
+  output$icu_los_plot <- renderPlot({
+    los <- los_critical
+    title <- "Duration of ICU hospitalisation"
+    max_days <- max(1, los$q(.999))
+    days <- 0:max_days
+    plot(days,
+         los$d(days),
+         type = "h", col = cmmid_color,
+         lwd = 14, lend = 2,
+         xlab = "Days in hospital",
+         ylab = "Probability",
+         main = title,
+         cex.lab = 1.3,
+         cex.main = 1.5)
+  }, width = 600)
   
   ## main plot: predictions of bed occupancy
-  output$main_plot <- renderPlot({
+  output$gen_main_plot <- renderPlot({
 
-    ## select appropriate distribution
-  #  if (input$distribution_duration == "normal") {
       los <- los_normal
       title <- "Duration of normal hospitalisation"
-  #  } else {
-      los <- los_critical
-      title <- "Duration of critical care hospitalisation"
-  #  }
 
     ## run model
-    beds <- run_model(date = input$admission_date,
-                      n_start = as.integer(input$number_admissions),
-                      doubling = input$doubling_time,
-                      doubling_error = input$uncertainty_doubling_time,
-                      duration = input$simulation_duration,
-                      reporting = input$assumed_reporting / 100,
+    beds <- run_model(date = input$gen_admission_date,
+                      n_start = as.integer(input$gen_number_admissions),
+                      doubling = input$gen_doubling_time,
+                      doubling_error = input$gen_uncertainty_doubling_time,
+                      duration = input$gen_simulation_duration,
+                      reporting = input$gen_assumed_reporting / 100,
                       r_los = los$r,
-                      n_sim = input$number_simulations)
+                      n_sim = input$icu_number_simulations)
     plot_beds(beds, ribbon_color = cmmid_color)
   })
 
+  output$icu_main_plot <- renderPlot({
+    
+    los <- los_critical
+    title <- "Duration of critical care hospitalisation"
+
+    ## run model
+    beds <- run_model(date = input$icu_admission_date,
+                      n_start = as.integer(input$icu_number_admissions),
+                      doubling = input$icu_doubling_time,
+                      doubling_error = input$icu_uncertainty_doubling_time,
+                      duration = input$icu_simulation_duration,
+                      reporting = input$icu_assumed_reporting / 100,
+                      r_los = los$r,
+                      n_sim = input$icu_number_simulations)
+    plot_beds(beds, ribbon_color = cmmid_color)
+  })
+  
 }
 
 ## Run the application 
