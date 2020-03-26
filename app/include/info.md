@@ -26,20 +26,23 @@ The following values are specified by the user to tailor the model to a particul
   - *Required*
 * **Number of admissions on that date**
   - *Required*
+  - Either critical admissions or non-critical admissions
 * **Duration of the forecast**, i.e. how far ahead to predict
-  - Default: 14 days
-* **Assumed reporting level in %** 
+  - Default: 7 days
+* **Assumed reporting level (%)** 
   - Default: 100%, i.e. all admissions reported
-* **Assumed doubling time**, in days. This is the estimated time taken for the epidemic to double in size, and serves as a measure of transmission intensity.
-  - Default: *look for sensible number from literature*
-* **Uncertainty in doubling time**, in days. Since the doubling time is an estimated parameter, it is necessary to incorporate the potential error associated with it. Lower / upper bound will be doubling time +/- this value. 
-  - Default: *?*
+* **Assumed doubling time (days)** This is the estimated time taken for the epidemic to double in size, and serves as a measure of transmission intensity.
+  - Default: 2
+  - Plausible ranges 1.8 - 9.3. See [Muniz-Rodriguez et al 2020](https://www.medrxiv.org/content/10.1101/2020.02.05.20020750v4.full.pdf), [Zhao et al 2020](https://www.medrxiv.org/content/medrxiv/early/2020/02/29/2020.02.26.20028449.full.pdf), [Wu et al 2020](https://www.nature.com/articles/s41591-020-0822-7), [Li et al 2020](https://www.nejm.org/doi/full/10.1056/NEJMoa2001316), [Cheng et al 2020](https://link.springer.com/content/pdf/10.1007/s15010-020-01401-y.pdf) and [Granozio 2020](https://arxiv.org/ftp/arxiv/papers/2003/2003.08661.pdf) for references. 
+* **Uncertainty in doubling time (days)** Since the doubling time is an estimated parameter, it is necessary to incorporate the potential error associated with it. Lower / upper bound will be doubling time +/- this value. 
+  - Default: 1
 * **Number of simulations** to incorporate uncertainty in the duration of stay.
-  Default: 50 simulated durations of stay per admission
+  Default: 10 simulated durations of stay per admission
 
 ### Pre-set model parameters
 
 Two options for duration of hospitalisation are provided to match the results of <a href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext">Zhou et al 2020</a>:
+
 
 * Long-stay: discretised Weibull (shape:*?*, scale:*?*) to aim for a median of 11
     days, IQR 7-14
