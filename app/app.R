@@ -16,12 +16,10 @@ library(shiny)
 library(incidence)
 library(projections)
 library(distcrete)
-
+library(ggplot2)
 
 ## global variables
-app_title <- "Hospital Bed Occupancy Projections"
-cmmid_color <- "#134e51"
-lshtm_grey <- "#A7A8AA"
+app_title   <- "Hospital Bed Occupancy Projections"
 
 admitsPanel <- function(
   prefix, tabtitle
@@ -84,22 +82,24 @@ admitsPanel <- function(
 
 ## Define UI for application that draws a histogram
 ui <- navbarPage(
-    title = div(
-        a(img(src="cmmid_newlogo.svg", height="45px"),
-          href="https://cmmid.github.io/"),
-        span(app_title, style="line-height:45px")
-    ),
-    windowTitle = app_title,
-    theme = "styling.css",
-    position="fixed-top", collapsible = TRUE,
-    admitsPanel(prefix="gen_", tabtitle="General"),
-    admitsPanel(prefix="icu_", tabtitle="ICU"),
-    tabPanel("Overall", mainPanel(
-      plotOutput("gen_over_plot"),
-      br(),
-      plotOutput("icu_over_plot")
-    )),
-    tabPanel("Information", includeMarkdown("info.md"))
+  title = div(
+    a(img(src="cmmid_newlogo.svg", height="45px"),
+      href="https://cmmid.github.io/"),
+    span(app_title, style="line-height:45px")
+  ),
+  windowTitle = app_title,
+  theme = "styling.css",
+  position="fixed-top", collapsible = TRUE,
+  admitsPanel(prefix="gen_", tabtitle="General"),
+  admitsPanel(prefix="icu_", tabtitle="ICU"),
+  tabPanel("Overall", mainPanel(
+    plotOutput("gen_over_plot"),
+    br(),
+    plotOutput("icu_over_plot")
+  )),
+  tabPanel("Information", 
+           fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
+                     includeMarkdown("info.md")))
 )
 
 
@@ -108,42 +108,19 @@ server <- function(input, output) {
   
   ## graphs for the distributions of length of hospital stay (LoS)
   output$gen_los_plot <- renderPlot({
-    los <- los_normal
-    title <- "Duration of normal hospitalisation"
-    max_days <- max(1, los$q(.999))
-    days <- 0:max_days
     
-    dat <- data.frame(days = days,
-                      y = los$d(days))
+    los   <- los_normal
+    title <- "Normal hospital bed utilisation"
     
-    ggplot(data=dat,
-           aes(x=days, y=y)) +
-      geom_col(fill = cmmid_color, width = 0.8) +
-      xlab("Days in hospital") +
-      ylab("Probability") +
-      ggtitle(title) +
-      ggplot2::theme_bw() +
-      large_txt 
-    
-    
+    plot_distribution(los = los, title = title)
   }, width = 600)
   
   output$icu_los_plot <- renderPlot({
-    los <- los_critical
-    title <- "Duration of ICU hospitalisation"
-    max_days <- max(1, los$q(.999))
-    days     <- 0:max_days
-    dat <- data.frame(days = days,
-                      y = los$d(days))
     
-    ggplot(data=dat,
-           aes(x=days, y=y)) +
-      geom_col(fill = cmmid_color, width = 0.8) +
-      xlab("Days in hospital") +
-      ylab("Probability") +
-      ggtitle(title) +
-      ggplot2::theme_bw() +
-      large_txt 
+    los   <- los_critical
+    title <- "Duration of ICU hospitalisation"
+    
+    plot_distribution(los = los, title = title)
   }, width = 600)
   
   ## main plot: predictions of bed occupancy
@@ -153,16 +130,15 @@ server <- function(input, output) {
     title <- "Normal hospital bed utilisation"
     
     ## run model
-    beds <- run_model(date = input$gen_admission_date,
-                      n_start = as.integer(input$gen_number_admissions),
-                      doubling = input$gen_doubling_time,
+    beds <- run_model(date           = input$gen_admission_date,
+                      n_start        = as.integer(input$gen_number_admissions),
+                      doubling       = input$gen_doubling_time,
                       doubling_error = input$gen_uncertainty_doubling_time,
-                      duration = input$gen_simulation_duration,
-                      reporting = input$gen_assumed_reporting / 100,
-                      r_los = los$r,
-                      n_sim = input$icu_number_simulations)
-    plot_beds(beds, ribbon_color = lshtm_grey, palette = cmmid_pal) +
-      ggtitle(title) 
+                      duration       = input$gen_simulation_duration,
+                      reporting      = input$gen_assumed_reporting / 100,
+                      r_los          = los$r,
+                      n_sim          = input$icu_number_simulations)
+    plot_beds(beds, ribbon_color = lshtm_grey, palette = cmmid_pal, title = title)
   }, width = 600)
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
@@ -171,16 +147,15 @@ server <- function(input, output) {
     title <- "ICU bed utilisation"
     
     ## run model
-    beds <- run_model(date = input$icu_admission_date,
-                      n_start = as.integer(input$icu_number_admissions),
-                      doubling = input$icu_doubling_time,
+    beds <- run_model(date           = input$icu_admission_date,
+                      n_start        = as.integer(input$icu_number_admissions),
+                      doubling       = input$icu_doubling_time,
                       doubling_error = input$icu_uncertainty_doubling_time,
-                      duration = input$icu_simulation_duration,
-                      reporting = input$icu_assumed_reporting / 100,
-                      r_los = los$r,
-                      n_sim = input$icu_number_simulations)
-    plot_beds(beds, ribbon_color = lshtm_grey, palette = cmmid_pal) +
-      ggtitle(title)
+                      duration       = input$icu_simulation_duration,
+                      reporting      = input$icu_assumed_reporting / 100,
+                      r_los          = los$r,
+                      n_sim          = input$icu_number_simulations)
+    plot_beds(beds, ribbon_color = lshtm_grey, palette = cmmid_pal, title = title)
   }, width = 600)
   
 }

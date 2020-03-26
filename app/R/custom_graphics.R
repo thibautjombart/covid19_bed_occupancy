@@ -49,6 +49,9 @@ add_ribbon <- function(x, proj, ci = 0.95) {
                    ribbon_quantiles = c(alpha / 2, 1 - (alpha  / 2)))
 }
 
+# color choices
+cmmid_color <- "#0D5257"
+lshtm_grey  <- "#A7A8AA"
 
 cmmid_pal <- function(n){
   

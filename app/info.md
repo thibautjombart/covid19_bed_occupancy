@@ -63,12 +63,14 @@ TJ receives funding from the Global Challenges Research Fund (GCRF) project 'REC
 The UK Public Health Rapid Support Team is funded by UK aid from the Department of Health and Social Care and is jointly run by Public Health England and the London School of Hygiene & Tropical Medicine. The University of Oxford and King's College London are academic partners. The views expressed in this publication are those of the authors and not necessarily those of the National Health Service, the National Institute for Health Research or the Department of Health and Social Care.
 
 ### Authors' contributions
-In alphabetic order:
-JE, MJ, TJ developed the methodology. 
-ESN, MJ, TJ contributed code.
-TJ performed the analyses.
-ESN, TJ reviewed code.
-ESN, TJ wrote the first draft of the manuscript.
-GMK, AJK, CP, ESN, JE, MJ, OlP, RE, SF, TJ contributed to the manuscript.
 
-CMMID COVID-19 Working Group gave input on the method, contributed data and provided elements of discussion. The following authors were part of the Centre for Mathematical Modelling of Infectious Disease 2019-nCoV working group: Billy J Quilty, Christopher I Jarvis, Petra Klepac, Charlie Diamond, Joel Hellewell, Timothy W Russell, Alicia Rosello, Yang Liu, James D Munday, Sam Abbott, Kevin van Zandvoort, Graham Medley, Samuel Clifford, Kiesha Prem, Nicholas Davies, Fiona Sun, Hamish Gibbs, Amy Gimma, Nikos I Bosse, Sebastian Funk. Each contributed in processing, cleaning and interpretation of data, interpreted findings, contributed to the manuscript, and approved the work for publication.
+In alphabetic order:
+
+* JE, MJ, TJ developed the methodology. 
+* ESN, MJ, TJ contributed code.
+* TJ performed the analyses.
+* ESN, TJ reviewed code.
+* ESN, TJ wrote the first draft of the manuscript.
+* GMK, AJK, CP, ESN, JE, MJ, OlP, RE, SF, TJ contributed to the manuscript.
+
+CMMID COVID-19 Working Group gave input on the method, contributed data and provided elements of discussion. The following authors were part of the Centre for Mathematical Modelling of Infectious Disease COVID-19 working group: Billy J Quilty, Christopher I Jarvis, Petra Klepac, Charlie Diamond, Joel Hellewell, Timothy W Russell, Alicia Rosello, Yang Liu, James D Munday, Sam Abbott, Kevin van Zandvoort, Graham Medley, Samuel Clifford, Kiesha Prem, Nicholas Davies, Fiona Sun, Hamish Gibbs, Amy Gimma, Nikos I Bosse, Sebastian Funk. Each contributed in processing, cleaning and interpretation of data, interpreted findings, contributed to the manuscript, and approved the work for publication.

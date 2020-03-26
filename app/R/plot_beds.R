@@ -26,16 +26,16 @@
 #' beds
 #' plot_beds(beds)
 
-plot_beds <- function(x, ...) {
+plot_beds <- function(x, title = NULL, ...) {
   plot(x,
        quantiles = c(.025, .5),
        ribbon = TRUE, ...) +
     ggplot2::theme_bw() +
-    theme(legend.position = "bottom") +
+    ggplot2::theme(legend.position = "bottom") +
     large_txt +
     ggplot2::scale_x_date(date_label = "%d %b %y") +
     rotate_x +
-    ggplot2::labs(title = "Predicted bed occupancy",
+    ggplot2::labs(title = title,
                   x = NULL,
                   y = "Daily numbers of beds")
 }
