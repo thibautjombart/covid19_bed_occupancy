@@ -26,20 +26,22 @@ The following values are specified by the user to tailor the model to a particul
   - *Required*
 * **Number of admissions on that date**
   - *Required*
+  - Either critical admissions or non-critical admissions
 * **Duration of the forecast**, i.e. how far ahead to predict
-  - Default: 14 days
-* **Assumed reporting level in %** 
+  - Default: 7 days
+* **Assumed reporting level (%)** 
   - Default: 100%, i.e. all admissions reported
-* **Assumed doubling time**, in days. This is the estimated time taken for the epidemic to double in size, and serves as a measure of transmission intensity.
-  - Default: *look for sensible number from literature*
-* **Uncertainty in doubling time**, in days. Since the doubling time is an estimated parameter, it is necessary to incorporate the potential error associated with it. Lower / upper bound will be doubling time +/- this value. 
-  - Default: *?*
+* **Assumed doubling time (days)** This is the estimated time taken for the epidemic to double in size, and serves as a measure of transmission intensity.
+  - Default: 2
+  - Plausible ranges 1.8 - 9.3. See [Muniz-Rodriguez et al 2020](https://www.medrxiv.org/content/10.1101/2020.02.05.20020750v4.full.pdf), [Zhao et al 2020](https://www.medrxiv.org/content/medrxiv/early/2020/02/29/2020.02.26.20028449.full.pdf), [Wu et al 2020](https://www.nature.com/articles/s41591-020-0822-7), [Li et al 2020](https://www.nejm.org/doi/full/10.1056/NEJMoa2001316), [Cheng et al 2020](https://link.springer.com/content/pdf/10.1007/s15010-020-01401-y.pdf) and [Granozio 2020](https://arxiv.org/ftp/arxiv/papers/2003/2003.08661.pdf) for references. 
+* **Uncertainty in doubling time (days)** Since the doubling time is an estimated parameter, it is necessary to incorporate the potential error associated with it. Lower / upper bound will be doubling time +/- this value. 
+  - Default: 1
 * **Number of simulations** to incorporate uncertainty in the duration of stay.
-  Default: 50 simulated durations of stay per admission
+  Default: 10 simulated durations of stay per admission
 
 ### Pre-set model parameters
 
-Two options for duration of hospitalisation are provided to match the results of [Zhou et al 2020](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext):
+Two options for duration of hospitalisation are provided to match the results of [Zhou et al 2020](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736\(20\)30566-3/fulltext):
 
 * Long-stay: discretised Weibull (shape:*?*, scale:*?*) to aim for a median of 11
     days, IQR 7-14
@@ -57,7 +59,7 @@ These distributions may not be appropriate in some settings, and the user should
 
 ### Acknowledgements
 
-The named authors (TJ, ESN, MJ, OLPDW, GMK, RME, AJK, CABP, WJE) had the following sources of funding: 
+The named authors (TJ, ESN, MJ, OLPDW, GMK, EMR, RME, AJK, CABP, WJE) had the following sources of funding: 
 TJ receives funding from the Global Challenges Research Fund (GCRF) project 'RECAP' managed through RCUK and ESRC (ES/P010873/1), the UK Public Health Rapid Support Team funded by the United Kingdom Department of Health and Social Care and from the National Institute for Health Research (NIHR) - Health Protection Research Unit for Modelling Methodology. ESN receives funding from the Bill and Melinda Gates Foundation (grant number: OPP1183986). MJ receives funding from the Bill and Melinda Gates foundation (grant number: INV-003174) and the NIHR (grant numbers: 16/137/109 and HPRU-2012-10096). SRP receives funding  from the Bill and Melinda Gates Foundation (grant number: OPP1180644). RME receives funding from HDR UK (grant number: MR/S003975/1). SF is supported by a Sir Henry Dale Fellowship jointly funded by the Wellcome Trust and the Royal Society (Grant number 208812/Z/17/Z). AJK receives funding from the Wellcome Trust (grant number: 206250/Z/17/Z). GMK was supported by a fellowship from the UK Medical Research Council (MR/P014658/1).
  
 The UK Public Health Rapid Support Team is funded by UK aid from the Department of Health and Social Care and is jointly run by Public Health England and the London School of Hygiene & Tropical Medicine. The University of Oxford and King's College London are academic partners. The views expressed in this publication are those of the authors and not necessarily those of the National Health Service, the National Institute for Health Research or the Department of Health and Social Care.
@@ -69,6 +71,6 @@ ESN, MJ, TJ contributed code.
 TJ performed the analyses.
 ESN, TJ reviewed code.
 ESN, TJ wrote the first draft of the manuscript.
-GMK, AJK, CP, ESN, JE, MJ, OlP, RE, SF, TJ contributed to the manuscript.
+GMK, AJK, CP, ESN, EMR, JE, MJ, OlP, RE, SF, TJ contributed to the manuscript.
 
-CMMID COVID-19 Working Group gave input on the method, contributed data and provided elements of discussion. The following authors were part of the Centre for Mathematical Modelling of Infectious Disease 2019-nCoV working group: Billy J Quilty, Christopher I Jarvis, Petra Klepac, Charlie Diamond, Joel Hellewell, Timothy W Russell, Alicia Rosello, Yang Liu, James D Munday, Sam Abbott, Kevin van Zandvoort, Graham Medley, Samuel Clifford, Kiesha Prem, Nicholas Davies, Fiona Sun, Hamish Gibbs, Amy Gimma, Nikos I Bosse, Sebastian Funk. Each contributed in processing, cleaning and interpretation of data, interpreted findings, contributed to the manuscript, and approved the work for publication.
+CMMID COVID-19 Working Group gave input on the method, contributed data and provided elements of discussion. The following authors were part of the Centre for Mathematical Modelling of Infectious Disease 2019-nCoV working group: Billy J Quilty, Christopher I Jarvis, Petra Klepac, Charlie Diamond, Joel Hellewell, Timothy W Russell, Alicia Rosello, Yang Liu, James D Munday, Sam Abbott, Kevin van Zandvoort, Graham Medley, Samuel Clifford, Kiesha Prem, Nicholas Davies, Fiona Sun, Hamish Gibbs, Amy Gimma, Nikos I Bosse, Eleanor Rees, Sebastian Funk. Each contributed in processing, cleaning and interpretation of data, interpreted findings, contributed to the manuscript, and approved the work for publication.
