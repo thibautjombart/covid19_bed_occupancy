@@ -31,6 +31,7 @@ plot_beds <- function(x, ...) {
        quantiles = c(.025, .5),
        ribbon = TRUE, ...) +
     ggplot2::theme_bw() +
+    theme(legend.position = "bottom") +
     large_txt +
     ggplot2::scale_x_date(date_label = "%d %b %y") +
     rotate_x +
