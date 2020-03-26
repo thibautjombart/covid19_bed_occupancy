@@ -67,8 +67,8 @@ predict_admissions <- function(date_start,
 
   ## calculate growth rate from doubling times
   r <- log(2) / doubling
-  r_low <- log(2) / (doubling - doubling_error)
-  r_high <- log(2) / (doubling + doubling_error)
+  r_low <- log(2) / (doubling*(1-doubling_error))
+  r_high <- log(2) / (doubling*(1+doubling_error))
 
   ## calculate future admissions
   future_admissions <- initial_admissions * exp(r * (seq_len(duration) - 1))
