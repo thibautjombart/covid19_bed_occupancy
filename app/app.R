@@ -84,7 +84,7 @@ ui <- navbarPage(
           plotOutput("main_plot")
       )
     )),
-    tabPanel("Information", includeMarkdown("info.md"))
+    tabPanel("Information", includeMarkdown("include/info.md"))
 )
 
 
