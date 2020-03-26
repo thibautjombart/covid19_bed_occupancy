@@ -22,6 +22,50 @@ library(distcrete)
 app_title <- "Hospital Bed Occupancy Projections"
 cmmid_color <- "#134e51"
 
+admitsPanel <- function(prefix) tabPanel("Results", sidebarLayout(position = "left",
+  sidebarPanel(
+    dateInput("admission_date", "Date of admission:"),
+    numericInput("number_admissions", "Number of admissions on that date:",
+      min = 1,
+      max = 10000,
+      value = 1
+    ),
+    numericInput("assumed_reporting", "Reporting rate (%):",
+      min = 10,
+      max = 100,
+      value = 100,
+      step = 10
+    ),
+    numericInput("doubling_time", "Assumed doubling time (days):",
+      min = 0.5,
+      max = 10,
+      value = 5
+    ),
+    numericInput("uncertainty_doubling_time", "Uncertainty in doubling time (%):",
+      min = 0,
+      max = 1,
+      value = .2,
+      step = 0.05
+    ),
+    numericInput("simulation_duration", "Forecast interval (days):",
+      min = 1,
+      max = 21,
+      value = 7,
+      step = 1
+    ),
+    numericInput("number_simulations", "Number of simulations:",
+      min = 10,
+      max = 50,
+      value = 10,
+      step = 10
+    )
+  ),
+  mainPanel(
+    plotOutput("los_plot"),
+    plotOutput("main_plot")
+  )
+))
+
 ## Define UI for application that draws a histogram
 ui <- navbarPage(
     title = div(
@@ -32,58 +76,7 @@ ui <- navbarPage(
     windowTitle = app_title,
     theme = "styling.css",
     position="fixed-top", collapsible = TRUE,
-    tabPanel("Results", sidebarLayout(position = "left",
-      sidebarPanel(
-        dateInput("admission_date",
-          "Date of admission:"
-        ),
-        numericInput("number_admissions",
-                     "Number of admissions on that date:",
-                     min = 1,
-                     max = 10000,
-                     value = 1
-        ),
-        numericInput("assumed_reporting",
-                     "Reporting rate (%):",
-                     min = 1,
-                     max = 100,
-                     value = 100
-        ),
-        numericInput("doubling_time",
-                     "Assumed doubling time (days):",
-                     min = 0.5,
-                     max = 10,
-                     value = 5
-        ),
-        numericInput("uncertainty_doubling_time",
-                     "Uncertainty in doubling time (days):",
-                     min = 0,
-                     max = 5,
-                     value = 1
-        ),
-        radioButtons(inputId = "distribution_duration",
-                     label = "Distribution of duration of stay", 
-                     choices = c("non-critical hospitalization" = "normal",
-                                "critical hospitalization" = "critical")
-        ),
-        numericInput("simulation_duration",
-                     "Duration of the simulation (days):",
-                     min = 1,
-                     max = 21,
-                     value = 7
-        ),
-        numericInput("number_simulations",
-                     "Number of simulations:",
-                     min = 1,
-                     max = 50,
-                     value = 10
-        )
-      ),
-      mainPanel(
-          plotOutput("los_plot"),
-          plotOutput("main_plot")
-      )
-    )),
+    admitsPanel(),
     tabPanel("Information", includeMarkdown("info.md"))
 )
 
@@ -95,13 +88,13 @@ server <- function(input, output) {
   output$los_plot <- renderPlot({
     
     ## select appropriate distribution
-    if (input$distribution_duration == "normal") {
+#    if (input$distribution_duration == "normal") {
       los <- los_normal
       title <- "Duration of normal hospitalisation"
-    } else {
+#    } else {
       los <- los_critical
       title <- "Duration of critical care hospitalisation"
-    }
+#    }
 
     max_days <- max(1, los$q(.999))
     days <- 0:max_days
@@ -121,13 +114,13 @@ server <- function(input, output) {
   output$main_plot <- renderPlot({
 
     ## select appropriate distribution
-    if (input$distribution_duration == "normal") {
+  #  if (input$distribution_duration == "normal") {
       los <- los_normal
       title <- "Duration of normal hospitalisation"
-    } else {
+  #  } else {
       los <- los_critical
       title <- "Duration of critical care hospitalisation"
-    }
+  #  }
 
     ## run model
     beds <- run_model(date = input$admission_date,
