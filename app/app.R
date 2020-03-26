@@ -81,6 +81,10 @@ ui <- navbarPage(
     windowTitle = app_title,
     theme = "styling.css",
     position="fixed-top", collapsible = TRUE,
+    tabPanel("Overall", mainPanel(
+      plotOutput("gen_over_plot"),
+      plotOutput("icu_over_plot")
+    )),
     admitsPanel(prefix="gen_", tabtitle="General"),
     admitsPanel(prefix="icu_", tabtitle="ICU"),
     tabPanel("Information", includeMarkdown("info.md"))
@@ -124,7 +128,7 @@ server <- function(input, output) {
   }, width = 600)
   
   ## main plot: predictions of bed occupancy
-  output$gen_main_plot <- renderPlot({
+  output$gen_over_plot <- output$gen_main_plot <- renderPlot({
 
       los <- los_normal
       title <- "Duration of normal hospitalisation"
@@ -141,7 +145,7 @@ server <- function(input, output) {
     plot_beds(beds, ribbon_color = cmmid_color)
   })
 
-  output$icu_main_plot <- renderPlot({
+  output$icu_over_plot <- output$icu_main_plot <- renderPlot({
     
     los <- los_critical
     title <- "Duration of critical care hospitalisation"
