@@ -97,7 +97,7 @@ ui <- navbarPage(
             plotOutput("distPlot3")
         )
     )),
-    tabPanel("Notes", includeMarkdown("notes.md"))
+    tabPanel("Information", includeMarkdown("info.md"))
 )
 
 
