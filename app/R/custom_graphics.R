@@ -48,3 +48,11 @@ add_ribbon <- function(x, proj, ci = 0.95) {
                    ribbon_color = ribbon_color,
                    ribbon_quantiles = c(alpha / 2, 1 - (alpha  / 2)))
 }
+
+
+cmmid_pal <- function(n){
+  
+  #colorRampPalette(colors = c("#FFB81C", "#FE5000"))(n)
+  colorRampPalette(colors = c("#00BF6F","#0D5257"))(n)
+  
+}

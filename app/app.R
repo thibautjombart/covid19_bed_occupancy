@@ -21,6 +21,7 @@ library(distcrete)
 ## global variables
 app_title <- "Hospital Bed Occupancy Projections"
 cmmid_color <- "#134e51"
+lshtm_grey <- "#A7A8AA"
 
 admitsPanel <- function(
   prefix, tabtitle
@@ -160,8 +161,8 @@ server <- function(input, output) {
                       reporting = input$gen_assumed_reporting / 100,
                       r_los = los$r,
                       n_sim = input$icu_number_simulations)
-    plot_beds(beds, ribbon_color = cmmid_color) +
-      ggtitle(title)
+    plot_beds(beds, ribbon_color = lshtm_grey, palette = cmmid_pal) +
+      ggtitle(title) 
   }, width = 600)
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
@@ -178,7 +179,7 @@ server <- function(input, output) {
                       reporting = input$icu_assumed_reporting / 100,
                       r_los = los$r,
                       n_sim = input$icu_number_simulations)
-    plot_beds(beds, ribbon_color = cmmid_color) +
+    plot_beds(beds, ribbon_color = lshtm_grey, palette = cmmid_pal) +
       ggtitle(title)
   }, width = 600)
   
