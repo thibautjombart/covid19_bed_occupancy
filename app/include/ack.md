@@ -1,4 +1,16 @@
-## Acknowledgements
+
+
+## App developers
+
+This Shiny app was developed by: Thibaut Jombart, Emily Nightingale, Eleanor
+Rees, Gwen Knight, Carl AB Pearson, Samuel Clifford. Each contributed to
+adaptation of the model, writing body text, visualisation, app design and
+testing.
+
+
+<br>
+
+## Acknowledgements (original method)
 
 The named authors (TJ, ESN, MJ, OLPDW, GMK, RME, AJK, CABP, WJE) had the following sources of funding: 
 
@@ -16,10 +28,6 @@ In alphabetic order:
 * ESN, TJ reviewed code.
 * ESN, TJ wrote the first draft of the manuscript.
 * GMK, AJK, CP, ESN, JE, MJ, OLPDW, RE, SF, TJ contributed to the manuscript.
-
-### Shiny app developers
-
-This Shiny app was developed by the following people: Thibaut Jombart, Emily Nightingale, Eleanor Rees, Gwen Knight, Carl AB Pearson, Samuel Clifford. Each contributed to adaptation of the model, writing body text, visualisation, app design and testing.
 
 ### COVID-19 Working Group
 
