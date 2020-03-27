@@ -62,7 +62,8 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
       max = 50,
       value = 10,
       step = 10
-    )
+    ),
+    actionButton(fmtr("run"), "Run")
   ),
   mainPanel(
     plotOutput(fmtr("los_plot")),
@@ -90,78 +91,70 @@ ui <- navbarPage(
     tabPanel("Information", includeMarkdown("include/info.md"))
 )
 
+stay_distro_plot <- function(
+  distribution, main,
+  type = "h", col = cmmid_color,
+  lwd = 14, lend = 2,
+  xlab = "Days in hospital", ylab = "Probability",
+  cex.lab = 1.3, cex.main = 1.5
+) {
+  days <- 0:max(1, distribution$q(.999))
+  plot(
+    days, distribution$d(days),
+    main = main,
+    type = type, col = col,
+    lwd = lwd, lend = lend,
+    xlab = xlab, ylab = ylab,
+    cex.lab = cex.lab, cex.main = cex.main
+  )
+}
 
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
 
   ## graphs for the distributions of length of hospital stay (LoS)
-  output$gen_los_plot <- renderPlot({
-    los <- los_normal
-    title <- "Duration of normal hospitalisation"
-    max_days <- max(1, los$q(.999))
-    days <- 0:max_days
-    plot(days,
-         los$d(days),
-         type = "h", col = cmmid_color,
-         lwd = 14, lend = 2,
-         xlab = "Days in hospital",
-         ylab = "Probability",
-         main = title,
-         cex.lab = 1.3,
-         cex.main = 1.5)
-  }, width = 600)
+  output$gen_los_plot <- renderPlot(stay_distro_plot(
+    los_normal, "Duration of normal hospitalisation"
+  ), width = 600)
 
-  output$icu_los_plot <- renderPlot({
-    los <- los_critical
-    title <- "Duration of ICU hospitalisation"
-    max_days <- max(1, los$q(.999))
-    days <- 0:max_days
-    plot(days,
-         los$d(days),
-         type = "h", col = cmmid_color,
-         lwd = 14, lend = 2,
-         xlab = "Days in hospital",
-         ylab = "Probability",
-         main = title,
-         cex.lab = 1.3,
-         cex.main = 1.5)
-  }, width = 600)
+  output$icu_los_plot <- renderPlot(stay_distro_plot(
+    los_critical, "Duration of ICU hospitalisation"
+  ), width = 600)
+  
+  genpars <- eventReactive(input$gen_run, list(
+    date = input$gen_admission_date,
+    n_start = as.integer(input$gen_number_admissions),
+    doubling = input$gen_doubling_time,
+    doubling_error = input$gen_uncertainty_doubling_time,
+    duration = input$gen_simulation_duration,
+    reporting = input$gen_assumed_reporting / 100,
+    n_sim = input$gen_number_simulations,
+    r_los = los_normal$r
+  ), ignoreNULL = FALSE)
+  
+  icupars <- eventReactive(input$icu_run, list(
+    date = input$icu_admission_date,
+    n_start = as.integer(input$icu_number_admissions),
+    doubling = input$icu_doubling_time,
+    doubling_error = input$icu_uncertainty_doubling_time,
+    duration = input$icu_simulation_duration,
+    reporting = input$icu_assumed_reporting / 100,
+    n_sim = input$icu_number_simulations,
+    r_los = los_critical$r
+  ), ignoreNULL = FALSE)
+  
+  genbeds <- reactive(do.call(run_model, genpars()))
+  icubeds <- reactive(do.call(run_model, icupars()))
   
   ## main plot: predictions of bed occupancy
   output$gen_over_plot <- output$gen_main_plot <- renderPlot({
-
-      los <- los_normal
-      title <- "Duration of normal hospitalisation"
-
-    ## run model
-    beds <- run_model(date = input$gen_admission_date,
-                      n_start = as.integer(input$gen_number_admissions),
-                      doubling = input$gen_doubling_time,
-                      doubling_error = input$gen_uncertainty_doubling_time,
-                      duration = input$gen_simulation_duration,
-                      reporting = input$gen_assumed_reporting / 100,
-                      r_los = los$r,
-                      n_sim = input$icu_number_simulations)
-    plot_beds(beds, ribbon_color = cmmid_color)
-  })
-
-  output$icu_over_plot <- output$icu_main_plot <- renderPlot({
-    
-    los <- los_critical
-    title <- "Duration of critical care hospitalisation"
-
-    ## run model
-    beds <- run_model(date = input$icu_admission_date,
-                      n_start = as.integer(input$icu_number_admissions),
-                      doubling = input$icu_doubling_time,
-                      doubling_error = input$icu_uncertainty_doubling_time,
-                      duration = input$icu_simulation_duration,
-                      reporting = input$icu_assumed_reporting / 100,
-                      r_los = los$r,
-                      n_sim = input$icu_number_simulations)
-    plot_beds(beds, ribbon_color = cmmid_color)
+    plot_beds(genbeds(), ribbon_color = cmmid_color)
   })
   
+  output$icu_over_plot <- output$icu_main_plot <- renderPlot({
+    plot_beds(icubeds(), ribbon_color = cmmid_color)
+  })
+
 }
 
 ## Run the application 
