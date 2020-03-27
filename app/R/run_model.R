@@ -29,24 +29,15 @@
 #'
 #' @examples
 #' 
-#' ## get forecast for admissions
-#' x <- predict_admissions(Sys.Date(),
-#'                         n_start = 40,
-#'                         doubling = 5,
-#'                         doubling_error = 1,
-#'                         duration = 14) 
-#' x
-#' 
 #' ## make toy duration of hospitalisation (exponential distribution)
 #' r_duration <- function(n = 1) rexp(n, .2)
 #'
 #' x <- run_model(Sys.Date(),
 #'                n_start = 66,
-#'                doubling = 7,
-#'                doubling_error = 2,
+#'                doubling = c(4.5, 5.1, 6, 4.8),
 #'                duration = 14,
 #'                r_los = r_duration,
-#'                n_sim = 1)
+#'                n_sim = 10)
 #' x
 #' plot(x)
 
