@@ -21,10 +21,10 @@
 #'
 #' @examples
 #'
+#' doubling_times <- rnorm(50, mean = 5, sd = 0.5)
 #' x <- predict_admissions(Sys.Date(),
 #'                         n_start = 40,
-#'                         doubling = 5,
-#'                         doubling_error = 1,
+#'                         doubling = doubling_times,
 #'                         duration = 14) 
 #' x
 #' 
