@@ -57,11 +57,11 @@ run_model <- function(date_start,
                                         reporting = reporting)
 
   ## get daily bed needs predictions for each simulated trajectory of admissions
-  dates <- projections::get_dates(proj_admissions)
+  proj_dates <- projections::get_dates(proj_admissions)
   beds <- lapply(seq_len(ncol(proj_admissions)),
-                 function(i) predict_beds(proj_admissions[,i],
-                                          dates,
-                                          r_duration,
+                 function(i) predict_beds(n_admissions = proj_admissions[,i],
+                                          dates = proj_dates,
+                                          r_los = r_los,
                                           n_sim = n_sim))
 
   beds <- projections::merge_projections(beds)

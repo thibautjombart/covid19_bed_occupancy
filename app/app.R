@@ -58,11 +58,11 @@ admitsPanel <- function(prefix, tabtitle) {
       ),
       sliderInput(
           fmtr("uncertainty_doubling_time"),
-          "Uncertainty in doubling time (%):",
+          "Uncertainty in doubling time (coefficient of variation):",
           min = 0,
-          max = 50,
-          value = 10,
-          step = 1
+          max = 0.5,
+          value = 0.1,
+          step = 0.05
       ),
       numericInput(
           fmtr("simulation_duration"),
@@ -75,10 +75,10 @@ admitsPanel <- function(prefix, tabtitle) {
       numericInput(
           fmtr("number_simulations"),
           "Number of simulations:",
-          min = 10,
-          max = 50,
+          min = 1,
+          max = 100,
           value = 10,
-          step = 10
+          step = 5
       ),
   actionButton(fmtr("run"), "Run model", icon("play")), 
   ),
@@ -91,7 +91,7 @@ admitsPanel <- function(prefix, tabtitle) {
           plotOutput(fmtr("los_plot"), width = "30%", height = "300px")
       ),
       br(),
-      dataTableOutput(fmtr("main_table")),
+      dataTableOutput(fmtr("main_table"), width = "50%"),
       ## Not sure why this is not working?!
       ## br(),
       ## DT::dataTableOutput("toy_table", width = "75%")
@@ -143,22 +143,22 @@ server <- function(input, output) {
   genpars <- eventReactive(input$gen_run, list(
     date = input$gen_admission_date,
     n_start = as.integer(input$gen_number_admissions),
-    doubling = input$gen_doubling_time,
-    doubling_error = input$gen_uncertainty_doubling_time / 100,
+    doubling = r_doubling(n = input$gen_number_simulations,
+                          mean = input$gen_doubling_time,
+                          cv = input$gen_uncertainty_doubling_time),
     duration = input$gen_simulation_duration,
     reporting = input$gen_assumed_reporting / 100,
-    n_sim = input$gen_number_simulations,
     r_los = los_normal$r
   ), ignoreNULL = FALSE)
   
   icupars <- eventReactive(input$icu_run, list(
     date = input$icu_admission_date,
     n_start = as.integer(input$icu_number_admissions),
-    doubling = input$icu_doubling_time,
-    doubling_error = input$icu_uncertainty_doubling_time / 100,
+    doubling = r_doubling(n = input$icu_number_simulations,
+                          mean = input$icu_doubling_time,
+                          cv = input$icu_uncertainty_doubling_time),
     duration = input$icu_simulation_duration,
     reporting = input$icu_assumed_reporting / 100,
-    n_sim = input$icu_number_simulations,
     r_los = los_critical$r
   ), ignoreNULL = FALSE)
   
@@ -183,10 +183,10 @@ server <- function(input, output) {
   
   ## summary tables
   output$gen_main_table <- renderDataTable({
-    as.data.frame(genbeds())
+    summarise_beds(genbeds())
   })
   output$icu_main_table <- renderDataTable({
-    as.data.frame(icubeds())
+    summarise_beds(icubeds())
   })
 
 }

@@ -42,7 +42,6 @@
 ## beds <- projections::merge_projections(beds)
 ## plot(beds)
 
-
 predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
 
   ## sanity checks
