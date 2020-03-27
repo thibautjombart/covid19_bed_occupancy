@@ -11,11 +11,7 @@
 #'
 #' @param n_start The number of COVID-19 admissions reported on `date_start`
 #'
-#' @param doubling The doubling time, in days.
-#' 
-#' @param doubling_error The uncertainty associated to the doubling time, in
-#'   days. Upper and lower bounds of the forecast will be `doubling +/-
-#'   doubling_error`.
+#' @param doubling A vector of doubling times, in days.
 #'
 #' @param reporting The proportion of admissions reported; defaults to 1,
 #'   i.e. all admissions are reported.
@@ -25,10 +21,10 @@
 #'
 #' @examples
 #'
+#' doubling_times <- rnorm(50, mean = 5, sd = 0.5)
 #' x <- predict_admissions(Sys.Date(),
 #'                         n_start = 40,
-#'                         doubling = 5,
-#'                         doubling_error = 1,
+#'                         doubling = doubling_times,
 #'                         duration = 14) 
 #' x
 #' 
@@ -36,17 +32,14 @@
 predict_admissions <- function(date_start,
                                n_start,
                                doubling,
-                               doubling_error,
                                duration,
-                               reporting = 1,
-                               long = FALSE) {
+                               reporting = 1) {
 
   ## Sanity checks
   if (!is.finite(n_start)) stop("`n_start` is not a number")
   if (n_start < 1) stop("`n_start` must be >= 1")
 
-  if (!is.finite(doubling)) stop("`doubling` is not a number")
-  if (!is.finite(doubling_error)) stop("`doubling_error` is not a number")
+  if (!all(is.finite(doubling))) stop("`doubling` is not a number")
 
   if (!is.finite(duration)) stop("`duration` is not a number")
   if (duration < 1) stop("`duration` must be >= 1")
@@ -66,31 +59,17 @@ predict_admissions <- function(date_start,
   initial_admissions <- round(n_start / reporting)
 
   ## calculate growth rate from doubling times
-  r <- log(2) / doubling
-  r_low <- log(2) / (doubling*(1-doubling_error))
-  r_high <- log(2) / (doubling*(1+doubling_error))
+  r_values <- log(2) / doubling
 
   ## calculate future admissions
-  future_admissions <- initial_admissions * exp(r * (seq_len(duration) - 1))
-  future_admissions_low <- initial_admissions * exp(r_low * (seq_len(duration) - 1))
-  future_admissions_high <- initial_admissions * exp(r_high * (seq_len(duration) - 1))
-  future_admissions <- round(future_admissions)
-  future_admissions_low <- round(future_admissions_low)
-  future_admissions_high <- round(future_admissions_high)
+  future_admissions <- lapply(r_values,
+                              function(r)
+    round(initial_admissions * exp(r * (seq_len(duration) - 1))))
 
   ## build output
-  out <- data.frame(date = future_dates,
-                    mean = future_admissions,
-                    low = future_admissions_low,
-                    high = future_admissions_high)
-
-  if (long) {
-    out <- tidyr::pivot_longer(out, -1,
-                               names_to = "prediction",
-                               values_to = "n")
-    out$prediction <- factor(out$prediction,
-                             levels = c("low", "mean", "high"))
-  }
+  future_admissions <- matrix(unlist(future_admissions), ncol = length(doubling))
+  out <- projections::build_projections(x = future_admissions,
+                                        date = future_dates)
   out
 }
 

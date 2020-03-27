@@ -23,24 +23,26 @@
 #'
 #' @examples
 #' 
-#' ## get forecast for admissions
-#' x <- predict_admissions(Sys.Date(),
-#'                         n_start = 40,
-#'                         doubling = 5,
-#'                         doubling_error = 1,
-#'                         duration = 14) 
-#' x
-#' 
-#' ## make toy duration of hospitalisation (exponential distribution)
-#' r_duration <- function(n = 1) rexp(n, .2)
-#'
-#' ## get daily bed needs predictions
-#' beds <- predict_beds(x$date, x$mean, r_duration)
-#' beds
-#' plot(beds)
+##  ## get forecast for admissions
+##  x <- predict_admissions(Sys.Date(),
+##                          n_start = 40,
+##                          doubling = c(3.5,5, 6.1, 4.6),
+##                          duration = 14) 
+##  x
+ 
+##  ## make toy duration of hospitalisation (exponential distribution)
+##  r_duration <- function(n = 1) rexp(n, .2)
 
 
-predict_beds <- function(dates, n_admissions, r_los, n_sim = 10) {
+## ## get daily bed needs predictions for each simulated trajectory of admissions
+## beds <- lapply(1:ncol(x),
+##               function(i) predict_beds(x[,i],
+##               projections::get_dates(x),
+##               r_duration))
+## beds <- projections::merge_projections(beds)
+## plot(beds)
+
+predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
 
   ## sanity checks
   if (!length(dates)) stop("`dates` is empty")
