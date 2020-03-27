@@ -90,11 +90,12 @@ admitsPanel <- function(prefix, tabtitle) {
           condition = sprintf("input.%s == true", fmtr("show_los")),
           plotOutput(fmtr("los_plot"), width = "30%", height = "300px")
       ),
-      br(),
-      dataTableOutput(fmtr("main_table"), width = "50%"),
-      ## Not sure why this is not working?!
-      ## br(),
-      ## DT::dataTableOutput("toy_table", width = "75%")
+      checkboxInput(fmtr("show_table"), "Show summary table", FALSE),
+      conditionalPanel(
+          condition = sprintf("input.%s == true", fmtr("show_table")),
+          dataTableOutput(fmtr("main_table"), width = "50%")
+      ),
+      
   )
   )))
 }
