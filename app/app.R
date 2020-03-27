@@ -104,24 +104,6 @@ ui <- navbarPage(
 
 )
 
-stay_distro_plot <- function(
-  distribution, main,
-  type = "h", col = cmmid_color,
-  lwd = 14, lend = 2,
-  xlab = "Days in hospital", ylab = "Probability",
-  cex.lab = 1.3, cex.main = 1.5
-) {
-  days <- 0:max(1, distribution$q(.999))
-  plot(
-    days, distribution$d(days),
-    main = main,
-    type = type, col = col,
-    lwd = lwd, lend = lend,
-    xlab = xlab, ylab = ylab,
-    cex.lab = cex.lab, cex.main = cex.main
-  )
-}
-
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
   
@@ -162,11 +144,17 @@ server <- function(input, output) {
   
   ## main plot: predictions of bed occupancy
   output$gen_over_plot <- output$gen_main_plot <- renderPlot({
-    plot_beds(genbeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "Normal hospital bed utilisation")
+    plot_beds(genbeds(),
+    ribbon_color = lshtm_grey,
+    palette = cmmid_pal,
+    title = "Normal hospital bed utilisation")
   }, width = 600)
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
-    plot_beds(icubeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "ICU bed utilisation")
+    plot_beds(icubeds(),
+    ribbon_color = lshtm_grey,
+    palette = cmmid_pal,
+    title = "ICU bed utilisation")
   }, width = 600)
 
   

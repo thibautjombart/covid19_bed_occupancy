@@ -55,7 +55,6 @@ lshtm_grey  <- "#A7A8AA"
 
 cmmid_pal <- function(n){
   
-  #colorRampPalette(colors = c("#FFB81C", "#FE5000"))(n)
-  colorRampPalette(colors = c("#00BF6F","#0D5257"))(n)
+  colorRampPalette(colors = c("#388a68","#0D5257"))(n)
   
 }
