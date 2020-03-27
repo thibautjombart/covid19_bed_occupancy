@@ -16,11 +16,10 @@ library(shiny)
 library(incidence)
 library(projections)
 library(distcrete)
-
+library(ggplot2)
 
 ## global variables
-app_title <- "Hospital Bed Occupancy Projections"
-cmmid_color <- "#134e51"
+app_title   <- "Hospital Bed Occupancy Projections"
 
 admitsPanel <- function(
   prefix, tabtitle
@@ -67,6 +66,7 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
   ),
   mainPanel(
     plotOutput(fmtr("los_plot")),
+    br(),
     plotOutput(fmtr("main_plot"))
   )
 )))
@@ -74,21 +74,29 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
 
 ## Define UI for application that draws a histogram
 ui <- navbarPage(
-    title = div(
-        a(img(src="cmmid_newlogo.svg", height="45px"),
-          href="https://cmmid.github.io/"),
-        span(app_title, style="line-height:45px")
-    ),
-    windowTitle = app_title,
-    theme = "styling.css",
-    position="fixed-top", collapsible = TRUE,
-    admitsPanel(prefix="gen_", tabtitle="General"),
-    admitsPanel(prefix="icu_", tabtitle="ICU"),
-    tabPanel("Overall", mainPanel(
-      plotOutput("gen_over_plot"),
-      plotOutput("icu_over_plot")
-    )),
-    tabPanel("Information", includeMarkdown("include/info.md"))
+  title = div(
+    a(img(src="cmmid_newlogo.svg", height="45px"),
+      href="https://cmmid.github.io/"),
+    span(app_title, style="line-height:45px")
+  ),
+  windowTitle = app_title,
+  theme = "styling.css",
+  position="fixed-top", collapsible = TRUE,
+  admitsPanel(prefix="gen_", tabtitle="General"),
+  admitsPanel(prefix="icu_", tabtitle="ICU"),
+  tabPanel("Overall", mainPanel(
+    plotOutput("gen_over_plot"),
+    br(),
+    plotOutput("icu_over_plot")
+  )),
+  tabPanel("Information", 
+           fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
+                     includeMarkdown("include/info.md"))),
+  tabPanel("Acknowledgements", 
+           fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
+                     includeMarkdown("ack.md")))
+  
+
 )
 
 stay_distro_plot <- function(
@@ -111,8 +119,9 @@ stay_distro_plot <- function(
 
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
-
+  
   ## graphs for the distributions of length of hospital stay (LoS)
+
   output$gen_los_plot <- renderPlot(stay_distro_plot(
     los_normal, "Duration of normal hospitalisation"
   ), width = 600)
@@ -148,11 +157,11 @@ server <- function(input, output) {
   
   ## main plot: predictions of bed occupancy
   output$gen_over_plot <- output$gen_main_plot <- renderPlot({
-    plot_beds(genbeds(), ribbon_color = cmmid_color)
+    plot_beds(genbeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "Normal hospital bed utilisation")
   })
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
-    plot_beds(icubeds(), ribbon_color = cmmid_color)
+    plot_beds(icubeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "ICU bed utilisation")
   })
 
 }
