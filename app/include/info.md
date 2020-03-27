@@ -48,7 +48,7 @@ starting date and count for the forecast are required inputs.
 * **Uncertainty in doubling time (coefficient of variation)** Since the doubling time is an estimated parameter, it is necessary to incorporate the potential error associated with it. The sampling distribution for the doubling time is an inverse gamma distribution parameterised in terms of the mean doubling time (defined by the user) and the coefficient of variation (i.e. &sigma;/&mu;). The shape and rate parameters of the inverse gamma distribution are calculated by moment matching. 
   - Default: &sigma;/&mu; = 0.1
 * **Number of simulations** to incorporate uncertainty in the duration of stay.
-  Default: 10 simulated durations of stay per admission
+  - Default: 10 simulated durations of stay per admission
 
 
 
@@ -57,12 +57,12 @@ starting date and count for the forecast are required inputs.
 Two options for duration of hospitalisation are provided to match the results of
 <a
 href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext">Zhou
-et al 2020</a>:
+et al., 2020</a>:
 
 
-* Long-stay: discretised Weibull (shape: 2, scale: 13) to aim for a median of 11
+* Long-stay: discretised Weibull (shape: 2, scale: 13) targeting a median of 11
     days, IQR 7-14
-* Short-stay: discretised Weibull (shape: 2, scale:10) to aim for a median of 8
+* Short-stay: discretised Weibull (shape: 2, scale: 10) targeting a median of 8
     days, IQR 4-12
 
 These distributions may not be appropriate in some settings, and the user should
@@ -83,7 +83,7 @@ take this into account when interpreting a forecast.
 
 ## References
 
-Jombart et al. "Forecasting critical care bed requirements for COVID-19 patients in England". CMMID post, first online 22/03/2020. https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html
+Jombart et al. "Forecasting critical care bed requirements for COVID-19 patients in England". CMMID post, first online 2020-03-22. https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html
 
 Zhou, Fei, et al. "Clinical Course and Risk Factors for Mortality of Adult Inpatients with COVID-19 in Wuhan, China: a Retrospective Cohort Study." _The Lancet_, 2020. <a href="https://doi.org/10.1016/s0140-6736(20)30566-3">doi:10.1016/s0140-6736(20)30566-3</a>.
 
