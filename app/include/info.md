@@ -14,9 +14,7 @@ The forecasting approach can be summarised as follows:
 
 1. Augment the number of admissions by an assumed level of reporting. This is
    currently done by
-
-<div style="text-align:center"> n<sub>aug</sub> = n<sub>reported</sub> / %
-<sub>reported</sub> </div>
+<div style="text-align:center"> n<sub>aug</sub> = n<sub>reported</sub> / %<sub>reported</sub> </div>
  
 2. Use a log-linear model, parametrised via the doubling time, to simulate
    epidemic trajectories.
