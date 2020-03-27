@@ -47,10 +47,10 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
     sliderInput(fmtr("uncertainty_doubling_time"), "Uncertainty in doubling time (%):",
       min = 0,
       max = 50,
-      value = 2,
+      value = 10,
       step = 1
     ),
-    numericInput(fmtr("simulation_duration"), "Forecast interval (days):",
+    numericInput(fmtr("simulation_duration"), "Forecast period (days):",
       min = 1,
       max = 21,
       value = 7,
@@ -62,7 +62,8 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
       value = 10,
       step = 10
     ),
-    actionButton(fmtr("run"), "Run")
+    actionButton(fmtr("run"), "Run model", icon("play"))#, 
+#                 style="color: #fff; background-color: #0D5257; border-color: #0D5257")
   ),
   mainPanel(
     plotOutput(fmtr("los_plot")),
@@ -134,7 +135,7 @@ server <- function(input, output) {
     date = input$gen_admission_date,
     n_start = as.integer(input$gen_number_admissions),
     doubling = input$gen_doubling_time,
-    doubling_error = input$gen_uncertainty_doubling_time/100,
+    doubling_error = input$gen_uncertainty_doubling_time / 100,
     duration = input$gen_simulation_duration,
     reporting = input$gen_assumed_reporting / 100,
     n_sim = input$gen_number_simulations,
@@ -145,7 +146,7 @@ server <- function(input, output) {
     date = input$icu_admission_date,
     n_start = as.integer(input$icu_number_admissions),
     doubling = input$icu_doubling_time,
-    doubling_error = input$icu_uncertainty_doubling_time/100,
+    doubling_error = input$icu_uncertainty_doubling_time / 100,
     duration = input$icu_simulation_duration,
     reporting = input$icu_assumed_reporting / 100,
     n_sim = input$icu_number_simulations,
@@ -157,11 +158,17 @@ server <- function(input, output) {
   
   ## main plot: predictions of bed occupancy
   output$gen_over_plot <- output$gen_main_plot <- renderPlot({
-    plot_beds(genbeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "Normal hospital bed utilisation")
+    plot_beds(genbeds(),
+              ribbon_color = lshtm_grey,
+              palette = cmmid_pal,
+              title = "Normal hospital bed utilisation")
   })
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
-    plot_beds(icubeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "ICU bed utilisation")
+    plot_beds(icubeds(),
+              ribbon_color = lshtm_grey,
+              palette = cmmid_pal,
+              title = "ICU bed utilisation")
   })
 
   

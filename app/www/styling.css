@@ -55,3 +55,18 @@ hr { margin:5px; border-top: 1px solid grey; }
   padding: 2.5px;
   padding-right: 15px;
 }
+
+
+.btn {
+  transition-duration: 0.25s;
+  color: #0D5257;
+  background-color: white;
+  border-color: #0D5257;
+}
+
+.btn:hover {
+  color: white;
+  background-color: #0D5257;
+  border-color: #0D5257;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
