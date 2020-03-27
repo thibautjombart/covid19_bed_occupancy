@@ -62,13 +62,13 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
       value = 10,
       step = 10
     ),
-    actionButton(fmtr("run"), "Run model", icon("play"))#, 
-#                 style="color: #fff; background-color: #0D5257; border-color: #0D5257")
+    actionButton(fmtr("run"), "Run model", icon("play")), 
   ),
   mainPanel(
-    plotOutput(fmtr("los_plot")),
+    plotOutput(fmtr("main_plot")),
     br(),
-    plotOutput(fmtr("main_plot"))
+    plotOutput(fmtr("los_plot")),
+    style="padding-bottom: 40px;"
   )
 )))
 }
@@ -88,7 +88,8 @@ ui <- navbarPage(
   tabPanel("Overall", mainPanel(
     plotOutput("gen_over_plot"),
     br(),
-    plotOutput("icu_over_plot")
+    plotOutput("icu_over_plot"),
+    style="padding-bottom: 40px;"
   )),
   tabPanel("Information", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
@@ -123,11 +124,11 @@ server <- function(input, output) {
   
   ## graphs for the distributions of length of hospital stay (LoS)
 
-  output$gen_los_plot <- renderPlot(stay_distro_plot(
+  output$gen_los_plot <- renderPlot(plot_distribution(
     los_normal, "Duration of normal hospitalisation"
   ), width = 600)
 
-  output$icu_los_plot <- renderPlot(stay_distro_plot(
+  output$icu_los_plot <- renderPlot(plot_distribution(
     los_critical, "Duration of ICU hospitalisation"
   ), width = 600)
   
@@ -158,18 +159,12 @@ server <- function(input, output) {
   
   ## main plot: predictions of bed occupancy
   output$gen_over_plot <- output$gen_main_plot <- renderPlot({
-    plot_beds(genbeds(),
-              ribbon_color = lshtm_grey,
-              palette = cmmid_pal,
-              title = "Normal hospital bed utilisation")
-  })
+    plot_beds(genbeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "Normal hospital bed utilisation")
+  }, width = 600)
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
-    plot_beds(icubeds(),
-              ribbon_color = lshtm_grey,
-              palette = cmmid_pal,
-              title = "ICU bed utilisation")
-  })
+    plot_beds(icubeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "ICU bed utilisation")
+  }, width = 600)
 
   
 }
