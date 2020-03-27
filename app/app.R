@@ -94,7 +94,7 @@ ui <- navbarPage(
                      includeMarkdown("include/info.md"))),
   tabPanel("Acknowledgements", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
-                     includeMarkdown("ack.md")))
+                     includeMarkdown("include/ack.md")))
   
 
 )
