@@ -10,10 +10,6 @@
 #' @param n_start The number of COVID-19 admissions reported on `date_start`
 #'
 #' @param doubling The doubling time, in days.
-#' 
-#' @param doubling_error The uncertainty associated to the doubling time, in
-#'   days. Upper and lower bounds of the forecast will be `doubling +/-
-#'   doubling_error`.
 #'
 #' @param reporting The proportion of admissions reported; defaults to 1,
 #'   i.e. all admissions are reported.
@@ -24,7 +20,7 @@
 #'   object.
 #'
 #' @param n_sim The number of times duration of hospitalisation is simulated for
-#'   each admission. Defaults to 10. Only relevant for low (<30) numbers of
+#'   each admission. Defaults to 1. Only relevant for low (<30) numbers of
 #'   initial admissions, in which case it helps accounting for the uncertainty
 #'   in LoS.
 #'
@@ -57,11 +53,10 @@
 run_model <- function(date_start,
                       n_start,
                       doubling,
-                      doubling_error,
                       duration,
-                      reporting = 1,
                       r_los,
-                      n_sim = 10) {
+                      reporting = 1,
+                      n_sim = 1) {
 
   ## get projected admissions
   proj_admissions <- predict_admissions(date_start = date_start,
@@ -76,7 +71,7 @@ run_model <- function(date_start,
                  function(i) predict_beds(proj_admissions[,i],
                                           dates,
                                           r_duration,
-                                          n_sim = 1))
+                                          n_sim = n_sim))
 
   beds <- projections::merge_projections(beds)
   beds
