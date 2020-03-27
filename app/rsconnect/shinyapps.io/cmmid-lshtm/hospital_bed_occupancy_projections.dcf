@@ -1,0 +1,12 @@
+name: hospital_bed_occupancy_projections
+title: hospital_bed_occupancy_projections
+username:
+account: cmmid-lshtm
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2008980
+bundleId: 2933635
+url: https://cmmid-lshtm.shinyapps.io/hospital_bed_occupancy_projections/
+when: 1585339482.54078
+asMultiple: FALSE
+asStatic: FALSE
