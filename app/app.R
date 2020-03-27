@@ -44,11 +44,11 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
       max = 10,
       value = 5
     ),
-    numericInput(fmtr("uncertainty_doubling_time"), "Uncertainty in doubling time (%):",
+    sliderInput(fmtr("uncertainty_doubling_time"), "Uncertainty in doubling time (%):",
       min = 0,
-      max = 1,
-      value = .2,
-      step = 0.05
+      max = 50,
+      value = 2,
+      step = 1
     ),
     numericInput(fmtr("simulation_duration"), "Forecast interval (days):",
       min = 1,
@@ -134,7 +134,7 @@ server <- function(input, output) {
     date = input$gen_admission_date,
     n_start = as.integer(input$gen_number_admissions),
     doubling = input$gen_doubling_time,
-    doubling_error = input$gen_uncertainty_doubling_time,
+    doubling_error = input$gen_uncertainty_doubling_time/100,
     duration = input$gen_simulation_duration,
     reporting = input$gen_assumed_reporting / 100,
     n_sim = input$gen_number_simulations,
@@ -145,7 +145,7 @@ server <- function(input, output) {
     date = input$icu_admission_date,
     n_start = as.integer(input$icu_number_admissions),
     doubling = input$icu_doubling_time,
-    doubling_error = input$icu_uncertainty_doubling_time,
+    doubling_error = input$icu_uncertainty_doubling_time/100,
     duration = input$icu_simulation_duration,
     reporting = input$icu_assumed_reporting / 100,
     n_sim = input$icu_number_simulations,
@@ -164,6 +164,7 @@ server <- function(input, output) {
     plot_beds(icubeds(), ribbon_color = lshtm_grey, palette = cmmid_pal, title = "ICU bed utilisation")
   })
 
+  
 }
 
 ## Run the application 
