@@ -3,7 +3,7 @@
 #' This function wraps the forecasting of daily admissions and of bed
 #' admissions.
 #'
-
+#' 
 #' @param date_start A single `Date` used as a starting point to model future
 #'   COVID-19 admissions
 #'
@@ -33,7 +33,6 @@
 #'
 #' @examples
 #' 
-
 #' ## get forecast for admissions
 #' x <- predict_admissions(Sys.Date(),
 #'                         n_start = 40,
@@ -68,26 +67,17 @@ run_model <- function(date_start,
   proj_admissions <- predict_admissions(date_start = date_start,
                                         n_start = n_start,
                                         doubling = doubling,
-                                        doubling_error = doubling_error,
                                         duration = duration,
-                                        reporting = reporting,
-                                        long = TRUE)
+                                        reporting = reporting)
 
-  ## split projections by type of prediction (low / mean / high)
-  list_proj_admissions <- split(proj_admissions, proj_admissions$prediction)
+  ## get daily bed needs predictions for each simulated trajectory of admissions
+  dates <- projections::get_dates(proj_admissions)
+  beds <- lapply(seq_len(ncol(proj_admissions)),
+                 function(i) predict_beds(proj_admissions[,i],
+                                          dates,
+                                          r_duration,
+                                          n_sim = 1))
 
-
-  ## get projected bed needs for each type of prediction
-  list_proj_beds <- lapply(list_proj_admissions,
-                         function(e)
-                           predict_beds(dates = e$date,
-                                        n_admission = e$n,
-                                        r_los = r_los,
-                                        n_sim = n_sim))
-
-  
-  ## put results back together as a `projections` object
-  beds <- projections::merge_projections(list_proj_beds)
-
+  beds <- projections::merge_projections(beds)
   beds
 }
