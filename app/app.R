@@ -184,10 +184,10 @@ server <- function(input, output) {
 
   
   ## summary tables
-  output$gen_main_table <- renderDataTable({
+  output$gen_main_table <- DT::renderDataTable({
     summarise_beds(genbeds())
   })
-  output$icu_main_table <- renderDataTable({
+  output$icu_main_table <- DT::renderDataTable({
     summarise_beds(icubeds())
   })
 
