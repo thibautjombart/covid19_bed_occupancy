@@ -18,7 +18,7 @@ library(projections)
 library(distcrete)
 library(ggplot2)
 library(invgamma)
-#library(DT)
+library(DT)
 
 ## global variables
 app_title   <- "Hospital Bed Occupancy Projections"
@@ -94,7 +94,7 @@ admitsPanel <- function(prefix, tabtitle) {
       checkboxInput(fmtr("show_table"), "Show summary table", FALSE),
       conditionalPanel(
           condition = sprintf("input.%s == true", fmtr("show_table")),
-          dataTableOutput(fmtr("main_table"), width = "50%")
+          DT::dataTableOutput(fmtr("main_table"), width = "50%")
       ),
       
   )
