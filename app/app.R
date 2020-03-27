@@ -65,15 +65,18 @@ return(tabPanel(tabtitle, sidebarLayout(position = "left",
     actionButton(fmtr("run"), "Run model", icon("play")), 
   ),
   mainPanel(
-    plotOutput(fmtr("main_plot")),
+    plotOutput(fmtr("main_plot"), width = "60%", height = "400px"),
     br(),
-    plotOutput(fmtr("los_plot")),
+    checkboxInput("show_los", "Show duration of hospitalisation", FALSE),
+    conditionalPanel(
+        condition = "input.show_los == true",
+        plotOutput(fmtr("los_plot"), width = "30%", height = "300px")),
     style="padding-bottom: 40px;"
-  )
+    )
 )))
 }
 
-## Define UI for application that draws a histogram
+## Define UI for application
 ui <- navbarPage(
   title = div(
     a(img(src="cmmid_newlogo.svg", height="45px"),
