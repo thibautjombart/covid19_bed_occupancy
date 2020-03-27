@@ -17,7 +17,7 @@ library(incidence)
 library(projections)
 library(distcrete)
 library(ggplot2)
-library(DT)
+#library(DT)
 
 ## global variables
 app_title   <- "Hospital Bed Occupancy Projections"
@@ -88,7 +88,10 @@ admitsPanel <- function(prefix, tabtitle) {
       checkboxInput(fmtr("show_los"), "Show duration of hospitalisation", FALSE),
       conditionalPanel(
           condition = sprintf("input.%s == true", fmtr("show_los")),
-          plotOutput(fmtr("los_plot"), width = "30%", height = "300px")),
+          plotOutput(fmtr("los_plot"), width = "30%", height = "300px")
+      ),
+      br(),
+      dataTableOutput(fmtr("main_table")),
       ## Not sure why this is not working?!
       ## br(),
       ## DT::dataTableOutput("toy_table", width = "75%")
@@ -179,17 +182,13 @@ server <- function(input, output) {
 
   
   ## summary tables
-  output$gen_main_table <- DT::renderDataTable({
-    genbeds()
+  output$gen_main_table <- renderDataTable({
+    as.data.frame(genbeds())
   })
-  output$icu_main_table <- DT::renderDataTable({
-    icubeds()
+  output$icu_main_table <- renderDataTable({
+    as.data.frame(icubeds())
   })
-  ## toy table; remove once table is working
-  output$toy_table <- DT::renderDataTable({
-    iris
-  })
-  
+
 }
 
 ## Run the application 
