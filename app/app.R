@@ -21,59 +21,61 @@ library(ggplot2)
 ## global variables
 app_title   <- "Hospital Bed Occupancy Projections"
 
-admitsPanel <- function(
-  prefix, tabtitle
-) {
-  fmtr = function(inputId) sprintf("%s%s", prefix, inputId)
-return(tabPanel(tabtitle, sidebarLayout(position = "left",
+
+admitsPanel <- function(prefix, tabtitle) {
+  fmtr = function(inputId) {
+    sprintf("%s%s", prefix, inputId)
+  }
+  
+  return(
+  tabPanel(tabtitle, sidebarLayout(position = "left",
   sidebarPanel(
-    dateInput(fmtr("admission_date"), "Date of admission:"),
-    numericInput(fmtr("number_admissions"), "Number of admissions on that date:",
-      min = 1,
-      max = 10000,
-      value = 1
-    ),
-    numericInput(fmtr("assumed_reporting"), "Reporting rate (%):",
-      min = 10,
-      max = 100,
-      value = 100,
-      step = 10
-    ),
-    numericInput(fmtr("doubling_time"), "Assumed doubling time (days):",
-      min = 0.5,
-      max = 10,
-      value = 5
-    ),
-    sliderInput(fmtr("uncertainty_doubling_time"), "Uncertainty in doubling time (%):",
-      min = 0,
-      max = 50,
-      value = 10,
-      step = 1
-    ),
-    numericInput(fmtr("simulation_duration"), "Forecast period (days):",
-      min = 1,
-      max = 21,
-      value = 7,
-      step = 1
-    ),
-    numericInput(fmtr("number_simulations"), "Number of simulations:",
-      min = 10,
-      max = 50,
-      value = 10,
-      step = 10
-    ),
-    actionButton(fmtr("run"), "Run model", icon("play")), 
+  dateInput(fmtr("admission_date"), "Date of admission:"),
+  numericInput(fmtr("number_admissions"), "Number of admissions on that date:",
+  min = 1,
+  max = 10000,
+  value = 1
+  ),
+  numericInput(fmtr("assumed_reporting"), "Reporting rate (%):",
+  min = 10,
+  max = 100,
+  value = 100,
+  step = 10
+  ),
+  numericInput(fmtr("doubling_time"), "Assumed doubling time (days):",
+  min = 0.5,
+  max = 10,
+  value = 5
+  ),
+  sliderInput(fmtr("uncertainty_doubling_time"), "Uncertainty in doubling time (%):",
+  min = 0,
+  max = 50,
+  value = 10,
+  step = 1
+  ),
+  numericInput(fmtr("simulation_duration"), "Forecast period (days):",
+  min = 1,
+  max = 21,
+  value = 7,
+  step = 1
+  ),
+  numericInput(fmtr("number_simulations"), "Number of simulations:",
+  min = 10,
+  max = 50,
+  value = 10,
+  step = 10
+  ),
+  actionButton(fmtr("run"), "Run model", icon("play")), 
   ),
   mainPanel(
-    plotOutput(fmtr("main_plot"), width = "60%", height = "400px"),
-    br(),
-    checkboxInput("show_los", "Show duration of hospitalisation", FALSE),
-    conditionalPanel(
-        condition = "input.show_los == true",
-        plotOutput(fmtr("los_plot"), width = "30%", height = "300px")),
-    style="padding-bottom: 40px;"
-    )
-)))
+  plotOutput(fmtr("main_plot"), width = "60%", height = "400px"),
+  br(),
+  checkboxInput(fmtr("show_los"), "Show duration of hospitalisation", FALSE),
+  conditionalPanel(
+      condition = sprintf("input.%s == true", fmtr("show_los")),
+      plotOutput(fmtr("los_plot"), width = "30%", height = "300px"))
+  )
+  )))
 }
 
 ## Define UI for application
