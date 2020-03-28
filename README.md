@@ -62,3 +62,12 @@ either using version control systems (e.g. GIT) to track changes, or creating
 new versions in `report_sources/` with a more recent date in the file name. Note
 that by default, `reportfactory::update_reports()` will always compile the
 latest version of reports.
+
+
+
+
+<br>
+<br>
+### License
+
+This work is distributed under MIT License (see LICENSE file).
