@@ -18,7 +18,7 @@ library(projections)
 library(distcrete)
 library(ggplot2)
 library(invgamma)
-library(DT)
+library(markdown)
 
 ## global variables
 app_title   <- "Hospital Bed Occupancy Projections"
@@ -65,6 +65,8 @@ admitsPanel <- function(prefix, tabtitle) {
           value = 0.1,
           step = 0.05
       ),
+      htmlOutput(fmtr("doubling_CI")),
+      br(),
       numericInput(
           fmtr("simulation_duration"),
           "Forecast period (days):",
@@ -182,6 +184,19 @@ server <- function(input, output) {
     title = "ICU bed utilisation")
   }, width = 600)
 
+  output$icu_doubling_CI <- reactive({
+    q <- q_doubling(mean = input$icu_doubling_time, 
+                    cv   = input$icu_uncertainty_doubling_time,
+                    p = c(0.025, 0.975))
+    sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
+  })
+  
+  output$gen_doubling_CI <- reactive({
+    q <- q_doubling(mean = input$gen_doubling_time, 
+                    cv   = input$gen_uncertainty_doubling_time,
+                    p = c(0.025, 0.975))
+    sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
+  })
   
   ## summary tables
   output$gen_main_table <- DT::renderDataTable({
@@ -191,6 +206,7 @@ server <- function(input, output) {
     summarise_beds(icubeds())
   })
 
+  
 }
 
 ## Run the application 
