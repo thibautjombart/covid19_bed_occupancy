@@ -1,3 +1,6 @@
+
+# Information on the model
+
 ## Model Description
 
 This app implements a model to forecast COVID19 bed requirements based on a
@@ -10,19 +13,21 @@ staff have limited opportunity to update the database with new records.
 
 ### Summary
 
-The forecasting approach can be summarised as follows:
+The forecasting approach can be summarised as follows; for each simulation:
 
 1. Augment the number of admissions by an assumed level of reporting. This is
-   currently done by
-<div style="text-align:center"> n<sub>aug</sub> = n<sub>reported</sub> / %<sub>reported</sub> </div>
+   currently done by:
+<div> n<sub>aug</sub> = n<sub>reported</sub> / %<sub>reported</sub> </div>
  
-2. Use a log-linear model, parametrised via the doubling time, to simulate
-   epidemic trajectories.
+2. Use a log-linear model, parametrised via the doubling time (drawn from an
+   inverse Gamma distribution, with user-specified mean and coefficient of
+   variation), to simulate future daily admissions trajectories.
 
 3. For each admission, simulate duration of hospitalisation from the
-   length-of-stay distribution.
+   length-of-stay distribution. This is drawn from discretised Weibull
+   distributions matching published results (see below).
 
-4. Count beds for each day and simulation.
+4. Count beds for each day simulation.
 
 
 ### User Inputs
@@ -45,8 +50,8 @@ starting date and count for the forecast are required inputs.
   - Plausible ranges 1.8 - 9.3. See [Muniz-Rodriguez et al 2020](https://www.medrxiv.org/content/10.1101/2020.02.05.20020750v4.full.pdf), [Zhao et al 2020](https://www.medrxiv.org/content/medrxiv/early/2020/02/29/2020.02.26.20028449.full.pdf), [Wu et al 2020](https://www.nature.com/articles/s41591-020-0822-7), [Li et al 2020](https://www.nejm.org/doi/full/10.1056/NEJMoa2001316), [Cheng et al 2020](https://link.springer.com/content/pdf/10.1007/s15010-020-01401-y.pdf) and [Granozio 2020](https://arxiv.org/ftp/arxiv/papers/2003/2003.08661.pdf) for references. 
 * **Uncertainty in doubling time (coefficient of variation)** Since the doubling time is an estimated parameter, it is necessary to incorporate the potential error associated with it. The sampling distribution for the doubling time is an inverse gamma distribution parameterised in terms of the mean doubling time (defined by the user) and the coefficient of variation (i.e. &sigma;/&mu;). The shape and rate parameters of the inverse gamma distribution are calculated by moment matching. 
   - Default: &sigma;/&mu; = 0.1
-* **Number of simulations** to incorporate uncertainty in the duration of stay.
-  - Default: 10 simulated durations of stay per admission
+* **Number of simulations** to incorporate uncertainty in the doubling time and duration of stay.
+  - Default: 10 simulations.
 
 
 
@@ -85,3 +90,36 @@ Jombart et al. "Forecasting critical care bed requirements for COVID-19 patients
 
 Zhou, Fei, et al. "Clinical Course and Risk Factors for Mortality of Adult Inpatients with COVID-19 in Wuhan, China: a Retrospective Cohort Study." _The Lancet_, 2020. <a href="https://doi.org/10.1016/s0140-6736(20)30566-3">doi:10.1016/s0140-6736(20)30566-3</a>.
 
+
+<br>
+<br>
+
+# Getting in touch
+
+## Questions, feature requests, bug reports
+
+The best way to ask questions about the app, ask for new features, or report
+potential bugs is to use the [github issues
+system](https://github.com/thibautjombart/covid19_bed_occupancy/issues). Make
+sure to use labels as appropriate (most useful ones will be: *question*,
+*enhancement*, *bug* and *documentation*.
+
+
+
+## Contact
+
+For other enquiries send an email to <a
+href="mailto:thibautjombart@gmail.com?&subject=bed%20occupancy%20app%20inquiry"
+rel="EMAIL">Thibaut Jombart</a>.
+
+
+
+## Source code
+
+The code is hosted on github at:
+[https://github.com/thibautjombart/covid19_bed_occupancy/](https://github.com/thibautjombart/covid19_bed_occupancy/)
+
+
+
+<br>
+<br>
