@@ -48,7 +48,7 @@ admitsPanel <- function(prefix, tabtitle) {
           min = 10,
           max = 100,
           value = 100,
-          step = 10
+          step = 5
       ),
       sliderInput(
           fmtr("doubling_time"),
@@ -68,7 +68,7 @@ admitsPanel <- function(prefix, tabtitle) {
       ),
       htmlOutput(fmtr("doubling_CI")),
       br(),
-      numericInput(
+      sliderInput(
           fmtr("simulation_duration"),
           "Forecast period (days):",
           min = 1,
@@ -76,13 +76,13 @@ admitsPanel <- function(prefix, tabtitle) {
           value = 7,
           step = 1
       ),
-      numericInput(
+      sliderInput(
           fmtr("number_simulations"),
           "Number of simulations:",
-          min = 1,
+          min = 10,
           max = 100,
           value = 10,
-          step = 5
+          step = 10
       ),
   actionButton(fmtr("run"), "Run model", icon("play")), 
   ),
