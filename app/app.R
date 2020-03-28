@@ -42,7 +42,7 @@ admitsPanel <- function(prefix, tabtitle) {
           max = 10000,
           value = 1
       ),
-      numericInput(
+      sliderInput(
           fmtr("assumed_reporting"),
           "Reporting rate (%):",
           min = 10,
@@ -50,12 +50,13 @@ admitsPanel <- function(prefix, tabtitle) {
           value = 100,
           step = 10
       ),
-      numericInput(
+      sliderInput(
           fmtr("doubling_time"),
           "Assumed doubling time (days):",
           min = 0.5,
           max = 10,
-          value = 5
+          value = 5, 
+          step = 0.1
       ),
       sliderInput(
           fmtr("uncertainty_doubling_time"),
@@ -63,7 +64,7 @@ admitsPanel <- function(prefix, tabtitle) {
           min = 0,
           max = 0.5,
           value = 0.1,
-          step = 0.05
+          step = 0.01
       ),
       htmlOutput(fmtr("doubling_CI")),
       br(),
