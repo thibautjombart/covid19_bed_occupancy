@@ -12,7 +12,7 @@ testing.
 
 ## Acknowledgements (original method)
 
-The named authors (TJ, ESN, MJ, OLPDW, GMK, RME, AJK, CABP, WJE) had the following sources of funding: 
+The named authors (TJ, ESN, MJ, OLPDW, GMK, RME, AJK, CABP, SRP, WJE) had the following sources of funding: 
 
 TJ receives funding from the Global Challenges Research Fund (GCRF) project 'RECAP' managed through RCUK and ESRC (ES/P010873/1), the UK Public Health Rapid Support Team funded by the United Kingdom Department of Health and Social Care and from the National Institute for Health Research (NIHR) - Health Protection Research Unit for Modelling Methodology. ESN receives funding from the Bill and Melinda Gates Foundation (grant number: OPP1183986). MJ receives funding from the Bill and Melinda Gates foundation (grant number: INV-003174) and the NIHR (grant numbers: 16/137/109 and HPRU-2012-10096). SRP receives funding  from the Bill and Melinda Gates Foundation (grant number: OPP1180644). RME receives funding from HDR UK (grant number: MR/S003975/1). SF is supported by a Sir Henry Dale Fellowship jointly funded by the Wellcome Trust and the Royal Society (Grant number 208812/Z/17/Z). AJK receives funding from the Wellcome Trust (grant number: 206250/Z/17/Z). GMK was supported by a fellowship from the UK Medical Research Council (MR/P014658/1).
 
@@ -27,7 +27,7 @@ In alphabetic order:
 * TJ performed the analyses.
 * ESN, TJ reviewed code.
 * ESN, TJ wrote the first draft of the manuscript.
-* GMK, AJK, CP, ESN, JE, MJ, OLPDW, RE, SF, TJ contributed to the manuscript.
+* GMK, AJK, CP, ESN, JE, MJ, OLPDW, RE, SF, SRP, TJ contributed to the manuscript.
 
 ### COVID-19 Working Group
 
