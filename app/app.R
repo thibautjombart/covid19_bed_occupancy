@@ -182,14 +182,14 @@ server <- function(input, output) {
   ## main plot: predictions of bed occupancy
   output$gen_over_plot <- output$gen_main_plot <- renderPlot({
     plot_beds(genbeds(),
-    ribbon_color = lshtm_grey,
+    ribbon_color = slider_color,
     palette = cmmid_pal,
     title = "Non-critical care bed occupancy")
   }, width = 600)
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
     plot_beds(icubeds(),
-    ribbon_color = lshtm_grey,
+    ribbon_color = slider_color,
     palette = cmmid_pal,
     title = "Critical care bed occupancy")
   }, width = 600)

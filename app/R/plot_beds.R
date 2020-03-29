@@ -34,6 +34,7 @@ plot_beds <- function(x, title = NULL, ...) {
     ggplot2::theme(legend.position = "bottom") +
     large_txt +
     ggplot2::scale_x_date(date_label = "%d %b %y") +
+    ggplot2::scale_y_continuous(breaks = int_breaks, limits = c(0, NA)) + 
     rotate_x +
     ggplot2::labs(title = title,
                   x = NULL,
