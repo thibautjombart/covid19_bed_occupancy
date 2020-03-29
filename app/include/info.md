@@ -11,6 +11,11 @@ if it is considered plausible that some hospitalised cases may not have their
 data reported. This may occur, for example, if admission rates are high and
 staff have limited opportunity to update the database with new records.
 
+
+Bed occupancies for non-critical care and critical care are modelled separately
+(see caveats).
+
+
 ### Summary
 
 The forecasting approach can be summarised as follows; for each simulation:
@@ -82,6 +87,10 @@ take this into account when interpreting a forecast.
 * Default distributions for the duration of stay will not be appropriate in all
   settings and this fact should be considered before drawing conclusions.
 
+* The bed occupancy in non-critical and critial wards are modelled
+  independently, so that there is no interplay between the two. Fruther
+  refinements of the model are looking at incorporating patient movements
+  between non-critical and critical care wards.
 
 
 ## References
