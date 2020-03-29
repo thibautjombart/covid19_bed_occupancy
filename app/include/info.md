@@ -3,17 +3,25 @@
 
 ## Model Description
 
-This app implements a model to forecast COVID19 bed requirements based on a
-starting point of admissions on a given date, a user-inputted epidemic growth
-rate, and an assumed distribution of length of stay after admission. This
-forecast can be adjusted to accommodate a certain assumed reporting percentage,
+This app can be used to forecast COVID-19 bed requirements for up to 21 days in
+a given location (e.g. a healthcare facility, a county, a state). Data on a
+number of reported admissions on a given date are used to define the starting
+point of the model. Future admissions are simulated using an exponential model
+and length of hospital stay for each new admitted patient is simulated using
+pre-specified distributions, depending on the type of hospitalisation (critical
+or non-critical care).
+
+Forecast can be adjusted to accommodate a certain assumed reporting percentage,
 if it is considered plausible that some hospitalised cases may not have their
 data reported. This may occur, for example, if admission rates are high and
 staff have limited opportunity to update the database with new records.
-
-
 Bed occupancies for non-critical care and critical care are modelled separately
 (see caveats).
+
+This app generalises a model used for predicting COVID-19 critical care bed requirements in
+England introduced in 
+[this post](https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html).
+
 
 
 ### Summary

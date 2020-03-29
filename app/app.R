@@ -35,6 +35,8 @@ admitsPanel <- function(prefix, tabtitle) {
   tabPanel(tabtitle, sidebarLayout(position = "left",
   sidebarPanel(
       chooseSliderSkin("Shiny", color = slider_color),
+      actionButton(fmtr("run"), "Run model", icon("play"),
+                   style = "align:right"),
       h2("Starting conditions", style = sprintf("color:%s", cmmid_color)),
       p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting refers to the % of admissions notified.",
         style = sprintf("color:%s", annot_color)),
@@ -56,6 +58,7 @@ admitsPanel <- function(prefix, tabtitle) {
           value = 100,
           step = 5
       ),
+      br(),
       h2("Model parameters", style = sprintf("color:%s", cmmid_color)),
       p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. Use more simulations to account for uncertainty in doubling time and length of hospital stay.",
         style = sprintf("color:%s", annot_color)),
@@ -93,9 +96,10 @@ admitsPanel <- function(prefix, tabtitle) {
           value = 30,
           step = 10
       ),
-  actionButton(fmtr("run"), "Run model", icon("play")), 
   ),
   mainPanel(
+      includeMarkdown("include/heading_box.md"),
+      br(),
       plotOutput(fmtr("main_plot"), width = "60%", height = "400px"),
       br(),
       checkboxInput(fmtr("show_los"), "Show duration of hospitalisation", FALSE),
@@ -123,8 +127,8 @@ ui <- navbarPage(
   windowTitle = app_title,
   theme = "styling.css",
   position="fixed-top", collapsible = TRUE,
-  admitsPanel(prefix="gen_", tabtitle="General"),
-  admitsPanel(prefix="icu_", tabtitle="ICU"),
+  admitsPanel(prefix = "gen_", tabtitle = "Non-critical care"),
+  admitsPanel(prefix = "icu_", tabtitle = "Critical care"),
   tabPanel("Overall", mainPanel(
     plotOutput("gen_over_plot"),
     br(),

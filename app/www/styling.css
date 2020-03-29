@@ -71,3 +71,23 @@ hr { margin:5px; border-top: 1px solid grey; }
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
+
+.heading_box {
+  margin-top: 0px;
+  margin-bottom: 20px;
+  padding: 20px 20px 15px 20px;
+  border: 1px solid #A7A8AA;
+  width: 70%;
+  box-shadow: 1px 1px 2px 2px #A7A8AA;
+  border-radius: 5px;
+}
+.heading_box p {
+  font-size: 16px;
+  font-color: #69716F;
+  line-height: 1;
+  margin: 0 0 6px;
+}
+.heading_box strong {
+  color: #0D5257;
+  margin: 0 0 10px;
+}
