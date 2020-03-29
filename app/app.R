@@ -90,7 +90,7 @@ admitsPanel <- function(prefix, tabtitle) {
           "Number of simulations:",
           min = 10,
           max = 100,
-          value = 10,
+          value = 30,
           step = 10
       ),
   actionButton(fmtr("run"), "Run model", icon("play")), 
@@ -184,14 +184,14 @@ server <- function(input, output) {
     plot_beds(genbeds(),
     ribbon_color = lshtm_grey,
     palette = cmmid_pal,
-    title = "Normal hospital bed utilisation")
+    title = "Non-critical care bed occupancy")
   }, width = 600)
   
   output$icu_over_plot <- output$icu_main_plot <- renderPlot({
     plot_beds(icubeds(),
     ribbon_color = lshtm_grey,
     palette = cmmid_pal,
-    title = "ICU bed utilisation")
+    title = "Critical care bed occupancy")
   }, width = 600)
 
   output$icu_doubling_CI <- reactive({
