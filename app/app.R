@@ -13,12 +13,14 @@ for (e in R_files) source(e, local = TRUE)
 
 ## load required packages
 library(shiny)
+library(shinyWidgets)
 library(incidence)
 library(projections)
 library(distcrete)
 library(ggplot2)
 library(invgamma)
 library(markdown)
+
 
 ## global variables
 app_title   <- "Hospital Bed Occupancy Projections"
@@ -32,6 +34,10 @@ admitsPanel <- function(prefix, tabtitle) {
   return(
   tabPanel(tabtitle, sidebarLayout(position = "left",
   sidebarPanel(
+      chooseSliderSkin("Shiny", color = slider_color),
+      h2("Starting conditions", style = sprintf("color:%s", cmmid_color)),
+      p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting refers to the % of admissions notified.",
+        style = sprintf("color:%s", annot_color)),
       dateInput(
           fmtr("admission_date"),
           "Date of admission:"),
@@ -50,6 +56,9 @@ admitsPanel <- function(prefix, tabtitle) {
           value = 100,
           step = 5
       ),
+      h2("Model parameters", style = sprintf("color:%s", cmmid_color)),
+      p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. Use more simulations to account for uncertainty in doubling time and length of hospital stay.",
+        style = sprintf("color:%s", annot_color)),
       sliderInput(
           fmtr("doubling_time"),
           "Assumed doubling time (days):",

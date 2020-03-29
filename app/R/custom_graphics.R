@@ -52,6 +52,8 @@ add_ribbon <- function(x, proj, ci = 0.95) {
 # color choices
 cmmid_color <- "#0D5257"
 lshtm_grey  <- "#A7A8AA"
+annot_color <- "#738E87"
+slider_color <- "#89C5B7"
 
 cmmid_pal <- function(n){
   
