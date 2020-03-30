@@ -1,3 +1,4 @@
+[![DOI](https://zenodo.org/badge/249441528.svg)](https://zenodo.org/badge/latestdoi/249441528)
 
 
 ## App
