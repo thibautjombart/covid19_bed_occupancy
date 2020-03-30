@@ -3,13 +3,14 @@
 
 ## App
 
-To start the app, start R in the `app/` folder and type:
+To start the app, download this repository, start R in the `app/` folder, and type:
 
 ```r
 shiny::runApp("app.R")
 ```
 
-
+Alternatively, you can use the online version of the app at:
+https://cmmid-lshtm.shinyapps.io/hospital_bed_occupancy_projections/
 
 
 ## Model
