@@ -26,32 +26,42 @@ library(markdown)
 app_title   <- "Hospital Bed Occupancy Projections"
 
 
-admitsPanel <- function(prefix, tabtitle) {
-  fmtr = function(inputId) {
-    sprintf("%s%s", prefix, inputId)
+admitsPanel <- function(prefixes, tabtitle) {
+  fmtr = function(inputId, ind) {
+    sprintf("%s%s", prefixes[ind], inputId)
   }
   
   return(
   tabPanel(tabtitle, sidebarLayout(position = "left",
   sidebarPanel(
       chooseSliderSkin("Shiny", color = slider_color),
-      actionButton(fmtr("run"), "Run model", icon("play"),
-                   style = "align:right"),
+      actionButton("run", "Run model", icon("play"), style = "align:right"),
+      
       h2("Starting conditions", style = sprintf("color:%s", cmmid_color)),
-      p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting refers to the % of admissions notified.",
+      
+      p("Data inputs specifying the starting point of the forecast:
+        a number of new COVID-19 admissions on a given date at the location considered.
+        Reporting refers to the % of admissions notified.",
         style = sprintf("color:%s", annot_color)),
       dateInput(
-          fmtr("admission_date"),
+          "admission_date",
           "Date of admission:"),
       numericInput(
-          fmtr("number_admissions"),
-          "Number of admissions on that date:",
+          fmtr("number_admissions", 1),
+          "Regular admissions that day:",
           min = 1,
           max = 10000,
           value = 1
       ),
+      numericInput(
+        fmtr("number_admissions", 2),
+        "ICU admissions that day:",
+        min = 1,
+        max = 10000,
+        value = 1
+      ),
       sliderInput(
-          fmtr("assumed_reporting"),
+          "assumed_reporting",
           "Reporting rate (%):",
           min = 10,
           max = 100,
@@ -63,7 +73,7 @@ admitsPanel <- function(prefix, tabtitle) {
       p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. Use more simulations to account for uncertainty in doubling time and length of hospital stay.",
         style = sprintf("color:%s", annot_color)),
       sliderInput(
-          fmtr("doubling_time"),
+          "doubling_time",
           "Assumed doubling time (days):",
           min = 0.5,
           max = 10,
@@ -71,17 +81,17 @@ admitsPanel <- function(prefix, tabtitle) {
           step = 0.1
       ),
       sliderInput(
-          fmtr("uncertainty_doubling_time"),
+          "uncertainty_doubling_time",
           "Uncertainty in doubling time (coefficient of variation):",
           min = 0,
           max = 0.5,
           value = 0.1,
           step = 0.01
       ),
-      htmlOutput(fmtr("doubling_CI")),
+      htmlOutput("doubling_CI"),
       br(),
       sliderInput(
-          fmtr("simulation_duration"),
+          "simulation_duration",
           "Forecast period (days):",
           min = 1,
           max = 21,
@@ -89,7 +99,7 @@ admitsPanel <- function(prefix, tabtitle) {
           step = 1
       ),
       sliderInput(
-          fmtr("number_simulations"),
+          "number_simulations",
           "Number of simulations:",
           min = 10,
           max = 100,
@@ -100,17 +110,20 @@ admitsPanel <- function(prefix, tabtitle) {
   mainPanel(
       includeMarkdown("include/heading_box.md"),
       br(),
-      plotOutput(fmtr("main_plot"), width = "60%", height = "400px"),
+      plotOutput(fmtr("main_plot", 1), width = "60%", height = "400px"), 
+      plotOutput(fmtr("main_plot", 2), width = "60%", height = "400px"),
       br(),
-      checkboxInput(fmtr("show_los"), "Show duration of hospitalisation", FALSE),
+      checkboxInput("show_los", "Show length-of-stay distributions?", FALSE),
       conditionalPanel(
-          condition = sprintf("input.%s == true", fmtr("show_los")),
-          plotOutput(fmtr("los_plot"), width = "30%", height = "300px")
+          condition = sprintf("input.%s == true", "show_los"),
+          plotOutput(fmtr("los_plot",1), width = "30%", height = "300px"),
+          plotOutput(fmtr("los_plot",2), width = "30%", height = "300px")
       ),
-      checkboxInput(fmtr("show_table"), "Show summary table", FALSE),
+      checkboxInput("show_table", "Show summary tables?", FALSE),
       conditionalPanel(
-          condition = sprintf("input.%s == true", fmtr("show_table")),
-          DT::dataTableOutput(fmtr("main_table"), width = "50%")
+          condition = sprintf("input.%s == true", "show_table"),
+          DT::dataTableOutput(fmtr("main_table",1), width = "50%"),
+          DT::dataTableOutput(fmtr("main_table",2), width = "50%")
       ),
       
   )
@@ -127,8 +140,8 @@ ui <- navbarPage(
   windowTitle = app_title,
   theme = "styling.css",
   position="fixed-top", collapsible = TRUE,
-  admitsPanel(prefix = "gen_", tabtitle = "Non-critical care"),
-  admitsPanel(prefix = "icu_", tabtitle = "Critical care"),
+  admitsPanel(prefixes = c("gen_","icu_"), tabtitle = "Forecasts"),
+#  admitsPanel(prefix = "icu_", tabtitle = "Critical care"),
   tabPanel("Overall", mainPanel(
     plotOutput("gen_over_plot"),
     br(),
@@ -158,27 +171,24 @@ server <- function(input, output) {
     los_critical, "Duration of ICU hospitalisation"
   ), width = 600)
   
-  genpars <- eventReactive(input$gen_run, list(
-    date = input$gen_admission_date,
-    n_start = as.integer(input$gen_number_admissions),
-    doubling = r_doubling(n = input$gen_number_simulations,
-                          mean = input$gen_doubling_time,
-                          cv = input$gen_uncertainty_doubling_time),
-    duration = input$gen_simulation_duration,
-    reporting = input$gen_assumed_reporting / 100,
-    r_los = los_normal$r
-  ), ignoreNULL = FALSE)
+  sharedpars <- reactive(list(
+    date = input$admission_date,
+    doubling = r_doubling(n = input$number_simulations,
+                          mean = input$doubling_time,
+                          cv = input$uncertainty_doubling_time),
+    duration = input$simulation_duration,
+    reporting = input$assumed_reporting / 100
+  ))
   
-  icupars <- eventReactive(input$icu_run, list(
-    date = input$icu_admission_date,
+  genpars <- eventReactive(input$run, c(list(
+    n_start = as.integer(input$gen_number_admissions),
+    r_los = los_normal$r
+  ), sharedpars()), ignoreNULL = FALSE)
+  
+  icupars <- eventReactive(input$run, c(list(
     n_start = as.integer(input$icu_number_admissions),
-    doubling = r_doubling(n = input$icu_number_simulations,
-                          mean = input$icu_doubling_time,
-                          cv = input$icu_uncertainty_doubling_time),
-    duration = input$icu_simulation_duration,
-    reporting = input$icu_assumed_reporting / 100,
     r_los = los_critical$r
-  ), ignoreNULL = FALSE)
+  ), sharedpars()), ignoreNULL = FALSE)
   
   genbeds <- reactive(do.call(run_model, genpars()))
   icubeds <- reactive(do.call(run_model, icupars()))
@@ -198,16 +208,9 @@ server <- function(input, output) {
     title = "Critical care bed occupancy")
   }, width = 600)
 
-  output$icu_doubling_CI <- reactive({
-    q <- q_doubling(mean = input$icu_doubling_time, 
-                    cv   = input$icu_uncertainty_doubling_time,
-                    p = c(0.025, 0.975))
-    sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
-  })
-  
-  output$gen_doubling_CI <- reactive({
-    q <- q_doubling(mean = input$gen_doubling_time, 
-                    cv   = input$gen_uncertainty_doubling_time,
+  output$doubling_CI <- reactive({
+    q <- q_doubling(mean = input$doubling_time, 
+                    cv   = input$uncertainty_doubling_time,
                     p = c(0.025, 0.975))
     sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
   })
