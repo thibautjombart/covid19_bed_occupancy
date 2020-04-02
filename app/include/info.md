@@ -76,9 +76,9 @@ href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3
 et al., 2020</a>:
 
 
-* Long-stay: discretised Weibull (shape: 2, scale: 13) targeting a median of 11
+* Non-critical hospitalisation: discretised Weibull (shape: 2, scale: 13) targeting a median of 11
     days, IQR 7-14
-* Short-stay: discretised Weibull (shape: 2, scale: 10) targeting a median of 8
+* Critical hospitalisation: discretised Weibull (shape: 2, scale: 10) targeting a median of 8
     days, IQR 4-12
 
 These distributions may not be appropriate in some settings, and the user should
