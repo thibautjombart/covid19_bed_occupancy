@@ -113,12 +113,6 @@ admitsPanel <- function(prefixes, tabtitle) {
       plotOutput(fmtr("main_plot", 1), width = "60%", height = "400px"), 
       plotOutput(fmtr("main_plot", 2), width = "60%", height = "400px"),
       br(),
-      checkboxInput("show_los", "Show length-of-stay distributions?", FALSE),
-      conditionalPanel(
-          condition = sprintf("input.%s == true", "show_los"),
-          plotOutput(fmtr("los_plot",1), width = "30%", height = "300px"),
-          plotOutput(fmtr("los_plot",2), width = "30%", height = "300px")
-      ),
       checkboxInput("show_table", "Show summary tables?", FALSE),
       conditionalPanel(
           condition = sprintf("input.%s == true", "show_table"),
@@ -142,12 +136,10 @@ ui <- navbarPage(
   position="fixed-top", collapsible = TRUE,
   admitsPanel(prefixes = c("gen_","icu_"), tabtitle = "Forecasts"),
 #  admitsPanel(prefix = "icu_", tabtitle = "Critical care"),
-  tabPanel("Overall", mainPanel(
-    plotOutput("gen_over_plot"),
-    br(),
-    plotOutput("icu_over_plot"),
-    style="padding-bottom: 40px;"
-  )),
+  tabPanel("Length of Stay Distributions",
+    plotOutput("gen_los_plot", width = "30%", height = "300px"),
+    plotOutput("icu_los_plot", width = "30%", height = "300px")
+  ),
   tabPanel("Information", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
                      includeMarkdown("include/info.md"))),
