@@ -15,3 +15,13 @@ los_normal <- distcrete::distcrete("weibull", shape = 2, scale = 13, w = 0, inte
 
 ## los_critical for critical care
 los_critical <- distcrete::distcrete("weibull", shape = 2, scale = 10, w = 0, interval = 1)
+
+
+## customised version: user defined mean and CV
+los_gamma <- function(mean, cv) {
+  params <- epitrix::gamma_mucv2shapescale(mean, cv)
+  distcrete::distcrete("gamma",
+                       shape = params$shape,
+                       scale = params$scale,
+                       w = 0, interval = 1)
+}
