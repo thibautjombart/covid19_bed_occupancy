@@ -42,7 +42,7 @@ admitsPanel <- function(prefixes, tabtitle) {
       
       p("Data inputs specifying the starting point of the forecast:
         a number of new COVID-19 admissions on a given date at the location considered.
-        Reporting refers to the % of admissions notified.",
+        Reporting rate refers to the % of COVID-19 admissions reported as such.",
         style = sprintf("color:%s", annot_color)),
       dateInput(
           "admission_date",
@@ -125,7 +125,8 @@ admitsPanel <- function(prefixes, tabtitle) {
               min = 0,
               max = 2,
               value = 0.1,
-              step = .01)
+              step = .01),
+          htmlOutput("los_CI"),
       )
   ),
   mainPanel(
@@ -235,6 +236,13 @@ server <- function(input, output) {
                     cv   = input$uncertainty_doubling_time,
                     p = c(0.025, 0.975))
     sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
+  })
+  
+  output$los_CI <- reactive({
+    q <- q_los(mean = input$mean_los, 
+               cv   = input$cv_los,
+               p = c(0.025, 0.975))
+    sprintf("<b>LoS 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
   })
   
   ## summary tables
