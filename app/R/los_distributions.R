@@ -15,3 +15,24 @@ los_normal <- distcrete::distcrete("weibull", shape = 2, scale = 13, w = 0, inte
 
 ## los_critical for critical care
 los_critical <- distcrete::distcrete("weibull", shape = 2, scale = 10, w = 0, interval = 1)
+
+
+## Customised version: user defined mean and CV
+## we want to avoid having 0 days LoS, so what we do is actually:
+## - generate a discretised Gamma with (mean - 1)
+## - add 1 to simulated LoS
+los_gamma <- function(mean, cv) {
+  params <- epitrix::gamma_mucv2shapescale(mean - 1, cv)
+  auxil <- distcrete::distcrete("gamma",
+                                shape = params$shape,
+                                scale = params$scale,
+                                w = 0.5, interval = 1)
+  r <- function(n) auxil$r(n) + 1
+  d <- function(x) {
+    out <- auxil$d(x - 1)
+    out[x < 1] <- 0
+    out
+  }
+
+  list(r = r, d = d)
+}

@@ -66,7 +66,7 @@ starting date and count for the forecast are required inputs.
 * **Number of simulations** to incorporate uncertainty in the doubling time and duration of stay.
   - Default: 10 simulations.
 
-
+ 
 
 ### Pre-set model parameters
 
@@ -84,7 +84,7 @@ et al., 2020</a>:
 These distributions may not be appropriate in some settings, and the user should
 take this into account when interpreting a forecast.
 
-
+Optionally, users may decide to provide custom parameters for the length of stay distribution. The custom length of stay is specified by a discretised gamma distribution whose parameters are obtained by moment matching with the mean and coefficient of variation. 
 
 ## Caveats
 

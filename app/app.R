@@ -17,6 +17,7 @@ library(shinyWidgets)
 library(incidence)
 library(projections)
 library(distcrete)
+library(epitrix)
 library(ggplot2)
 library(invgamma)
 library(markdown)
@@ -41,7 +42,7 @@ admitsPanel <- function(prefixes, tabtitle) {
       
       p("Data inputs specifying the starting point of the forecast:
         a number of new COVID-19 admissions on a given date at the location considered.
-        Reporting refers to the % of admissions notified.",
+        Reporting rate refers to the % of COVID-19 admissions reported as such.",
         style = sprintf("color:%s", annot_color)),
       dateInput(
           "admission_date",
@@ -106,6 +107,27 @@ admitsPanel <- function(prefixes, tabtitle) {
           value = 30,
           step = 10
       ),
+      ## Custom LoS distribution
+      ## Discretised Gamma param as mean and cv
+      checkboxInput("custom_los", "Specify length of stay (LoS)?", FALSE),
+      conditionalPanel(
+          condition = sprintf("input.%s == true", "custom_los"),
+          sliderInput(
+              "mean_los",
+              "Average LoS (in days)",
+              min = 1,
+              max = 20,
+              value = 7,
+              step = .1),
+          sliderInput(
+              "cv_los",
+              "Coefficient of variation",
+              min = 0,
+              max = 2,
+              value = 0.1,
+              step = .01),
+          htmlOutput("los_CI"),
+      )
   ),
   mainPanel(
       includeMarkdown("include/heading_box.md"),
@@ -135,7 +157,6 @@ ui <- navbarPage(
   theme = "styling.css",
   position="fixed-top", collapsible = TRUE,
   admitsPanel(prefixes = c("gen_","icu_"), tabtitle = "Forecasts"),
-#  admitsPanel(prefix = "icu_", tabtitle = "Critical care"),
   tabPanel("Length of Stay Distributions",
     plotOutput("gen_los_plot", width = "30%", height = "300px"),
     plotOutput("icu_los_plot", width = "30%", height = "300px")
@@ -152,9 +173,19 @@ ui <- navbarPage(
 
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
+
+  ## generate custom LoS if needed
+  ## this can be used elsewhere using `custom_los()`
+  custom_los <- reactive({
+    if (input$custom_los) {
+      los_gamma(mean = input$mean_los,
+                cv = input$cv_los)
+    } else {
+      NULL
+    }
+  })
   
   ## graphs for the distributions of length of hospital stay (LoS)
-
   output$gen_los_plot <- renderPlot(plot_distribution(
     los_normal, "Duration of normal hospitalisation"
   ), width = 600)
@@ -205,6 +236,13 @@ server <- function(input, output) {
                     cv   = input$uncertainty_doubling_time,
                     p = c(0.025, 0.975))
     sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
+  })
+  
+  output$los_CI <- reactive({
+    q <- q_los(mean = input$mean_los, 
+               cv   = input$cv_los,
+               p = c(0.025, 0.975))
+    sprintf("<b>LoS 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
   })
   
   ## summary tables
