@@ -27,7 +27,7 @@ library(linelist)
 
 ## global variables
 app_title   <- "Hospital Bed Occupancy Projections   "
-
+url_template <- "https://github.com/thibautjombart/covid19_bed_occupancy/blob/master/app/extra/data_model.xlsx?raw=true"
 
 
 ##############
@@ -92,18 +92,30 @@ ui <- navbarPage(
             ),
             conditionalPanel(
               condition = sprintf("input.data_source == 'multiple'"),
+              div(
+                strong("1. Download our data template"),
+                HTML(
+                  sprintf("<a href='%s'>here</a>.",
+                          url_template)
+                )
+              ),
+              div(
+                strong(
+                  "2. Enter your data into the template, save as a new file."
+                )
+              ),
               fileInput("data_file",
-                        "Choose data file (.xlsx/.xls/.csv)",
+                        "3. Upload this file here (.xlsx/.xls)",
                         multiple = FALSE,
-                        accept = c(".xlsx", ".xls", ".csv"))
-            ),
-            sliderInput(
-              "assumed_reporting",
-              "Reporting rate (%):",
-              min = 10,
-              max = 100,
-              value = 100,
-              step = 5
+                        accept = c(".xlsx", ".xls")),
+              sliderInput(
+                "assumed_reporting",
+                "Reporting rate (%):",
+                min = 10,
+                max = 100,
+                value = 100,
+                step = 5
+              )
             )
           ),
           
