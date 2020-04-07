@@ -29,20 +29,20 @@
 #'
 #' @examples
 #' 
-#' ## make toy duration of hospitalisation (exponential distribution)
+#' ## make toy duration of hospitalisation (geometric distribution)
 #' r_duration <- function(n = 1) rgeom(n, .2) + 2
-
-## dates <- Sys.Date() - 1:3
-## admissions <- c(17, 15, 3)
-
-##  x <- run_model(dates,
-##                 admissions,
-##                 doubling = c(4.5, 5.1, 6, 4.8),
-##                 duration = 14,
-##                 r_los = r_duration,
-##                 n_sim = 10)
-##  x
-##  plot(x)
+#'
+#' dates <- Sys.Date() - 1:3
+#' admissions <- c(17, 15, 3)
+#'
+#' x <- run_model(dates,
+#'                admissions,
+#'                doubling = c(4.5, 5.1, 6, 4.8),
+#'                duration = 14,
+#'                r_los = r_duration,
+#'                n_sim = 10)
+#' x
+#' plot(x)
 
 run_model <- function(dates,
                       admissions,
