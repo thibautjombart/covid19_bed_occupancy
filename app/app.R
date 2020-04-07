@@ -58,13 +58,14 @@ ui <- navbarPage(
       
       ## LEFT PANEL: INPUTS
       sidebarPanel(
+        h2("Data and parameter inputs", style = sprintf("color:%s", cmmid_color)),
         tabsetPanel(
           
           ## Data inputs
           tabPanel(
             "Data",
             chooseSliderSkin("Shiny", color = slider_color),
-            h2("Data input", style = sprintf("color:%s", cmmid_color)),
+            h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting rate refers to the % of COVID-19 admissions reported as such.",
               style = sprintf("color:%s", annot_color)),
             dateInput(
@@ -90,9 +91,9 @@ ui <- navbarPage(
           ## LOS inputs
           tabPanel(
             "Duration of hospitalisation",
+            h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients.",
               style = sprintf("color:%s", annot_color)),
-            h3("Duration of hospitalisation"),
             selectInput(
               "los",
               "Length of hospital stay (LoS) distribution",
@@ -125,6 +126,7 @@ ui <- navbarPage(
           ## Epidemic growth inputs
           tabPanel(
             "Growth parameters",
+            h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty.",
               style = sprintf("color:%s", annot_color)),
             sliderInput(
@@ -149,6 +151,7 @@ ui <- navbarPage(
           ## Simulation parameters
           tabPanel(
             "Simulation parameters",
+            h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Parameter inputs specifying the number and durations of the simulations.",
               style = sprintf("color:%s", annot_color)),
             sliderInput(
