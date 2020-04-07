@@ -2,7 +2,8 @@
 ## key points:
 ##  - organized as a navbar page
 ##  - show audience something first: sidebar layouts are all controls-right
-##    which means when viewed on mobile, the plot appears first rather than the controls
+##    which means when viewed on mobile, the plot appears first rather than the
+##    controls
 ##  - the notes markdown is the place to document any long form details.
 
 
@@ -74,10 +75,11 @@ ui <- navbarPage(
         ),
         h2("Model parameters", style = sprintf("color:%s", cmmid_color)),
         p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. Use more simulations to account for uncertainty in doubling time and length of hospital stay.",
-          style = sprintf("color:%s", annot_color)),        
+          style = sprintf("color:%s", annot_color)),
+        h3("Duration of hospitalisation"),
         selectInput(
           "los",
-          "Length of hospital stay",
+          "Length of hospital stay distribution",
           choices = c("Custom" = "custom",
                       "Zhou et al. non-critical" = "zhou_general",
                       "Zhou et al. critical care" = "zhou_critical")
@@ -89,7 +91,7 @@ ui <- navbarPage(
           sliderInput(
             "mean_los",
             "Average LoS (in days)",
-            min = 1,
+            min = 1.1,
             max = 20,
             value = 7,
             step = .1),
@@ -97,11 +99,12 @@ ui <- navbarPage(
             "cv_los",
             "Coefficient of variation",
             min = 0,
-            max = 2,
+            max = 1,
             value = 0.1,
-            step = .01)#,
-          #htmlOutput("los_CI"),
+            step = .01),
+          htmlOutput("los_CI"),
         ),
+        h3("Epidemic growth"),
         sliderInput(
           "doubling_time",
           "Assumed doubling time (days):",
@@ -143,7 +146,7 @@ ui <- navbarPage(
         tabsetPanel(
           tabPanel(
             "Length of Stay Distribution",
-            ##plotOutput("los_plot", width = "30%", height = "300px")
+            plotOutput("los_plot", width = "30%", height = "300px")
             ),
           tabPanel(
             "Main Results",
@@ -186,21 +189,32 @@ server <- function(input, output) {
 
   ## generate custom LoS if needed
   ## this can be used elsewhere using `custom_los()`
-  custom_los <- reactive({
-    if (input$custom_los) {
-      los_gamma(mean = input$mean_los,
-                cv = input$cv_los)
-    } else {
-      NULL
-    }
+  los <- reactive({
+    switch(input$los,
+           custom =  los_gamma(
+             mean = input$mean_los,
+             cv = input$cv_los),
+           zhou_general = los_zhou_general,
+           zhou_critical = los_zhou_critical)
   })
   
   ## graphs for the distributions of length of hospital stay (LoS)
-  output$los_plot <- renderPlot(plot_distribution(
-    los_normal, "Duration of normal hospitalisation"
-  ), width = 600)
+  output$los_plot <- renderPlot(
+    plot_distribution(
+    los(), "Duration of normal hospitalisation"
+    ), width = 600
+  )
+
+  output$doubling_plot <- renderPlot(
+    hist(sharedpars()$doubling)
+    ## plot_distribution(
+    ## los(), "Duration of normal hospitalisation"
+    ## ), width = 600
+  )
+
   
-  sharedpars <- reactive(list(
+  sharedpars <- reactive(
+    list(
     date = input$admission_date,
     doubling = r_doubling(n = input$number_simulations,
                           mean = input$doubling_time,
@@ -209,10 +223,14 @@ server <- function(input, output) {
     reporting = input$assumed_reporting / 100
   ))
   
-  genpars <- eventReactive(input$run, c(list(
-    n_start = as.integer(input$gen_number_admissions),
-    r_los = los_normal$r
-  ), sharedpars()), ignoreNULL = FALSE)
+  genpars <- eventReactive(
+    input$run,
+    c(list(
+      n_start = as.integer(input$gen_number_admissions),
+      r_los = los_normal$r
+    ),
+    sharedpars()
+    ), ignoreNULL = FALSE)
   
   
   genbeds <- reactive(do.call(run_model, genpars()))
