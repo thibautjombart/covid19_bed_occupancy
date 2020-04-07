@@ -180,6 +180,11 @@ ui <- navbarPage(
             plotOutput("los_plot", width = "30%", height = "300px")
           ),
           tabPanel(
+            "Doubling time distribution",
+            br(),
+            plotOutput("doubling_plot", width = "30%", height = "300px")
+          ),
+          tabPanel(
             "Main Results",
             br(),
             actionButton("run", "Generate results", icon("play"), style = "align:right"),
@@ -238,6 +243,12 @@ server <- function(input, output) {
                mean = input$doubling_time,
                cv = input$uncertainty_doubling_time)
   })
+  ## same, but larger sample to plot distribution
+  doubling_large <-  reactive({
+    r_doubling(n = 1e5,
+               mean = input$doubling_time,
+               cv = input$uncertainty_doubling_time)
+  })
 
 
   ## main results
@@ -257,10 +268,17 @@ server <- function(input, output) {
 
 
   ## PLOTS  
-  ## graphs for the distributions of length of hospital stay (LoS)
+  ## graph for the distribution of length of hospital stay (LoS)
   output$los_plot <- renderPlot(
     plot_los_distribution(
       los(), "Duration of hospitalisation"
+    ), width = 600
+  )
+
+  ## graph for the distribution of length of hospital stay (LoS)
+  output$doubling_plot <- renderPlot(
+    plot_doubling_distribution(
+      doubling_large(), "Doubling time distribution"
     ), width = 600
   )
 
