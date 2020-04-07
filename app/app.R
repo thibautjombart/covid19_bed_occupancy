@@ -42,14 +42,23 @@ ui <- navbarPage(
   ),
   windowTitle = app_title,
   theme = "styling.css",
-  position="fixed-top", collapsible = TRUE,
+  position="fixed-top",
+  collapsible = TRUE,
+  
+  ## WELCOME PANEL
+  tabPanel("Welcome", 
+           fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
+                     includeMarkdown("include/heading_box.md"))),
+
+  ## MAIN SIMULATOR PANEL
   tabPanel(
     "Simulator",
     sidebarLayout(
       position = "left",
+      
+      ## INPUT SUB-PANEL
       sidebarPanel(
         chooseSliderSkin("Shiny", color = slider_color),
-        actionButton("run", "Run model", icon("play"), style = "align:right"),
         h2("Data input", style = sprintf("color:%s", cmmid_color)),
         p("Data inputs specifying the starting point of the forecast:
         a number of new COVID-19 admissions on a given date at the location considered.
@@ -140,16 +149,21 @@ ui <- navbarPage(
           step = 10
         )
       ),
-      ## OUTPUT PANEL
+      
+      ## OUTPUT SUB-PANEL
       mainPanel(
-        includeMarkdown("include/heading_box.md"),
         tabsetPanel(
           tabPanel(
             "Length of Stay Distribution",
+            br(),
             plotOutput("los_plot", width = "30%", height = "300px")
             ),
           tabPanel(
             "Main Results",
+            br(),
+            actionButton("run", "Generate results", icon("play"), style = "align:right"),
+            br(),
+            br(),
             plotOutput("main_plot", width = "30%", height = "300px"),
             checkboxInput("show_table", "Show summary tables?", FALSE),
             conditionalPanel(
@@ -160,11 +174,12 @@ ui <- navbarPage(
       )        
     )
   ),
+  
   ## PANEL WITH MODEL INFO
   tabPanel("Information", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
                      includeMarkdown("include/info.md"))),
-  ## ACKNOWLEDGEMENTS
+  ## ACKNOWLEDGEMENTS PANEL
   tabPanel("Acknowledgements", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
                      includeMarkdown("include/ack.md")))
@@ -264,6 +279,14 @@ server <- function(input, output) {
   })
 
 }
+
+
+
+
+
+#################
+## RUN THE APP ##
+#################
 
 ## Run the application 
 shinyApp(ui = ui, server = server)
