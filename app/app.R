@@ -49,7 +49,7 @@ ui <- navbarPage(
       sidebarPanel(
         chooseSliderSkin("Shiny", color = slider_color),
         actionButton("run", "Run model", icon("play"), style = "align:right"),
-        h2("Starting conditions", style = sprintf("color:%s", cmmid_color)),
+        h2("Data input", style = sprintf("color:%s", cmmid_color)),
         p("Data inputs specifying the starting point of the forecast:
         a number of new COVID-19 admissions on a given date at the location considered.
         Reporting rate refers to the % of COVID-19 admissions reported as such.",
@@ -72,10 +72,36 @@ ui <- navbarPage(
           value = 100,
           step = 5
         ),
-        br(),
         h2("Model parameters", style = sprintf("color:%s", cmmid_color)),
         p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. Use more simulations to account for uncertainty in doubling time and length of hospital stay.",
-          style = sprintf("color:%s", annot_color)),
+          style = sprintf("color:%s", annot_color)),        
+        selectInput(
+          "los",
+          "Length of hospital stay",
+          choices = c("Custom" = "custom",
+                      "Zhou et al. non-critical" = "zhou_general",
+                      "Zhou et al. critical care" = "zhou_critical")
+        ),
+        ## Custom LoS distribution
+        ## Discretised Gamma param as mean and cv
+        conditionalPanel(
+          condition = "input.los == 'custom'",
+          sliderInput(
+            "mean_los",
+            "Average LoS (in days)",
+            min = 1,
+            max = 20,
+            value = 7,
+            step = .1),
+          sliderInput(
+            "cv_los",
+            "Coefficient of variation",
+            min = 0,
+            max = 2,
+            value = 0.1,
+            step = .01)#,
+          #htmlOutput("los_CI"),
+        ),
         sliderInput(
           "doubling_time",
           "Assumed doubling time (days):",
@@ -109,39 +135,20 @@ ui <- navbarPage(
           max = 100,
           value = 30,
           step = 10
-        ),
-        ## Custom LoS distribution
-        ## Discretised Gamma param as mean and cv
-        checkboxInput("custom_los", "Specify length of stay (LoS)?", FALSE),
-        conditionalPanel(
-          condition = sprintf("input.%s == true", "custom_los"),
-          sliderInput(
-            "mean_los",
-            "Average LoS (in days)",
-            min = 1,
-            max = 20,
-            value = 7,
-            step = .1),
-          sliderInput(
-            "cv_los",
-            "Coefficient of variation",
-            min = 0,
-            max = 2,
-            value = 0.1,
-            step = .01),
-          htmlOutput("los_CI"),
-          )
+        )
       ),
       ## OUTPUT PANEL
       mainPanel(
         includeMarkdown("include/heading_box.md"),
         tabsetPanel(
-          tabPanel("Length of Stay Distribution",
-                   ##plotOutput("los_plot", width = "30%", height = "300px")
-                   ),
-          tabPanel("Main Results",
-                   ##plotOutput("los_plot", width = "30%", height = "300px")
-                   )
+          tabPanel(
+            "Length of Stay Distribution",
+            ##plotOutput("los_plot", width = "30%", height = "300px")
+            ),
+          tabPanel(
+            "Main Results",
+            ##plotOutput("los_plot", width = "30%", height = "300px")
+            )
         )
         
         
