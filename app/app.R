@@ -59,7 +59,7 @@ ui <- navbarPage(
           "admission_date",
           "Date of admission:"),
         numericInput(
-          "number_admissions",
+          "n_admissions",
           "Regular admissions that day:",
           min = 1,
           max = 10000,
@@ -150,7 +150,7 @@ ui <- navbarPage(
             ),
           tabPanel(
             "Main Results",
-            ##plotOutput("los_plot", width = "30%", height = "300px")
+            plotOutput("main_plot", width = "30%", height = "300px")
             )
         )
         
@@ -187,8 +187,9 @@ ui <- navbarPage(
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
 
-  ## generate custom LoS if needed
-  ## this can be used elsewhere using `custom_los()`
+  ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
+
+  ## length of stay (returns a `distcrete` object)
   los <- reactive({
     switch(input$los,
            custom =  los_gamma(
@@ -197,47 +198,44 @@ server <- function(input, output) {
            zhou_general = los_zhou_general,
            zhou_critical = los_zhou_critical)
   })
-  
+
+  ## doubling time (returns a vector or r values)
+  doubling <-  reactive({
+    r_doubling(n = input$number_simulations,
+               mean = input$doubling_time,
+               cv = input$uncertainty_doubling_time)
+  })
+
+
+  ## main results
+  results <- eventReactive(
+    input$run,
+    run_model(
+      date_start = input$admission_date,
+      n_start = as.integer(input$n_admissions),
+      doubling = doubling(),
+      duration = input$simulation_duration,
+      r_los = los()$r,
+      reporting = input$assumed_reporting / 100,
+      n_sim = input$number_simulations),
+    ignoreNULL = FALSE
+  )
+
+
+
+  ## PLOTS  
   ## graphs for the distributions of length of hospital stay (LoS)
   output$los_plot <- renderPlot(
     plot_distribution(
-    los(), "Duration of normal hospitalisation"
+    los(), "Duration of hospitalisation"
     ), width = 600
   )
 
-  output$doubling_plot <- renderPlot(
-    hist(sharedpars()$doubling)
-    ## plot_distribution(
-    ## los(), "Duration of normal hospitalisation"
-    ## ), width = 600
-  )
-
   
-  sharedpars <- reactive(
-    list(
-    date = input$admission_date,
-    doubling = r_doubling(n = input$number_simulations,
-                          mean = input$doubling_time,
-                          cv = input$uncertainty_doubling_time),
-    duration = input$simulation_duration,
-    reporting = input$assumed_reporting / 100
-  ))
-  
-  genpars <- eventReactive(
-    input$run,
-    c(list(
-      n_start = as.integer(input$gen_number_admissions),
-      r_los = los_normal$r
-    ),
-    sharedpars()
-    ), ignoreNULL = FALSE)
-  
-  
-  genbeds <- reactive(do.call(run_model, genpars()))
   
   ## main plot: predictions of bed occupancy
-  output$gen_over_plot <- output$gen_main_plot <- renderPlot({
-    plot_beds(genbeds(),
+  output$main_plot <- renderPlot({
+    plot_beds(results(),
               ribbon_color = slider_color,
               palette = cmmid_pal,
               title = "Predicted bed occupancy")

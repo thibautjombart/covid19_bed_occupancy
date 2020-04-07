@@ -9,9 +9,9 @@
 #' 
 
 plot_distribution <- function(los, title = NULL) {
-  min_days <- max(0, los$q(0.001) - 1)
-  max_days <- max(1, los$q(.999) + 1)
-  days     <- 0:max_days
+  min_days <- max(1, los$q(0.001) - 1)
+  max_days <- max(1, los$q(.999) + 2)
+  days     <- min_days:max_days
   dat      <- data.frame(days = days,
                          y    = los$d(days))
   
