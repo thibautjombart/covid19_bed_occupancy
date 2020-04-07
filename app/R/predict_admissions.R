@@ -36,14 +36,17 @@ predict_admissions <- function(date_start,
                                reporting = 1) {
 
   ## Sanity checks
-  if (!is.finite(n_start)) stop("`n_start` is not a number")
-  if (n_start < 1) stop("`n_start` must be >= 1")
+  if (length(date_start) != 1L) stop("`date_start` must contain exactly one number")
+  if (length(n_start) != 1L) stop("`n_start` must contain exactly one number")
+  if (!all(is.finite(n_start))) stop("`n_start` is not a number")
+  if (any(n_start < 1)) stop("`n_start` must be >= 1")
 
   if (!all(is.finite(doubling))) stop("`doubling` is not a number")
 
   if (!is.finite(duration)) stop("`duration` is not a number")
   if (duration < 1) stop("`duration` must be >= 1")
 
+  if (length(reporting) != 1L) stop("`reporting` must contain exactly one value")
   if (!is.finite(reporting)) stop("`reporting` is not a number")
   if (reporting <= 0) stop("`reporting` must be > 0")
   if (reporting > 1) stop("`reporting` must be <= 1")

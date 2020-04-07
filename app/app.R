@@ -22,6 +22,7 @@ library(epitrix)
 library(ggplot2)
 library(invgamma)
 library(markdown)
+library(linelist)
 
 
 ## global variables
@@ -254,7 +255,7 @@ server <- function(input, output) {
       data.frame(date = input$admission_date,
                  n_admissions = as.integer(input$n_admissions))
     } else {
-      x <- rio::import(input$data_file$datapath)
+      x <- rio::import(input$data_file$datapath, guess_max = 1e5)
       names(x) <- c("date", "n_admissions")
       x
     }
@@ -289,8 +290,8 @@ server <- function(input, output) {
   results <- eventReactive(
     input$run,
     run_model(
-      date_start = data()$date,
-      n_start = data()$n_admissions,
+      dates = data()$date,
+      admissions = data()$n_admissions,
       doubling = doubling(),
       duration = input$simulation_duration,
       r_los = los()$r,
