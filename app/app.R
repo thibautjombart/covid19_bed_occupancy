@@ -259,7 +259,7 @@ server <- function(input, output) {
   ## PLOTS  
   ## graphs for the distributions of length of hospital stay (LoS)
   output$los_plot <- renderPlot(
-    plot_distribution(
+    plot_los_distribution(
       los(), "Duration of hospitalisation"
     ), width = 600
   )

@@ -8,7 +8,7 @@
 #' @author Sam Clifford
 #' 
 
-plot_distribution <- function(los, title = NULL) {
+plot_los_distribution <- function(los, title = NULL) {
   min_days <- max(1, los$q(0.001) - 1)
   max_days <- max(1, los$q(.999) + 2)
   days     <- min_days:max_days
