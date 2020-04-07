@@ -68,15 +68,33 @@ ui <- navbarPage(
             h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting rate refers to the % of COVID-19 admissions reported as such.",
               style = sprintf("color:%s", annot_color)),
-            dateInput(
-              "admission_date",
-              "Date of admission:"),
-            numericInput(
-              "n_admissions",
-              "Regular admissions that day:",
-              min = 1,
-              max = 10000,
-              value = 1
+            radioButtons(
+              "data_source",
+              "How do you want to enter data",
+              choices = c(
+                "Admissions on a single day" = "single",
+                "Upload data for multiple days" = "multiple"
+              )
+            ),
+            conditionalPanel(
+              condition = sprintf("input.data_source == 'single'"),
+              dateInput(
+                "admission_date",
+                "Date of admission:"),
+              numericInput(
+                "n_admissions",
+                "New admissions that day:",
+                min = 1,
+                max = 10000,
+                value = 1
+              )
+            ),
+            conditionalPanel(
+              condition = sprintf("input.data_source == 'multiple'"),
+              fileInput("data_file",
+                        "Choose data file (.xlsx/.xls/.csv)",
+                        multiple = FALSE,
+                        accept = c(".xlsx", ".xls", ".csv"))
             ),
             sliderInput(
               "assumed_reporting",
@@ -230,6 +248,19 @@ server <- function(input, output) {
 
   ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
 
+  ## data
+  data <- reactive({
+    if (input$data_source == "single") {
+      data.frame(date = input$admission_date,
+                 n_admissions = as.integer(input$n_admissions))
+    } else {
+      x <- rio::import(input$data_file$datapath)
+      names(x) <- c("date", "n_admissions")
+      x
+    }
+  })
+
+  
   ## length of stay (returns a `distcrete` object)
   los <- reactive({
     switch(input$los,
@@ -258,8 +289,8 @@ server <- function(input, output) {
   results <- eventReactive(
     input$run,
     run_model(
-      date_start = input$admission_date,
-      n_start = as.integer(input$n_admissions),
+      date_start = data()$date,
+      n_start = data()$n_admissions,
       doubling = doubling(),
       duration = input$simulation_duration,
       r_los = los()$r,
