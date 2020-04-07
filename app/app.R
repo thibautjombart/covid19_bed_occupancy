@@ -102,7 +102,7 @@ ui <- navbarPage(
             max = 1,
             value = 0.1,
             step = .01),
-          htmlOutput("los_CI"),
+          htmlOutput("los_ci"),
         ),
         h3("Epidemic growth"),
         sliderInput(
@@ -121,7 +121,7 @@ ui <- navbarPage(
           value = 0.1,
           step = 0.01
         ),
-        htmlOutput("doubling_CI"),
+        htmlOutput("doubling_ci"),
         br(),
         sliderInput(
           "simulation_duration",
@@ -150,19 +150,13 @@ ui <- navbarPage(
             ),
           tabPanel(
             "Main Results",
-            plotOutput("main_plot", width = "30%", height = "300px")
-            )
+            plotOutput("main_plot", width = "30%", height = "300px"),
+            checkboxInput("show_table", "Show summary tables?", FALSE),
+            conditionalPanel(
+              condition = sprintf("input.show_table == true"),
+              DT::dataTableOutput("main_table", width = "50%"))
+          )
         )
-        
-        
-        ## ## br(),
-        ## ## plotOutput("main_plot", width = "60%", height = "400px"), 
-        ## ## br(),
-        ## ## checkboxInput("show_table", "Show summary tables?", FALSE),
-        ## ## conditionalPanel(
-        ## ##   condition = sprintf("input.%s == true", "show_table"),
-        ## ##   DT::dataTableOutput("main_table", width = "50%"))
-        ## tabPanel("Length of Stay Distributions")
       )        
     )
   ),
@@ -232,7 +226,6 @@ server <- function(input, output) {
   )
 
   
-  
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
     plot_beds(results(),
@@ -242,25 +235,34 @@ server <- function(input, output) {
   }, width = 600)
   
 
-  output$doubling_CI <- reactive({
-    q <- q_doubling(mean = input$doubling_time, 
-                    cv   = input$uncertainty_doubling_time,
-                    p = c(0.025, 0.975))
-    sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
-  })
+
+  ## TABLES
   
-  output$los_CI <- reactive({
+  ## summary tables
+  output$main_table <- DT::renderDataTable({
+    summarise_beds(results())
+  })
+
+
+  
+  ## OTHERS
+
+  ## confidence interval for length of stay
+  output$los_ci <- reactive({
     q <- q_los(mean = input$mean_los, 
                cv   = input$cv_los,
                p = c(0.025, 0.975))
     sprintf("<b>LoS 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
   })
-  
-  ## summary tables
-  output$gen_main_table <- DT::renderDataTable({
-    summarise_beds(genbeds())
+
+  ## confidence interval for doubling time 
+  output$doubling_ci <- reactive({
+    q <- q_doubling(mean = input$doubling_time, 
+                    cv   = input$uncertainty_doubling_time,
+                    p = c(0.025, 0.975))
+    sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
   })
-  
+
 }
 
 ## Run the application 
