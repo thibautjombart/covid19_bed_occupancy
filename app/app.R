@@ -134,7 +134,7 @@ ui <- navbarPage(
               sliderInput(
                 "cv_los",
                 "Coefficient of variation",
-                min = 0,
+                min = 0.1,
                 max = 1,
                 value = 0.1,
                 step = .01),

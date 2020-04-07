@@ -31,7 +31,7 @@
 #' 
 #' ## make toy duration of hospitalisation (geometric distribution)
 #' r_duration <- function(n = 1) rgeom(n, .2) + 2
-#'
+x#'
 #' dates <- Sys.Date() - 1:3
 #' admissions <- c(17, 15, 3)
 #'

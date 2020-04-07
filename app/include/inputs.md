@@ -9,9 +9,10 @@ of hospitalisations. If only this data is provided, the model will project bed
 occupancy for **new admissions only**, i.e. **not accounting for cases admitted
 before the starting point**.
 
-* **Date of the reference**: defaults to current day
-* **Number of admissions on that date**: number of new admissions on the data of
-  reference; defaults to 1
+* **Date of admission**: date of admission, provided using the format
+  *yyyy-mm-dd*; defaults to current day
+* **Number of admissions on that date**: number of new admissions on the date
+  provided; defaults to 1
 * **Assumed reporting level (%)**: the proportion of admissions reported;
   defaults to 100%, i.e. all admissions reported
 
