@@ -43,20 +43,105 @@ ui <- navbarPage(
   theme = "styling.css",
   position="fixed-top", collapsible = TRUE,
   tabPanel(
-    "tabtitle",
+    "Simulator",
     sidebarLayout(
       position = "left",
-      sidebarPanel(),
+      sidebarPanel(
+        chooseSliderSkin("Shiny", color = slider_color),
+        actionButton("run", "Run model", icon("play"), style = "align:right"),
+        h2("Starting conditions", style = sprintf("color:%s", cmmid_color)),
+        p("Data inputs specifying the starting point of the forecast:
+        a number of new COVID-19 admissions on a given date at the location considered.
+        Reporting rate refers to the % of COVID-19 admissions reported as such.",
+        style = sprintf("color:%s", annot_color)),
+        dateInput(
+          "admission_date",
+          "Date of admission:"),
+        numericInput(
+          "number_admissions",
+          "Regular admissions that day:",
+          min = 1,
+          max = 10000,
+          value = 1
+        ),
+        sliderInput(
+          "assumed_reporting",
+          "Reporting rate (%):",
+          min = 10,
+          max = 100,
+          value = 100,
+          step = 5
+        ),
+        br(),
+        h2("Model parameters", style = sprintf("color:%s", cmmid_color)),
+        p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. Use more simulations to account for uncertainty in doubling time and length of hospital stay.",
+          style = sprintf("color:%s", annot_color)),
+        sliderInput(
+          "doubling_time",
+          "Assumed doubling time (days):",
+          min = 0.5,
+          max = 10,
+          value = 5, 
+          step = 0.1
+        ),
+        sliderInput(
+          "uncertainty_doubling_time",
+          "Uncertainty in doubling time (coefficient of variation):",
+          min = 0,
+          max = 0.5,
+          value = 0.1,
+          step = 0.01
+        ),
+        htmlOutput("doubling_CI"),
+        br(),
+        sliderInput(
+          "simulation_duration",
+          "Forecast period (days):",
+          min = 1,
+          max = 21,
+          value = 7,
+          step = 1
+        ),
+        sliderInput(
+          "number_simulations",
+          "Number of simulations:",
+          min = 10,
+          max = 100,
+          value = 30,
+          step = 10
+        ),
+        ## Custom LoS distribution
+        ## Discretised Gamma param as mean and cv
+        checkboxInput("custom_los", "Specify length of stay (LoS)?", FALSE),
+        conditionalPanel(
+          condition = sprintf("input.%s == true", "custom_los"),
+          sliderInput(
+            "mean_los",
+            "Average LoS (in days)",
+            min = 1,
+            max = 20,
+            value = 7,
+            step = .1),
+          sliderInput(
+            "cv_los",
+            "Coefficient of variation",
+            min = 0,
+            max = 2,
+            value = 0.1,
+            step = .01),
+          htmlOutput("los_CI"),
+          )
+      ),
       ## OUTPUT PANEL
       mainPanel(
         includeMarkdown("include/heading_box.md"),
         tabsetPanel(
           tabPanel("Length of Stay Distribution",
                    ##plotOutput("los_plot", width = "30%", height = "300px")
-           ),
+                   ),
           tabPanel("Main Results",
-           ##plotOutput("los_plot", width = "30%", height = "300px")
-           )
+                   ##plotOutput("los_plot", width = "30%", height = "300px")
+                   )
         )
         
         
