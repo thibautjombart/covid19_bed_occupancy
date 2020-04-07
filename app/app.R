@@ -24,127 +24,13 @@ library(markdown)
 
 
 ## global variables
-app_title   <- "Hospital Bed Occupancy Projections"
+app_title   <- "Hospital Bed Occupancy Projections   "
 
 
-admitsPanel <- function(prefixes, tabtitle) {
-  fmtr = function(inputId, ind) {
-    sprintf("%s%s", prefixes[ind], inputId)
-  }
-  
-  return(
-  tabPanel(tabtitle, sidebarLayout(position = "left",
-  sidebarPanel(
-      chooseSliderSkin("Shiny", color = slider_color),
-      actionButton("run", "Run model", icon("play"), style = "align:right"),
-      
-      h2("Starting conditions", style = sprintf("color:%s", cmmid_color)),
-      
-      p("Data inputs specifying the starting point of the forecast:
-        a number of new COVID-19 admissions on a given date at the location considered.
-        Reporting rate refers to the % of COVID-19 admissions reported as such.",
-        style = sprintf("color:%s", annot_color)),
-      dateInput(
-          "admission_date",
-          "Date of admission:"),
-      numericInput(
-          fmtr("number_admissions", 1),
-          "Regular admissions that day:",
-          min = 1,
-          max = 10000,
-          value = 1
-      ),
-      numericInput(
-        fmtr("number_admissions", 2),
-        "ICU admissions that day:",
-        min = 1,
-        max = 10000,
-        value = 1
-      ),
-      sliderInput(
-          "assumed_reporting",
-          "Reporting rate (%):",
-          min = 10,
-          max = 100,
-          value = 100,
-          step = 5
-      ),
-      br(),
-      h2("Model parameters", style = sprintf("color:%s", cmmid_color)),
-      p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. Use more simulations to account for uncertainty in doubling time and length of hospital stay.",
-        style = sprintf("color:%s", annot_color)),
-      sliderInput(
-          "doubling_time",
-          "Assumed doubling time (days):",
-          min = 0.5,
-          max = 10,
-          value = 5, 
-          step = 0.1
-      ),
-      sliderInput(
-          "uncertainty_doubling_time",
-          "Uncertainty in doubling time (coefficient of variation):",
-          min = 0,
-          max = 0.5,
-          value = 0.1,
-          step = 0.01
-      ),
-      htmlOutput("doubling_CI"),
-      br(),
-      sliderInput(
-          "simulation_duration",
-          "Forecast period (days):",
-          min = 1,
-          max = 21,
-          value = 7,
-          step = 1
-      ),
-      sliderInput(
-          "number_simulations",
-          "Number of simulations:",
-          min = 10,
-          max = 100,
-          value = 30,
-          step = 10
-      ),
-      ## Custom LoS distribution
-      ## Discretised Gamma param as mean and cv
-      checkboxInput("custom_los", "Specify length of stay (LoS)?", FALSE),
-      conditionalPanel(
-          condition = sprintf("input.%s == true", "custom_los"),
-          sliderInput(
-              "mean_los",
-              "Average LoS (in days)",
-              min = 1,
-              max = 20,
-              value = 7,
-              step = .1),
-          sliderInput(
-              "cv_los",
-              "Coefficient of variation",
-              min = 0,
-              max = 2,
-              value = 0.1,
-              step = .01),
-          htmlOutput("los_CI"),
-      )
-  ),
-  mainPanel(
-      includeMarkdown("include/heading_box.md"),
-      br(),
-      plotOutput(fmtr("main_plot", 1), width = "60%", height = "400px"), 
-      plotOutput(fmtr("main_plot", 2), width = "60%", height = "400px"),
-      br(),
-      checkboxInput("show_table", "Show summary tables?", FALSE),
-      conditionalPanel(
-          condition = sprintf("input.%s == true", "show_table"),
-          DT::dataTableOutput(fmtr("main_table",1), width = "50%"),
-          DT::dataTableOutput(fmtr("main_table",2), width = "50%")
-      ),
-      
-  )
-  )))
-}
+
+##############
+## GUI SIDE ##
+##############
 
 ## Define UI for application
 ui <- navbarPage(
@@ -156,20 +42,52 @@ ui <- navbarPage(
   windowTitle = app_title,
   theme = "styling.css",
   position="fixed-top", collapsible = TRUE,
-  admitsPanel(prefixes = c("gen_","icu_"), tabtitle = "Forecasts"),
-  tabPanel("Length of Stay Distributions",
-    plotOutput("gen_los_plot", width = "30%", height = "300px"),
-    plotOutput("icu_los_plot", width = "30%", height = "300px")
+  tabPanel(
+    "tabtitle",
+    sidebarLayout(
+      position = "left",
+      sidebarPanel(),
+      ## OUTPUT PANEL
+      mainPanel(
+        includeMarkdown("include/heading_box.md"),
+        tabsetPanel(
+          tabPanel("Length of Stay Distribution",
+                   ##plotOutput("los_plot", width = "30%", height = "300px")
+           ),
+          tabPanel("Main Results",
+           ##plotOutput("los_plot", width = "30%", height = "300px")
+           )
+        )
+        
+        
+        ## ## br(),
+        ## ## plotOutput("main_plot", width = "60%", height = "400px"), 
+        ## ## br(),
+        ## ## checkboxInput("show_table", "Show summary tables?", FALSE),
+        ## ## conditionalPanel(
+        ## ##   condition = sprintf("input.%s == true", "show_table"),
+        ## ##   DT::dataTableOutput("main_table", width = "50%"))
+        ## tabPanel("Length of Stay Distributions")
+      )        
+    )
   ),
+  ## PANEL WITH MODEL INFO
   tabPanel("Information", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
                      includeMarkdown("include/info.md"))),
+  ## ACKNOWLEDGEMENTS
   tabPanel("Acknowledgements", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
                      includeMarkdown("include/ack.md")))
-  
-
 )
+
+
+
+
+
+#################
+## SERVER SIDE ##
+#################
 
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
@@ -186,12 +104,8 @@ server <- function(input, output) {
   })
   
   ## graphs for the distributions of length of hospital stay (LoS)
-  output$gen_los_plot <- renderPlot(plot_distribution(
+  output$los_plot <- renderPlot(plot_distribution(
     los_normal, "Duration of normal hospitalisation"
-  ), width = 600)
-
-  output$icu_los_plot <- renderPlot(plot_distribution(
-    los_critical, "Duration of ICU hospitalisation"
   ), width = 600)
   
   sharedpars <- reactive(list(
@@ -208,28 +122,17 @@ server <- function(input, output) {
     r_los = los_normal$r
   ), sharedpars()), ignoreNULL = FALSE)
   
-  icupars <- eventReactive(input$run, c(list(
-    n_start = as.integer(input$icu_number_admissions),
-    r_los = los_critical$r
-  ), sharedpars()), ignoreNULL = FALSE)
   
   genbeds <- reactive(do.call(run_model, genpars()))
-  icubeds <- reactive(do.call(run_model, icupars()))
   
   ## main plot: predictions of bed occupancy
   output$gen_over_plot <- output$gen_main_plot <- renderPlot({
     plot_beds(genbeds(),
-    ribbon_color = slider_color,
-    palette = cmmid_pal,
-    title = "Non-critical care bed occupancy")
+              ribbon_color = slider_color,
+              palette = cmmid_pal,
+              title = "Predicted bed occupancy")
   }, width = 600)
   
-  output$icu_over_plot <- output$icu_main_plot <- renderPlot({
-    plot_beds(icubeds(),
-    ribbon_color = slider_color,
-    palette = cmmid_pal,
-    title = "Critical care bed occupancy")
-  }, width = 600)
 
   output$doubling_CI <- reactive({
     q <- q_doubling(mean = input$doubling_time, 
@@ -249,10 +152,6 @@ server <- function(input, output) {
   output$gen_main_table <- DT::renderDataTable({
     summarise_beds(genbeds())
   })
-  output$icu_main_table <- DT::renderDataTable({
-    summarise_beds(icubeds())
-  })
-
   
 }
 
