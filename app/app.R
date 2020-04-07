@@ -90,12 +90,12 @@ ui <- navbarPage(
           ## LOS inputs
           tabPanel(
             "Duration of hospitalisation",
-            p("Parameter inputs specifying the distribution of the length of hospital stay for COVID-19 patients.",
+            p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients.",
               style = sprintf("color:%s", annot_color)),
             h3("Duration of hospitalisation"),
             selectInput(
               "los",
-              "Length of hospital stay distribution",
+              "Length of hospital stay (LoS) distribution",
               choices = c("Custom" = "custom",
                           "Zhou et al. non-critical care" = "zhou_general",
                           "Zhou et al. critical care" = "zhou_critical")
