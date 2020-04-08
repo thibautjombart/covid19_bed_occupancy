@@ -4,10 +4,10 @@
 #' admissions.
 #'
 #' 
-#' @param date_start A single `Date` used as a starting point to model future
-#'   COVID-19 admissions
+#' @param dates A `Date` object indicating the dates of COVID-19 admissions.
 #'
-#' @param n_start The number of COVID-19 admissions reported on `date_start`
+#' @param admissions An `integer` vector indicating the number of COVID-19
+#'   admissions reported on dates `dates`.
 #'
 #' @param doubling The doubling time, in days.
 #'
@@ -29,11 +29,14 @@
 #'
 #' @examples
 #' 
-#' ## make toy duration of hospitalisation (exponential distribution)
-#' r_duration <- function(n = 1) rexp(n, .2)
+#' ## make toy duration of hospitalisation (geometric distribution)
+#' r_duration <- function(n = 1) rgeom(n, .2) + 2
 #'
-#' x <- run_model(Sys.Date(),
-#'                n_start = 66,
+#' dates <- Sys.Date() - 1:3
+#' admissions <- c(17, 15, 3)
+#'
+#' x <- run_model(dates,
+#'                admissions,
 #'                doubling = c(4.5, 5.1, 6, 4.8),
 #'                duration = 14,
 #'                r_los = r_duration,
@@ -41,20 +44,64 @@
 #' x
 #' plot(x)
 
-run_model <- function(date_start,
-                      n_start,
+run_model <- function(dates,
+                      admissions,
                       doubling,
                       duration,
                       r_los,
                       reporting = 1,
                       n_sim = 1) {
+  ## check input
+  n <- length(dates)
+  if (n != length(admissions)) {
+    msg <- "`dates` and `admissions` have different length"
+    stop(msg)
+  }
+  if (n == 0L) {
+    msg <- "`dates` is empty"
+    stop(msg)
+  }
+  if (any(!is.finite(admissions))) {
+    msg <- "some `admissions` are missing"
+    stop(msg)
+  }
+  
+  
+  ## order data
+  dates <- linelist::guess_dates(dates,
+                                 error_tolerance = 1,
+                                 first_date = "2019-03-01",
+                                 last_date = "3000-01-01")
+  if (any(!is.finite(dates))) {
+    msg <- "some `dates` are missing / invalid"
+    stop(msg)
+  }
 
-  ## get projected admissions
-  proj_admissions <- predict_admissions(date_start = date_start,
-                                        n_start = n_start,
+  ord <- order(dates)
+  dates <- dates[ord]
+  admissions <- admissions[ord]
+  last_date <- dates[n]
+  last_admissions <- admissions[n]
+  
+  
+  ## get projected admissions from the most recent date
+  proj_admissions <- predict_admissions(date_start = last_date,
+                                        n_start = last_admissions,
                                         doubling = doubling,
                                         duration = duration,
                                         reporting = reporting)
+
+  ## add previous admission data
+  if (n > 1) {
+    previous_admissions <- projections::build_projections(
+      x = admissions[-n],
+      dates = dates[-n]
+    )
+    proj_admissions <- projections::merge_add_projections(
+      list(previous_admissions,
+           proj_admissions)
+    )
+  }
 
   ## get daily bed needs predictions for each simulated trajectory of admissions
   proj_dates <- projections::get_dates(proj_admissions)

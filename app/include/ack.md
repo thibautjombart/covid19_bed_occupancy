@@ -14,7 +14,7 @@ testing.
 
 The named authors (TJ, ESN, MJ, OLPDW, GMK, RME, AJK, CABP, SRP, WJE) had the following sources of funding: 
 
-TJ receives funding from the Global Challenges Research Fund (GCRF) project 'RECAP' managed through RCUK and ESRC (ES/P010873/1), the UK Public Health Rapid Support Team funded by the United Kingdom Department of Health and Social Care and from the National Institute for Health Research (NIHR) - Health Protection Research Unit for Modelling Methodology. ESN receives funding from the Bill and Melinda Gates Foundation (grant number: OPP1183986). MJ receives funding from the Bill and Melinda Gates foundation (grant number: INV-003174) and the NIHR (grant numbers: 16/137/109 and HPRU-2012-10096). SRP receives funding  from the Bill and Melinda Gates Foundation (grant number: OPP1180644). RME receives funding from HDR UK (grant number: MR/S003975/1). SF is supported by a Sir Henry Dale Fellowship jointly funded by the Wellcome Trust and the Royal Society (Grant number 208812/Z/17/Z). AJK receives funding from the Wellcome Trust (grant number: 206250/Z/17/Z). GMK was supported by a fellowship from the UK Medical Research Council (MR/P014658/1).
+TJ receives funding from the Global Challenges Research Fund (GCRF) project 'RECAP' managed through RCUK and ESRC (ES/P010873/1), the UK Public Health Rapid Support Team funded by the United Kingdom Department of Health and Social Care and from the National Institute for Health Research (NIHR) - Health Protection Research Unit for Modelling Methodology. ESN receives funding from the Bill and Melinda Gates Foundation (grant number: OPP1183986). MJ receives funding from the Bill and Melinda Gates foundation (grant number: INV-003174) and the NIHR (grant numbers: 16/137/109 and HPRU-2012-10096). SRP receives funding  from the Bill and Melinda Gates Foundation (grant number: OPP1180644). RME receives funding from HDR UK (grant number: MR/S003975/1). SF is supported by a Sir Henry Dale Fellowship jointly funded by the Wellcome Trust and the Royal Society (Grant number 208812/Z/17/Z). AJK receives funding from the Wellcome Trust (grant number: 206250/Z/17/Z). GMK was supported by a fellowship from the UK Medical Research Council (MR/P014658/1). CABP gratefully acknowledges funding of the NTD Modelling Consortium by the Bill and Melinda Gates Foundation (OPP1184344).
 
 The UK Public Health Rapid Support Team is funded by UK aid from the Department of Health and Social Care and is jointly run by Public Health England and the London School of Hygiene & Tropical Medicine. The University of Oxford and King's College London are academic partners. The views expressed in this publication are those of the authors and not necessarily those of the National Health Service, the National Institute for Health Research or the Department of Health and Social Care.
 
@@ -27,7 +27,7 @@ In alphabetic order:
 * TJ performed the analyses.
 * ESN, TJ reviewed code.
 * ESN, TJ wrote the first draft of the manuscript.
-* GMK, AJK, CP, ESN, JE, MJ, OLPDW, RE, SF, SRP, TJ contributed to the manuscript.
+* GMK, AJK, CABP, ESN, JE, MJ, OLPDW, RE, SF, SRP, TJ contributed to the manuscript.
 
 ### COVID-19 Working Group
 

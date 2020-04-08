@@ -11,10 +11,10 @@
 
 ## los = "length of stay"
 ## los_normal for non critical care hospitalisation
-los_normal <- distcrete::distcrete("weibull", shape = 2, scale = 13, w = 0, interval = 1)
+los_zhou_general <- distcrete::distcrete("weibull", shape = 2, scale = 13, w = 0, interval = 1)
 
 ## los_critical for critical care
-los_critical <- distcrete::distcrete("weibull", shape = 2, scale = 10, w = 0, interval = 1)
+los_zhou_critical <- distcrete::distcrete("weibull", shape = 2, scale = 10, w = 0, interval = 1)
 
 
 ## Customised version: user defined mean and CV
@@ -33,6 +33,9 @@ los_gamma <- function(mean, cv) {
     out[x < 1] <- 0
     out
   }
+  q <- function(x) {
+    1 + auxil$q(x)
+  }
 
-  list(r = r, d = d)
+  list(r = r, d = d, q = q)
 }
