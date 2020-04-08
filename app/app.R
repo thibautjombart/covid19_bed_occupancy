@@ -64,7 +64,7 @@ ui <- navbarPage(
           
           ## Data inputs
           tabPanel(
-            "Data",
+            "Admission data",
             chooseSliderSkin("Shiny", color = slider_color),
             h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting rate refers to the % of COVID-19 admissions reported as such.",
@@ -121,7 +121,7 @@ ui <- navbarPage(
           
           ## LOS inputs
           tabPanel(
-            "Duration of hospitalisation",
+            "Length of stay in hospital",
             h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients.",
               style = sprintf("color:%s", annot_color)),
@@ -156,7 +156,7 @@ ui <- navbarPage(
 
           ## Epidemic growth inputs
           tabPanel(
-            "Growth parameters",
+            "Epidemic growth parameters",
             h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty.",
               style = sprintf("color:%s", annot_color)),
@@ -181,7 +181,7 @@ ui <- navbarPage(
 
           ## Simulation parameters
           tabPanel(
-            "Simulation parameters",
+            "Duration and number of simulations",
             h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Parameter inputs specifying the number and durations of the simulations.",
               style = sprintf("color:%s", annot_color)),
@@ -209,7 +209,7 @@ ui <- navbarPage(
       mainPanel(
         tabsetPanel(
           tabPanel(
-            "Length of Stay Distribution",
+            "Length of stay distribution",
             br(),
             plotOutput("los_plot", width = "30%", height = "300px")
           ),
@@ -219,7 +219,7 @@ ui <- navbarPage(
             plotOutput("doubling_plot", width = "30%", height = "300px")
           ),
           tabPanel(
-            "Main Results",
+            "Main results",
             br(),
             actionButton("run", "Generate results", icon("play"), style = "align:right"),
             br(),
@@ -321,14 +321,14 @@ server <- function(input, output) {
   ## graph for the distribution of length of hospital stay (LoS)
   output$los_plot <- renderPlot(
     plot_los_distribution(
-      los(), "Duration of hospitalisation"
+      los(), "Length of stay in hospital"
     ), width = 600
   )
 
   ## graph for the distribution of length of hospital stay (LoS)
   output$doubling_plot <- renderPlot(
     plot_doubling_distribution(
-      doubling_large(), "Doubling time distribution"
+      doubling_large(), "Epidemic doubling time"
     ), width = 600
   )
 
@@ -338,7 +338,7 @@ server <- function(input, output) {
     plot_beds(results(),
               ribbon_color = slider_color,
               palette = cmmid_pal,
-              title = "Predicted bed occupancy")
+              title = "Projected bed occupancy")
   }, width = 600)
   
 
