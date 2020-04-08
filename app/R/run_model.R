@@ -61,10 +61,6 @@ run_model <- function(dates,
     msg <- "`dates` is empty"
     stop(msg)
   }
-  if (any(!is.finite(dates))) {
-    msg <- "some `dates` are missing"
-    stop(msg)
-  }
   if (any(!is.finite(admissions))) {
     msg <- "some `admissions` are missing"
     stop(msg)
@@ -72,7 +68,15 @@ run_model <- function(dates,
   
   
   ## order data
-  dates <- linelist::guess_dates(dates)
+  dates <- linelist::guess_dates(dates,
+                                 error_tolerance = 1,
+                                 first_date = "2019-03-01",
+                                 last_date = "3000-01-01")
+  if (any(!is.finite(dates))) {
+    msg <- "some `dates` are missing / invalid"
+    stop(msg)
+  }
+
   ord <- order(dates)
   dates <- dates[ord]
   admissions <- admissions[ord]
