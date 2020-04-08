@@ -147,7 +147,7 @@ ui <- navbarPage(
                 "cv_los",
                 "Coefficient of variation",
                 min = 0.01,
-                max = 1,
+                max = 2,
                 value = 0.1,
                 step = .01),
               htmlOutput("los_ci")
@@ -198,7 +198,7 @@ ui <- navbarPage(
               "Number of simulations:",
               min = 10,
               max = 100,
-              value = 30,
+              value = 10,
               step = 10
             )          
           )
