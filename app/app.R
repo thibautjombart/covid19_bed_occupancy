@@ -269,10 +269,11 @@ server <- function(input, output) {
     if (input$data_source == "single") {
       data.frame(date = input$admission_date,
                  n_admissions = as.integer(input$n_admissions))
+    } else if (length(input$data_file$datapath)) {
+        x <- rio::import(input$data_file$datapath, guess_max = 1e5)
+        x <- check_uploaded_data(x)
     } else {
-      x <- rio::import(input$data_file$datapath, guess_max = 1e5)
-      names(x) <- c("date", "n_admissions")
-      x
+      NULL
     }
   })
 
@@ -304,6 +305,7 @@ server <- function(input, output) {
   ## main results
   results <- eventReactive(
     input$run,
+    if (!is.null(data())) {
     run_model(
       dates = data()$date,
       admissions = data()$n_admissions,
@@ -311,7 +313,10 @@ server <- function(input, output) {
       duration = input$simulation_duration,
       r_los = los()$r,
       reporting = input$assumed_reporting / 100,
-      n_sim = input$number_simulations),
+      n_sim = input$number_simulations)
+    } else {
+      NULL
+    },
     ignoreNULL = FALSE
   )
 

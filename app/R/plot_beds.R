@@ -27,6 +27,10 @@
 #' plot_beds(beds)
 
 plot_beds <- function(x, title = NULL, ...) {
+  if (is.null(x)) {
+    return(NULL)
+  }
+  
   plot(x,
        quantiles = c(.025, .5),
        ribbon = TRUE, ...) +
