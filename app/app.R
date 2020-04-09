@@ -123,7 +123,7 @@ ui <- navbarPage(
           tabPanel(
             "Length of stay in hospital",
             h4("Description", style = sprintf("color:%s", cmmid_color)),
-            p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients.",
+            p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients. See the 'Inputs' tab for details on these distributions.",
               style = sprintf("color:%s", annot_color)),
             selectInput(
               "los",
@@ -158,7 +158,7 @@ ui <- navbarPage(
           tabPanel(
             "Epidemic growth parameters",
             h4("Description", style = sprintf("color:%s", cmmid_color)),
-            p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty.",
+            p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. See the 'Inputs' tab for details on the doubling time distribution.",
               style = sprintf("color:%s", annot_color)),
             sliderInput(
               "doubling_time",
