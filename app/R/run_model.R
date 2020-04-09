@@ -65,6 +65,10 @@ run_model <- function(dates,
     msg <- "some `admissions` are missing"
     stop(msg)
   }
+  if (any(admissions < 1)) {
+    msg <- "all `admissions` must be > 0"
+    stop(msg)
+  }
   
   
   ## order data
