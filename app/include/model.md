@@ -31,9 +31,8 @@ The forecasting approach can be summarised as follows; for each simulation:
    inverse Gamma distribution, with user-specified mean and coefficient of
    variation), to simulate future daily admissions trajectories.
 
-3. For each admission, simulate duration of hospitalisation from the
-   length-of-stay distribution. This is drawn from the chosen distribution (see
-   below: "Duration of hospitalisation").
+3. For each admission, simulate duration of hospitalisation from the specified
+   length-of-stay distribution.
 
 4. Count beds for each day simulation.
 
