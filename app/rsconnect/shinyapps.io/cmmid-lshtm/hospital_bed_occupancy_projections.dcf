@@ -5,8 +5,8 @@ account: cmmid-lshtm
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2008980
-bundleId: 2939505
+bundleId: 2992428
 url: https://cmmid-lshtm.shinyapps.io/hospital_bed_occupancy_projections/
-when: 1585491312.78569
+when: 1586443611.62379
 asMultiple: FALSE
 asStatic: FALSE
