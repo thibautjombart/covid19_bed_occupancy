@@ -39,8 +39,8 @@ To avoid data entry issues, we recommend using our
 ### Duration of hospitalisation
 
 Several options are available to specify the distribution of the length of
-hospital stay (LOS), i.e. the number of days between the admission to a service
-and the discharge. LOS reported in the literature vary widely across countries
+hospital stay (LoS), i.e. the number of days between the admission to a service
+and the discharge. LoS reported in the literature vary widely across countries
 and type of hospitalisation (critical or non-critical), so that we recommend,
 where possible, to use the *custom* distribution adapted to the context of the
 analysis.
@@ -51,7 +51,7 @@ Currently available options are:
   coefficient of variation (i.e. &sigma;/&mu;, which expresses how spread out the
   distribution is relative to its mean). The shape, &alpha;, and rate, &beta;, parameters of
   the gamma distribution are calculated by moment matching (deriving their 
-  values from the values of &mu; and &sigma;). Note that the distribution is generated so that LOS
+  values from the values of &mu; and &sigma;). Note that the distribution is generated so that LoS
   must be positive.
 
 * **Zhou et al non-critical care**: discretised Weibull (shape: 2, scale: 13) targeting a median of 11

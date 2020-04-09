@@ -119,7 +119,7 @@ ui <- navbarPage(
             )
           ),
           
-          ## LOS inputs
+          ## LoS inputs
           tabPanel(
             "Length of stay in hospital",
             h4("Description", style = sprintf("color:%s", cmmid_color)),
