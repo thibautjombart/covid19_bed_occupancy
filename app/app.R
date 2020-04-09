@@ -107,15 +107,15 @@ ui <- navbarPage(
               fileInput("data_file",
                         "3. Upload this file here (.xlsx/.xls)",
                         multiple = FALSE,
-                        accept = c(".xlsx", ".xls")),
-              sliderInput(
-                "assumed_reporting",
-                "Reporting rate (%):",
-                min = 10,
-                max = 100,
-                value = 100,
-                step = 5
-              )
+                        accept = c(".xlsx", ".xls"))
+            ),
+            sliderInput(
+              "assumed_reporting",
+              "Reporting rate (%):",
+              min = 10,
+              max = 100,
+              value = 100,
+              step = 5
             )
           ),
           
