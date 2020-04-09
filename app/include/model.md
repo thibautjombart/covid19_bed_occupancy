@@ -18,7 +18,7 @@ Bed occupancies for non-critical care and critical care are modelled separately
 
 This app generalises a model used for predicting COVID-19 critical care bed requirements in
 England introduced in 
-[this post (1)](https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html).
+[Jombart et al. 2020](https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html).
 
 
 The forecasting approach can be summarised as follows; for each simulation:
@@ -31,14 +31,31 @@ The forecasting approach can be summarised as follows; for each simulation:
    inverse Gamma distribution, with user-specified mean and coefficient of
    variation), to simulate future daily admissions trajectories.
 
-3. For each admission, simulate duration of hospitalisation from the specified
-   length-of-stay distribution.
+3. For each admission, simulate length of stay in hospital from the specified
+   distribution.
 
 4. Count beds for each day simulation.
 
 
 
+## Caveats
+
+* The current model assumes exponential growth. This is generally a reasonable
+  approximation at the beginning of an epidemic however will become less
+  appropriate as growth slows towards the peak.
+
+* User inputted data only contributes to bed requirements and any trend in user
+  data does not impact on the assumed exponential growth from the final time
+  point of data inputted.
+
+* When using distributions for the length of hospital stay (LoS) from published
+  studies, make sure settings are comparable with the context of your
+  analysis. LoS varies widely e.g. across countries, by type of hospitalisation
+  etc.
+
 
 ### References
 
-Jombart et al. "Forecasting critical care bed requirements for COVID-19 patients in England". CMMID post, first online 2020-03-22. https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html
+Jombart et al. 2020 "Forecasting critical care bed requirements for COVID-19 patients
+in England". CMMID post, first online
+2020-03-22. https://cmmid.github.io/topics/covid19/current-patterns-transmission/ICU-projections.html

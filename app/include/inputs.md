@@ -36,7 +36,7 @@ To avoid data entry issues, we recommend using our
 
  
 
-### Duration of hospitalisation
+### Length of hospital stay
 
 Several options are available to specify the distribution of the length of
 hospital stay (LoS), i.e. the number of days between the admission to a service
@@ -85,20 +85,10 @@ Currently available options are:
 
 * **Duration of the forecast**, i.e. how far ahead to predict
   - Default: 7 days
-* **Number of simulations** to incorporate uncertainty in the doubling time and duration of stay.
+* **Number of simulations** to incorporate uncertainty in the doubling time and LoS.
   - Default: 10 simulations.
 
 
-
-
-## Caveats
-
-* The current model assumes exponential growth. This is generally a reasonable
-  approximation at the beginning of an epidemic however will become less
-  appropriate as growth slows towards the peak.
-
-* Default distributions for the duration of stay will not be appropriate in all
-  settings and this fact should be considered before drawing conclusions.
 
 
 ### References
