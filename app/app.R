@@ -50,7 +50,7 @@ ui <- navbarPage(
   tabPanel("Welcome", 
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
                      includeMarkdown("include/heading_box.md"))),
-
+  
   ## MAIN SIMULATOR PANEL
   tabPanel(
     "Simulator",
@@ -136,6 +136,10 @@ ui <- navbarPage(
             ## Discretised Gamma param as mean and cv
             conditionalPanel(
               condition = "input.los == 'custom'",
+              radioButtons(inputId = "los_dist",
+                           label = "Distribution", 
+                           choices = c("gamma", "weibull"),
+                           selected = "gamma"),
               sliderInput(
                 "mean_los",
                 "Average LoS (in days)",
@@ -153,7 +157,7 @@ ui <- navbarPage(
               htmlOutput("los_ci")
             )
           ),
-
+          
           ## Epidemic growth inputs
           tabPanel(
             "Epidemic growth parameters",
@@ -178,7 +182,7 @@ ui <- navbarPage(
             ),
             htmlOutput("doubling_ci")
           ),
-
+          
           ## Simulation parameters
           tabPanel(
             "Duration and number of simulations",
@@ -261,33 +265,34 @@ ui <- navbarPage(
 
 ## Define server logic required to draw a histogram
 server <- function(input, output) {
-
+  
   ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
-
+  
   ## data
   data <- reactive({
     if (input$data_source == "single") {
       data.frame(date = input$admission_date,
                  n_admissions = as.integer(input$n_admissions))
     } else if (length(input$data_file$datapath)) {
-        x <- rio::import(input$data_file$datapath, guess_max = 1e5)
-        x <- check_uploaded_data(x)
+      x <- rio::import(input$data_file$datapath, guess_max = 1e5)
+      x <- check_uploaded_data(x)
     } else {
       NULL
     }
   })
-
+  
   
   ## length of stay (returns a `distcrete` object)
   los <- reactive({
     switch(input$los,
-           custom =  los_gamma(
-             mean = input$mean_los,
-             cv = input$cv_los),
+           custom =  los_dist(
+             distribution          = input$los_dist,
+             mean                  = input$mean_los,
+             cv                    = input$cv_los),
            zhou_general = los_zhou_general,
            zhou_critical = los_zhou_critical)
   })
-
+  
   ## doubling time (returns a vector or r values)
   doubling <-  reactive({
     r_doubling(n = input$number_simulations,
@@ -300,28 +305,28 @@ server <- function(input, output) {
                mean = input$doubling_time,
                cv = input$uncertainty_doubling_time)
   })
-
-
+  
+  
   ## main results
   results <- eventReactive(
     input$run,
     if (!is.null(data())) {
-    run_model(
-      dates = data()$date,
-      admissions = data()$n_admissions,
-      doubling = doubling(),
-      duration = input$simulation_duration,
-      r_los = los()$r,
-      reporting = input$assumed_reporting / 100,
-      n_sim = input$number_simulations)
+      run_model(
+        dates = data()$date,
+        admissions = data()$n_admissions,
+        doubling = doubling(),
+        duration = input$simulation_duration,
+        r_los = los()$r,
+        reporting = input$assumed_reporting / 100,
+        n_sim = input$number_simulations)
     } else {
       NULL
     },
     ignoreNULL = FALSE
   )
-
-
-
+  
+  
+  
   ## PLOTS  
   ## graph for the distribution of length of hospital stay (LoS)
   output$los_plot <- renderPlot(
@@ -329,14 +334,14 @@ server <- function(input, output) {
       los(), "Length of stay in hospital"
     ), width = 600
   )
-
+  
   ## graph for the distribution of length of hospital stay (LoS)
   output$doubling_plot <- renderPlot(
     plot_doubling_distribution(
       doubling_large(), "Epidemic doubling time"
     ), width = 600
   )
-
+  
   
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
@@ -346,27 +351,28 @@ server <- function(input, output) {
               title = "Projected bed occupancy")
   }, width = 600)
   
-
-
+  
+  
   ## TABLES
   
   ## summary tables
   output$main_table <- DT::renderDataTable({
     summarise_beds(results())
   })
-
-
+  
+  
   
   ## OTHERS
-
+  
   ## confidence interval for length of stay
   output$los_ci <- reactive({
-    q <- q_los(mean = input$mean_los, 
+    q <- q_los(distribution = input$los_dist,
+               mean = input$mean_los, 
                cv   = input$cv_los,
                p = c(0.025, 0.975))
     sprintf("<b>LoS 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
   })
-
+  
   ## confidence interval for doubling time 
   output$doubling_ci <- reactive({
     q <- q_doubling(mean = input$doubling_time, 
@@ -374,7 +380,7 @@ server <- function(input, output) {
                     p = c(0.025, 0.975))
     sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
   })
-
+  
 }
 
 

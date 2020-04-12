@@ -16,26 +16,57 @@ los_zhou_general <- distcrete::distcrete("weibull", shape = 2, scale = 13, w = 0
 ## los_critical for critical care
 los_zhou_critical <- distcrete::distcrete("weibull", shape = 2, scale = 10, w = 0, interval = 1)
 
+weibull_k_value <- function(k, cv){ cv^2 - (gamma(1 + 2/k)/gamma(1 + 1/k)^2) + 1  }
+
+weibull_mucv2shapescale <- function(mean, cv){
+  params       <- list(shape = uniroot(f = weibull_k_value, interval = c(0.1, 1000), cv = cv)$root)
+  params$scale <- mean/gamma(1 + 1/params$shape)
+  params
+}
+
 
 ## Customised version: user defined mean and CV
 ## we want to avoid having 0 days LoS, so what we do is actually:
 ## - generate a discretised Gamma with (mean - 1)
 ## - add 1 to simulated LoS
-los_gamma <- function(mean, cv) {
-  params <- epitrix::gamma_mucv2shapescale(mean - 1, cv)
-  auxil <- distcrete::distcrete("gamma",
-                                shape = params$shape,
-                                scale = params$scale,
-                                w = 0.5, interval = 1)
-  r <- function(n) auxil$r(n) + 1
-  d <- function(x) {
-    out <- auxil$d(x - 1)
-    out[x < 1] <- 0
-    out
+los_dist <- function(distribution = "gamma", mean, cv) {
+  
+  if (distribution == "gamma"){
+    params <- epitrix::gamma_mucv2shapescale(mean - 1, cv)
+    auxil <- distcrete::distcrete("gamma",
+                                  shape = params$shape,
+                                  scale = params$scale,
+                                  w = 0.5, interval = 1)
+    r <- function(n) auxil$r(n) + 1
+    d <- function(x) {
+      out <- auxil$d(x - 1)
+      out[x < 1] <- 0
+      out
+    }
+    q <- function(x) {
+      1 + auxil$q(x)
+    }
   }
-  q <- function(x) {
-    1 + auxil$q(x)
+  
+  if (distribution == "weibull"){
+    
+    
+    
+    params <- weibull_mucv2shapescale(mean, cv)
+    auxil <- distcrete::distcrete(distribution,
+                                  shape = params$shape,
+                                  scale = params$scale,
+                                  w = 0, interval = 1)
+    
+    r <- function(n) auxil$r(n)
+    d <- function(x) {
+      auxil$d(x)
+    }
+    q <- function(x) {
+      auxil$q(x)
+    }
+    
   }
-
+  
   list(r = r, d = d, q = q)
 }
