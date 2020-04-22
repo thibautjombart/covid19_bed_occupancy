@@ -369,8 +369,12 @@ server <- function(input, output) {
     q <- q_los(distribution = input$los_dist,
                mean = input$mean_los, 
                cv   = input$cv_los,
-               p = c(0.025, 0.975))
-    sprintf("<b>LoS 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
+               p = c(0.025, 0.5, 0.975))
+    #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
+    sprintf("<b>Median LoS:</b> %0.1f<br>
+            <b>95%% interval</b>: (%0.1f, %0.1f)<br>
+            <b>Distribution:</b> %s(%0.1f, %0.1f)",
+            q$q[2], q$q[1], q$q[3], q$short_name, q$params[1], q$params[2])
   })
   
   ## confidence interval for doubling time 
