@@ -5,11 +5,21 @@
 #' @author Samuel Clifford
 #'
 
-q_los <- function(mean, cv, p=c(0.025, 0.975)) {
+q_los <- function(distribution, mean, cv, p = c(0.025, 0.975)) {
     
     if (cv == 0){return(rep(x = mean, times = length(p)))} else{
-        params <- epitrix::gamma_mucv2shapescale(mean, cv)
-        stats::qgamma(p = p, shape =  params$shape, scale = params$scale)
+        
+        if (distribution == "gamma"){
+            params <- epitrix::gamma_mucv2shapescale(mean, cv)
+            return(stats::qgamma(p = p, shape =  params$shape, scale = params$scale))
+        }
+        
+        if (distribution == "weibull"){
+            params <- weibull_mucv2shapescale(mean, cv)
+            
+            return(stats::qweibull(p = p, shape = params$shape, scale = params$scale))
+        }
+        
     }
     
 }
