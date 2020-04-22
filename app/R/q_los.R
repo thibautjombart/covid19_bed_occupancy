@@ -5,7 +5,7 @@
 #' @author Samuel Clifford
 #'
 
-q_los <- function(distribution, mean, cv, p=c(0.025, 0.975)) {
+q_los <- function(distribution, mean, cv, p = c(0.025, 0.975)) {
     
     if (cv == 0){return(rep(x = mean, times = length(p)))} else{
         

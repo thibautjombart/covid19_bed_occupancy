@@ -56,7 +56,7 @@ los_dist <- function(distribution = "gamma", mean, cv) {
     auxil <- distcrete::distcrete(distribution,
                                   shape = params$shape,
                                   scale = params$scale,
-                                  w = 0, interval = 1)
+                                  w = 0.5, interval = 1)
     
     r <- function(n) auxil$r(n)
     d <- function(x) {
