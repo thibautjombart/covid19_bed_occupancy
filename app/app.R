@@ -381,8 +381,14 @@ server <- function(input, output) {
   output$doubling_ci <- reactive({
     q <- q_doubling(mean = input$doubling_time, 
                     cv   = input$uncertainty_doubling_time,
-                    p = c(0.025, 0.975))
-    sprintf("<b>Doubling time 95%% range:</b> (%0.1f, %0.1f)", q[1], q[2])
+                    p = c(0.025, 0.5, 0.975))
+    
+
+    sprintf("<b>Median doubling time:</b> %0.1f<br>
+            <b>95%% interval:</b> (%0.1f, %0.1f)<br>
+            <b>Distribution:</b> %s(%0.1f, %0.1f)", 
+            q$q[2], q$q[1], q$q[3], q$short_name, q$params[1], q$params[2]
+            )
   })
   
 }
