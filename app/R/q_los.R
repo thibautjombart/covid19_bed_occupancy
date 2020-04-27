@@ -13,17 +13,20 @@ q_los <- function(distribution, mean, cv, p = c(0.025, 0.975)) {
             params <- epitrix::gamma_mucv2shapescale(mean, cv)
             q <- stats::qgamma(p = p, shape =  params$shape, scale = params$scale)
             short_name <- "&Gamma;"
+            params_names <- c("k", "&theta;")
         }
         
         if (distribution == "weibull"){
             params <- weibull_mucv2shapescale(mean, cv)
             q <- stats::qweibull(p = p, shape = params$shape, scale = params$scale)
             short_name <- "W"
+            params_names <- c("k", "&lambda;")
         }
         
     }
     
     return(list(short_name = short_name,
                 q          = q,
-                params     = params))
+                params     = params,
+                params_names = params_names))
 }

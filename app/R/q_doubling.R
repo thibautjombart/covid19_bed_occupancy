@@ -16,9 +16,11 @@ q_doubling <- function(mean, cv, p=c(0.025, 0.975)) {
     }
     
     short_name <- "Inv-&Gamma;"
+    params_names <- c("&alpha;", "&beta;")
     
     return(list(short_name = short_name,
                 q          = q,
-                params     = params))
+                params     = params,
+                params_names = params_names))
     
 }
