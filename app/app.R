@@ -128,35 +128,33 @@ ui <- navbarPage(
             selectInput(
               "los",
               "Length of hospital stay (LoS) distribution",
-              choices = c("Custom" = "custom",
-                          "Zhou et al. non-critical care" = "zhou_general",
-                          "Zhou et al. critical care" = "zhou_critical")
+              choices = unique(los_parameters$name),
+              selected = "Custom"
             ),
             ## Custom LoS distribution
             ## Discretised Gamma param as mean and cv
-            conditionalPanel(
-              condition = "input.los == 'custom'",
-              radioButtons(inputId = "los_dist",
-                           label = "Distribution", 
-                           choices = c("gamma", "weibull"),
-                           selected = "gamma"),
-              sliderInput(
-                "mean_los",
-                "Average LoS (in days)",
-                min = 1.1,
-                max = 20,
-                value = 7,
-                step = .1),
-              sliderInput(
-                "cv_los",
-                "Coefficient of variation",
-                min = 0.01,
-                max = 2,
-                value = 0.1,
-                step = .01),
-              htmlOutput("los_ci")
-            )
-          ),
+            
+            radioButtons(inputId = "los_dist",
+                         label = "Distribution", 
+                         choices = unique(los_parameters$los_dist),
+                         selected = "gamma"),
+            sliderInput(
+              "mean_los",
+              "Average LoS (in days)",
+              min = 1.1,
+              max = 20,
+              value = 7,
+              step = .1),
+            sliderInput(
+              "cv_los",
+              "Coefficient of variation",
+              min = 0.01,
+              max = 2,
+              value = 0.1,
+              step = .01),
+            htmlOutput("los_ci")),
+          
+          
           
           ## Epidemic growth inputs
           tabPanel(
@@ -264,7 +262,30 @@ ui <- navbarPage(
 #################
 
 ## Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  ## SELECTION OF PARAMETERS GIVEN DROP DOWN MENU
+  
+  
+  
+  
+  observe({
+    default=input$los
+    
+    updateSliderInput(session, "mean_los",
+                      value = c(los_parameters[los_parameters$name == default, "mean_los"]))
+    
+    updateSliderInput(session, "cv_los",
+                      value = c(los_parameters[los_parameters$name == default, "cv_los"]))
+    
+    updateRadioButtons(session, "los_dist",
+                       selected = c(los_parameters[los_parameters$name == default, "los_dist"]))
+    
+    
+  }
+  
+  )
+  
   
   ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
   
@@ -284,13 +305,10 @@ server <- function(input, output) {
   
   ## length of stay (returns a `distcrete` object)
   los <- reactive({
-    switch(input$los,
-           custom =  los_dist(
-             distribution          = input$los_dist,
-             mean                  = input$mean_los,
-             cv                    = input$cv_los),
-           zhou_general = los_zhou_general,
-           zhou_critical = los_zhou_critical)
+    los_dist(
+      distribution          = input$los_dist,
+      mean                  = input$mean_los,
+      cv                    = input$cv_los)
   })
   
   ## doubling time (returns a vector or r values)
@@ -373,8 +391,10 @@ server <- function(input, output) {
     #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
     sprintf("<b>Median LoS:</b> %0.1f<br>
             <b>95%% interval</b>: (%0.1f, %0.1f)<br>
-            <b>Distribution:</b> %s(%0.1f, %0.1f)",
-            q$q[2], q$q[1], q$q[3], q$short_name, q$params[1], q$params[2])
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+            q$q[2], q$q[1], q$q[3], q$short_name,
+            q$params_names[1], q$params[1],
+            q$params_names[2], q$params[2])
   })
   
   ## confidence interval for doubling time 
@@ -383,12 +403,13 @@ server <- function(input, output) {
                     cv   = input$uncertainty_doubling_time,
                     p = c(0.025, 0.5, 0.975))
     
-
+    
     sprintf("<b>Median doubling time:</b> %0.1f<br>
             <b>95%% interval:</b> (%0.1f, %0.1f)<br>
-            <b>Distribution:</b> %s(%0.1f, %0.1f)", 
-            q$q[2], q$q[1], q$q[3], q$short_name, q$params[1], q$params[2]
-            )
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+            q$q[2], q$q[1], q$q[3], q$short_name,
+            q$params_names[1], q$params[1],
+            q$params_names[2], q$params[2])
   })
   
 }
