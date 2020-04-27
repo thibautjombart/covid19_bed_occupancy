@@ -147,7 +147,7 @@ ui <- navbarPage(
               step = .1),
             sliderInput(
               "cv_los",
-              "Coefficient of variation",
+              HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
               min = 0.01,
               max = 2,
               value = 0.1,
@@ -164,7 +164,7 @@ ui <- navbarPage(
               style = sprintf("color:%s", annot_color)),
             sliderInput(
               "doubling_time",
-              "Assumed doubling time (days):",
+              "Average doubling time (days):",
               min = 1,
               max = 20,
               value = 7, 
@@ -172,7 +172,7 @@ ui <- navbarPage(
             ),
             sliderInput(
               "uncertainty_doubling_time",
-              "Uncertainty in doubling time (coefficient of variation):",
+              HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
               min = 0,
               max = 0.5,
               value = 0.1,

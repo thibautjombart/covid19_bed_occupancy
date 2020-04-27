@@ -48,8 +48,8 @@ analysis.
 Currently available options are:
 
 * **Custom**: will generate a discretized distribution with specified mean and
-  coefficient of variation (i.e. &sigma;/&mu;, which expresses how spread out the
-  distribution is relative to its mean). The shape and scale parameters of
+  coefficient of variation (i.e. <i>c<sub>v</sub></i> = &sigma;/&mu;, which expresses how spread out the
+  distribution is as a fraction of its mean). The shape and scale parameters of
   the gamma distribution (_k_,  &theta;) or Weibull distribution (_k_,  &lambda;) are calculated by moment matching (deriving their 
   values from the values of &mu; and &sigma;). Note that the distribution is generated so that LoS
   must be positive.
