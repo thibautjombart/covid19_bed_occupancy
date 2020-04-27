@@ -153,9 +153,9 @@ ui <- navbarPage(
                 min = 0.01,
                 max = 2,
                 value = 0.1,
-                step = .01),
-              htmlOutput("los_ci")
-            )
+                step = .01)),
+            htmlOutput("los_ci")
+            
           ),
           
           ## Epidemic growth inputs
