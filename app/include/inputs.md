@@ -47,10 +47,10 @@ analysis.
 
 Currently available options are:
 
-* **Custom**: will generate a discretized gamma distribution with specified mean and
+* **Custom**: will generate a discretized distribution with specified mean and
   coefficient of variation (i.e. &sigma;/&mu;, which expresses how spread out the
-  distribution is relative to its mean). The shape, &alpha;, and rate, &beta;, parameters of
-  the gamma distribution are calculated by moment matching (deriving their 
+  distribution is relative to its mean). The shape and scale parameters of
+  the gamma distribution (_k_,  &theta;) or Weibull distribution (_k_,  &lambda;) are calculated by moment matching (deriving their 
   values from the values of &mu; and &sigma;). Note that the distribution is generated so that LoS
   must be positive.
 
@@ -76,7 +76,7 @@ Currently available options are:
   distribution for the doubling time is an inverse gamma distribution
   parameterised in terms of the mean doubling time (defined by the user) and the
   coefficient of variation (i.e. &sigma;/&mu;) which are then used for moment-matching
-  to determine appropriate values of the distribution's shape and rate parameters.
+  to determine appropriate values of the distribution's shape and rate parameters (&alpha;, &beta;).
     + Default: &sigma;/&mu; = 0.1
 
 
