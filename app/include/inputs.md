@@ -1,7 +1,7 @@
 
-### Data
+## Data
 
-#### Minimum data: admissions on a single day
+### Minimum data: admissions on a single day
 
 The **minimum data** to use the app is a number of new admissions reported on a
 given day, used as starting point for the growth model and subsequent simulation
@@ -17,7 +17,7 @@ before the starting point**.
   defaults to 100%, i.e. all admissions reported
 
  
-#### Recommended data: admissions over time
+### Recommended data: admissions over time
 
 The **recommended data** are numbers of daily admissions over time for the
 recent days. This will allow the model to account for bed occupancy from
@@ -36,7 +36,7 @@ To avoid data entry issues, we recommend using our
 
  
 
-### Length of hospital stay
+## Length of hospital stay
 
 Several options are available to specify the distribution of the length of
 hospital stay (LoS), i.e. the number of days between the admission to a service
@@ -67,7 +67,7 @@ Currently available options are:
 
 
   
-### Growth parameters
+## Growth parameters
 
 * **Assumed doubling time (days)** This is the estimated (mean) time taken for the epidemic to double in size, and serves as a measure of transmission intensity.
     + Default: 7
@@ -91,7 +91,7 @@ Currently available options are:
 
 
 
-### References
+## References
 
 Zhou, Fei, et al. "Clinical Course and Risk Factors for Mortality of Adult Inpatients with COVID-19 in Wuhan, China: a Retrospective Cohort Study." _The Lancet_, 2020. <a href="https://doi.org/10.1016/s0140-6736(20)30566-3">doi:10.1016/s0140-6736(20)30566-3</a>.
 
