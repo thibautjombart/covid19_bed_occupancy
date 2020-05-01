@@ -59,7 +59,7 @@ ui <- navbarPage(
         
         ## Data inputs
         conditionalPanel(
-          condition = "input.outputPanels == 'Admitted patients'",
+          condition = "input.outputPanels == 'Admissions'",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
           p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting rate refers to the % of COVID-19 admissions reported as such.",
             style = sprintf("color:%s", annot_color)),
@@ -117,7 +117,7 @@ ui <- navbarPage(
         
         ## LoS inputs
         conditionalPanel(
-          condition = sprintf("input.outputPanels == 'Length of stay distribution'"),
+          condition = sprintf("input.outputPanels == 'Length of Stay'"),
           #"Length of stay in hospital",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
           p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients. See the 'Inputs' tab for details on these distributions.",
@@ -148,14 +148,13 @@ ui <- navbarPage(
             min = 0.01,
             max = 2,
             value = 0.1,
-            step = .01),
-          htmlOutput("los_ci")),
+            step = .01)),
         
         
         
         ## Epidemic growth inputs
         conditionalPanel(
-          condition = "input.outputPanels == 'Doubling time distribution'",
+          condition = "input.outputPanels == 'Doubling time'",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
           p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. See the 'Inputs' tab for details on the doubling time distribution.",
             style = sprintf("color:%s", annot_color)),
@@ -174,8 +173,7 @@ ui <- navbarPage(
             max = 0.5,
             value = 0.1,
             step = 0.01
-          ),
-          htmlOutput("doubling_ci")
+          )
         ),
         
         ## Simulation parameters
@@ -212,22 +210,26 @@ ui <- navbarPage(
         tabsetPanel(
           id = "outputPanels",
           tabPanel(
-            "Admitted patients",
+            "Admissions",
             id = "admissions_tab",
             br(),
             plotOutput("data_plot", width = "100%", height = "300px")
           ),
           tabPanel(
-            "Length of stay distribution",
+            "Length of Stay",
             
             br(),
-            plotOutput("los_plot", width = "30%", height = "300px")
+            plotOutput("los_plot", width = "30%", height = "300px"),
+            br(),
+            htmlOutput("los_ci")
           ),
           tabPanel(
-            "Doubling time distribution",
+            "Doubling time",
             
             br(),
-            plotOutput("doubling_plot", width = "30%", height = "300px")
+            plotOutput("doubling_plot", width = "30%", height = "300px"),
+            br(),
+            htmlOutput("doubling_ci")
           ),
           tabPanel(
             "Main results",
