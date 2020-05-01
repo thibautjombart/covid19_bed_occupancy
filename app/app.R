@@ -215,7 +215,7 @@ ui <- navbarPage(
             "Admitted patients",
             id = "admissions_tab",
             br(),
-            plotOutput("data_plot", width = "30%", height = "300px")
+            plotOutput("data_plot", width = "100%", height = "300px")
           ),
           tabPanel(
             "Length of stay distribution",
@@ -336,8 +336,8 @@ server <- function(input, output, session) {
   output$data_plot <- renderPlot({
     
     ggdata <- data()
-    
-    plot_data(ggdata)
+    reporting <- input$assumed_reporting
+    plot_data(data = ggdata, reporting = reporting)
     
     
   })
