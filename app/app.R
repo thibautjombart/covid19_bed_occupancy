@@ -55,11 +55,12 @@ ui <- navbarPage(
       ## LEFT PANEL: INPUTS
       sidebarPanel(
         h2("Data and parameter inputs", style = sprintf("color:%s", cmmid_color)),
-        tabsetPanel(
+        tabsetPanel(id = "dataPanels",
           
           ## Data inputs
-          tabPanel(
+          tabPanel(title = 
             "Admission data",
+            #id = "admin",
             chooseSliderSkin("Shiny", color = slider_color),
             h4("Description", style = sprintf("color:%s", cmmid_color)),
             p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting rate refers to the % of COVID-19 admissions reported as such.",
@@ -205,9 +206,14 @@ ui <- navbarPage(
       ## RIGHT PANEL: OUTPUTS
       mainPanel(
         tabsetPanel(
+          id = "outputPanels",
           tabPanel(
             "Admitted patients",
             br(),
+            conditionalPanel(
+              condition = sprintf("input.dataPanels == 'Admission data'"),
+              "WHATS UP FELLOWS"
+            ),
             plotOutput("data_plot", width = "30%", height = "300px")
           ),
           tabPanel(
