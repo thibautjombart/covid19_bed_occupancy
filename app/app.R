@@ -26,7 +26,7 @@ library(linelist)
 
 
 ## global variables
-app_title   <- "Hospital Bed Occupancy Projections   "
+app_title   <- ""
 url_template <- "https://github.com/thibautjombart/covid19_bed_occupancy/blob/master/app/extra/data_model.xlsx?raw=true"
 
 
@@ -36,15 +36,10 @@ url_template <- "https://github.com/thibautjombart/covid19_bed_occupancy/blob/ma
 
 ## Define UI for application
 ui <- navbarPage(
-  title = div(
-    a(img(src="cmmid_newlogo.svg", height="45px"),
-      href="https://cmmid.github.io/"),
-    span(app_title, style="line-height:45px")
-  ),
-  windowTitle = app_title,
+  title = app_title,
   theme = "styling.css",
   position="fixed-top",
-  collapsible = TRUE,
+  collapsible = FALSE,
   
   ## WELCOME PANEL
   tabPanel("Welcome", 
@@ -60,171 +55,185 @@ ui <- navbarPage(
       ## LEFT PANEL: INPUTS
       sidebarPanel(
         h2("Data and parameter inputs", style = sprintf("color:%s", cmmid_color)),
-        tabsetPanel(
-          
-          ## Data inputs
-          tabPanel(
-            "Admission data",
-            chooseSliderSkin("Shiny", color = slider_color),
-            h4("Description", style = sprintf("color:%s", cmmid_color)),
-            p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting rate refers to the % of COVID-19 admissions reported as such.",
-              style = sprintf("color:%s", annot_color)),
-            radioButtons(
-              "data_source",
-              "How do you want to enter data",
-              choices = c(
-                "Admissions on a single day" = "single",
-                "Upload data for multiple days" = "multiple"
-              )
-            ),
-            conditionalPanel(
-              condition = sprintf("input.data_source == 'single'"),
-              dateInput(
-                "admission_date",
-                "Date of admission:"),
-              numericInput(
-                "n_admissions",
-                "New admissions that day:",
-                min = 1,
-                max = 10000,
-                value = 1
-              )
-            ),
-            conditionalPanel(
-              condition = sprintf("input.data_source == 'multiple'"),
-              div(
-                strong("1. Download our data template"),
-                HTML(
-                  sprintf("<a href='%s'>here</a>.",
-                          url_template)
-                )
-              ),
-              div(
-                strong(
-                  "2. Enter your data into the template, save as a new file."
-                )
-              ),
-              fileInput("data_file",
-                        "3. Upload this file here (.xlsx/.xls)",
-                        multiple = FALSE,
-                        accept = c(".xlsx", ".xls"))
-            ),
-            sliderInput(
-              "assumed_reporting",
-              "Reporting rate (%):",
-              min = 10,
-              max = 100,
-              value = 100,
-              step = 5
+        
+        
+        ## Data inputs
+        conditionalPanel(
+          condition = "input.outputPanels == 'Admissions'",
+          h4("Description", style = sprintf("color:%s", cmmid_color)),
+          p("Data inputs specifying the starting point of the forecast: a number of new COVID-19 admissions on a given date at the location considered. Reporting rate refers to the % of COVID-19 admissions reported as such.",
+            style = sprintf("color:%s", annot_color)),
+          radioButtons(
+            "data_source",
+            "How do you want to enter data",
+            choices = c(
+              "Admissions on a single day" = "single",
+              "Upload data for multiple days" = "multiple"
             )
           ),
           
-          ## LoS inputs
-          tabPanel(
-            "Length of stay in hospital",
-            h4("Description", style = sprintf("color:%s", cmmid_color)),
-            p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients. See the 'Inputs' tab for details on these distributions.",
-              style = sprintf("color:%s", annot_color)),
-            selectInput(
-              "los",
-              "Length of hospital stay (LoS) distribution",
-              choices = unique(los_parameters$name),
-              selected = "Custom"
-            ),
-            ## Custom LoS distribution
-            ## Discretised Gamma param as mean and cv
-            
-            radioButtons(inputId = "los_dist",
-                         label = "Distribution", 
-                         choices = unique(los_parameters$los_dist),
-                         selected = "gamma"),
-            sliderInput(
-              "mean_los",
-              "Average LoS (in days)",
-              min = 1.1,
-              max = 20,
-              value = 7,
-              step = .1),
-            sliderInput(
-              "cv_los",
-              HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
-              min = 0.01,
-              max = 2,
-              value = 0.1,
-              step = .01),
-            htmlOutput("los_ci")),
           
-          
-          
-          ## Epidemic growth inputs
-          tabPanel(
-            "Epidemic growth parameters",
-            h4("Description", style = sprintf("color:%s", cmmid_color)),
-            p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. See the 'Inputs' tab for details on the doubling time distribution.",
-              style = sprintf("color:%s", annot_color)),
-            sliderInput(
-              "doubling_time",
-              "Average doubling time (days):",
+          conditionalPanel(
+            condition = sprintf("input.data_source == 'single'"),
+            dateInput(
+              "admission_date",
+              "Date of admission:"),
+            numericInput(
+              "n_admissions",
+              "New admissions that day:",
               min = 1,
-              max = 20,
-              value = 7, 
-              step = 0.1
-            ),
-            sliderInput(
-              "uncertainty_doubling_time",
-              HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
-              min = 0,
-              max = 0.5,
-              value = 0.1,
-              step = 0.01
-            ),
-            htmlOutput("doubling_ci")
+              max = 10000,
+              value = 1
+            )
           ),
-          
-          ## Simulation parameters
-          tabPanel(
-            "Duration and number of simulations",
-            h4("Description", style = sprintf("color:%s", cmmid_color)),
-            p("Parameter inputs specifying the number and durations of the simulations.",
-              style = sprintf("color:%s", annot_color)),
-            sliderInput(
-              "simulation_duration",
-              "Forecast period (days):",
-              min = 1,
-              max = 21,
-              value = 7,
-              step = 1
+          conditionalPanel(
+            condition = sprintf("input.data_source == 'multiple'"),
+            div(
+              strong("1. Download our data template"),
+              HTML(
+                sprintf("<a href='%s'>here</a>.",
+                        url_template)
+              )
             ),
-            sliderInput(
-              "number_simulations",
-              "Number of simulations:",
-              min = 10,
-              max = 100,
-              value = 10,
-              step = 10
-            )          
+            div(
+              strong(
+                "2. Enter your data into the template, save as a new file."
+              )
+            ),
+            fileInput("data_file",
+                      "3. Upload this file here (.xlsx/.xls)",
+                      multiple = FALSE,
+                      accept = c(".xlsx", ".xls"))
+          ),
+          sliderInput(
+            "assumed_reporting",
+            "Reporting rate (%):",
+            min = 10,
+            max = 100,
+            value = 100,
+            step = 5
           )
+        ),
+        
+        ## LoS inputs
+        conditionalPanel(
+          condition = sprintf("input.outputPanels == 'Length of Stay'"),
+          #"Length of stay in hospital",
+          h4("Description", style = sprintf("color:%s", cmmid_color)),
+          p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients. See the 'Inputs' tab for details on these distributions.",
+            style = sprintf("color:%s", annot_color)),
+          selectInput(
+            "los",
+            "Length of hospital stay (LoS) distribution",
+            choices = unique(los_parameters$name),
+            selected = "Custom"
+          ),
+          ## Custom LoS distribution
+          ## Discretised Gamma param as mean and cv
+          
+          radioButtons(inputId = "los_dist",
+                       label = "Distribution", 
+                       choices = unique(los_parameters$los_dist),
+                       selected = "gamma"),
+          sliderInput(
+            "mean_los",
+            "Average LoS (in days)",
+            min = 1.1,
+            max = 20,
+            value = 7,
+            step = .1),
+          sliderInput(
+            "cv_los",
+            HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
+            min = 0.01,
+            max = 2,
+            value = 0.1,
+            step = .01)),
+        
+        
+        
+        ## Epidemic growth inputs
+        conditionalPanel(
+          condition = "input.outputPanels == 'Doubling time'",
+          h4("Description", style = sprintf("color:%s", cmmid_color)),
+          p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. See the 'Inputs' tab for details on the doubling time distribution.",
+            style = sprintf("color:%s", annot_color)),
+          sliderInput(
+            "doubling_time",
+            "Average doubling time (days):",
+            min = 1,
+            max = 20,
+            value = 7, 
+            step = 0.1
+          ),
+          sliderInput(
+            "uncertainty_doubling_time",
+            HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
+            min = 0,
+            max = 0.5,
+            value = 0.1,
+            step = 0.01
+          )
+        ),
+        
+        ## Simulation parameters
+        conditionalPanel(
+          condition = "input.outputPanels == 'Main results'",
+          h4("Description", style = sprintf("color:%s", cmmid_color)),
+          p("Parameter inputs specifying the number and durations of the simulations.",
+            style = sprintf("color:%s", annot_color)),
+          sliderInput(
+            "simulation_duration",
+            "Forecast period (days):",
+            min = 1,
+            max = 21,
+            value = 7,
+            step = 1
+          ),
+          sliderInput(
+            "number_simulations",
+            "Number of simulations:",
+            min = 10,
+            max = 100,
+            value = 10,
+            step = 10
+          ),
+          br(),
+          actionButton("run", "Generate results", icon("play"), style = "align:right"),
+          br()
+          
         )
       ),
       
       ## RIGHT PANEL: OUTPUTS
       mainPanel(
         tabsetPanel(
+          id = "outputPanels",
           tabPanel(
-            "Length of stay distribution",
+            "Admissions",
+            id = "admissions_tab",
             br(),
-            plotOutput("los_plot", width = "30%", height = "300px")
+            plotOutput("data_plot", width = "100%", height = "300px")
           ),
           tabPanel(
-            "Doubling time distribution",
+            "Length of Stay",
+            
             br(),
-            plotOutput("doubling_plot", width = "30%", height = "300px")
+            plotOutput("los_plot", width = "30%", height = "300px"),
+            br(),
+            htmlOutput("los_ci")
+          ),
+          tabPanel(
+            "Doubling time",
+            
+            br(),
+            plotOutput("doubling_plot", width = "30%", height = "300px"),
+            br(),
+            htmlOutput("doubling_ci")
           ),
           tabPanel(
             "Main results",
-            br(),
-            actionButton("run", "Generate results", icon("play"), style = "align:right"),
-            br(),
+          
             br(),
             plotOutput("main_plot", width = "30%", height = "300px"),
             checkboxInput("show_table", "Show summary table?", FALSE),
@@ -232,6 +241,7 @@ ui <- navbarPage(
               condition = sprintf("input.show_table == true"),
               DT::dataTableOutput("main_table", width = "50%"))
           )
+          
         )
       )        
     )
@@ -292,13 +302,15 @@ server <- function(input, output, session) {
   ## data
   data <- reactive({
     if (input$data_source == "single") {
-      data.frame(date = input$admission_date,
-                 n_admissions = as.integer(input$n_admissions))
+      data.frame(date = input$admission_date + c(0,input$simulation_duration) ,
+                 n_admissions = c(as.integer(input$n_admissions), 0))
     } else if (length(input$data_file$datapath)) {
       x <- rio::import(input$data_file$datapath, guess_max = 1e5)
       x <- check_uploaded_data(x)
     } else {
-      NULL
+      # hacky and i hate it
+      data.frame(date = input$admission_date + c(0,input$simulation_duration) ,
+                 n_admissions = c(as.integer(input$n_admissions), 0))
     }
   })
   
@@ -324,6 +336,15 @@ server <- function(input, output, session) {
                cv = input$uncertainty_doubling_time)
   })
   
+  
+  output$data_plot <- renderPlot({
+    
+    ggdata <- data()
+    reporting <- input$assumed_reporting
+    plot_data(data = ggdata, reporting = reporting)
+    
+    
+  })
   
   ## main results
   results <- eventReactive(
