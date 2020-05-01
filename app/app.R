@@ -302,15 +302,15 @@ server <- function(input, output, session) {
   ## data
   data <- reactive({
     if (input$data_source == "single") {
-      data.frame(date = input$admission_date,
-                 n_admissions = as.integer(input$n_admissions))
+      data.frame(date = input$admission_date + c(0,input$simulation_duration) ,
+                 n_admissions = c(as.integer(input$n_admissions), 0))
     } else if (length(input$data_file$datapath)) {
       x <- rio::import(input$data_file$datapath, guess_max = 1e5)
       x <- check_uploaded_data(x)
     } else {
       # hacky and i hate it
-      data.frame(date = input$admission_date,
-                 n_admissions = as.integer(input$n_admissions))
+      data.frame(date = input$admission_date + c(0,input$simulation_duration) ,
+                 n_admissions = c(as.integer(input$n_admissions), 0))
     }
   })
   

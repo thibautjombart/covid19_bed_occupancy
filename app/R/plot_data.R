@@ -10,29 +10,31 @@
 
 plot_data <- function(data, reporting = 100, title = NULL) {
     
-    data$status <- "Reported"
+    data$Status <- "Reported"
     
     if (reporting < 100){
         unreported <- data
-        unreported$status <- "Unreported"
+        unreported$Status <- "Unreported"
         unreported$n_admissions <- round(data$n_admissions*100/reporting - data$n_admissions)
         
         data <- rbind(data, unreported)
-        data$status <- factor(data$status, levels = c("Unreported", "Reported"))
+        data$Status <- factor(data$Status, levels = c("Unreported", "Reported"))
     }
     
     ggplot2::ggplot(data = data,
                     ggplot2::aes(x = as.Date(date), y = n_admissions)) +
         ggplot2::geom_col(fill = cmmid_color, width = 0.8,
-                          aes(alpha = status)) +
+                          aes(alpha = Status)) +
         ggplot2::xlab("Date") +
         ggplot2::scale_alpha_manual(values = c("Unreported" = 0.5,
-                                               "Reported" = 1)) +
+                                               "Reported" = 1),
+                                    name = "Reporting status") +
         ggplot2::ylab("Number of admissions") +
         ggplot2::ggtitle(title) +
         ggplot2::theme_bw() +
         ggplot2::scale_x_date(date_label = "%d %b %y") +
         ggplot2::scale_y_continuous(breaks = int_breaks, limits = c(0, NA)) + 
         rotate_x +
-        large_txt 
+        large_txt +
+        ggplot2::theme(legend.position = "bottom")
 }
