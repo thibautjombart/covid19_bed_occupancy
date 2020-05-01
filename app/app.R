@@ -308,7 +308,9 @@ server <- function(input, output, session) {
       x <- rio::import(input$data_file$datapath, guess_max = 1e5)
       x <- check_uploaded_data(x)
     } else {
-      NULL
+      # hacky and i hate it
+      data.frame(date = input$admission_date,
+                 n_admissions = as.integer(input$n_admissions))
     }
   })
   
