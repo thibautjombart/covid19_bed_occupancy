@@ -341,8 +341,8 @@ server <- function(input, output, session) {
     
     ggdata <- data()
     reporting <- input$assumed_reporting
-    plot_data(data = ggdata, reporting = reporting)
-    
+    simulation_duration <- input$simulation_duration
+    plot_data(data = ggdata, reporting = reporting, simulation_duration)
     
   })
   
@@ -420,6 +420,9 @@ server <- function(input, output, session) {
   
   ## confidence interval for doubling time 
   output$doubling_ci <- reactive({
+    
+    if (input$uncertainty_doubling_time > 0){
+    
     q <- q_doubling(mean = input$doubling_time, 
                     cv   = input$uncertainty_doubling_time,
                     p = c(0.025, 0.5, 0.975))
@@ -431,6 +434,10 @@ server <- function(input, output, session) {
             q$q[2], q$q[1], q$q[3], q$short_name,
             q$params_names[1], q$params[1],
             q$params_names[2], q$params[2])
+    } else {
+      sprintf("<b>Fixed doubling time:</b> %0.1f<br>",
+              input$doubling_time)
+    }
   })
   
 }
