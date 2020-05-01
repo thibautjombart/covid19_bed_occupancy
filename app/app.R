@@ -36,12 +36,7 @@ url_template <- "https://github.com/thibautjombart/covid19_bed_occupancy/blob/ma
 
 ## Define UI for application
 ui <- navbarPage(
-  title = div(
-    a(img(src="cmmid_newlogo.svg", height="45px"),
-      href="https://cmmid.github.io/"),
-    span(app_title, style="line-height:45px")
-  ),
-  windowTitle = app_title,
+  title = app_title,
   theme = "styling.css",
   position="fixed-top",
   collapsible = TRUE,
@@ -211,6 +206,11 @@ ui <- navbarPage(
       mainPanel(
         tabsetPanel(
           tabPanel(
+            "Admitted patients",
+            br(),
+            plotOutput("data_plot", width = "30%", height = "300px")
+          ),
+          tabPanel(
             "Length of stay distribution",
             br(),
             plotOutput("los_plot", width = "30%", height = "300px")
@@ -232,6 +232,7 @@ ui <- navbarPage(
               condition = sprintf("input.show_table == true"),
               DT::dataTableOutput("main_table", width = "50%"))
           )
+          
         )
       )        
     )
@@ -324,6 +325,15 @@ server <- function(input, output, session) {
                cv = input$uncertainty_doubling_time)
   })
   
+  
+  output$data_plot <- renderPlot({
+    
+    ggdata <- data()
+    
+    plot_data(ggdata)
+    
+    
+  })
   
   ## main results
   results <- eventReactive(
