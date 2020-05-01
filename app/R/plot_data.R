@@ -8,8 +8,11 @@
 #' @author Sam Clifford
 #' 
 
-plot_data <- function(data, reporting = 100, title = NULL) {
-    
+plot_data <- function(data, reporting = 100, simulation_duration = 1,
+                      title = NULL) {
+    data$date <- as.Date(data$date)
+    data <- rbind(data, data.frame(date = tail(data$date, 1) + simulation_duration,
+                                   n_admissions = 0))
     data$Status <- "Reported"
     
     if (reporting < 100){
@@ -22,7 +25,7 @@ plot_data <- function(data, reporting = 100, title = NULL) {
     }
     
     ggplot2::ggplot(data = data,
-                    ggplot2::aes(x = as.Date(date), y = n_admissions)) +
+                    ggplot2::aes(x = date, y = n_admissions)) +
         ggplot2::geom_col(fill = cmmid_color, width = 0.8,
                           aes(alpha = Status)) +
         ggplot2::xlab("Date") +
