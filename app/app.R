@@ -80,7 +80,7 @@ ui <- navbarPage(
               "Date of admission:"),
             numericInput(
               "n_admissions",
-              "New admissions that day:",
+              "New admissions reported that day:",
               min = 1,
               max = 10000,
               value = 1
