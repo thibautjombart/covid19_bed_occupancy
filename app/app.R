@@ -26,7 +26,7 @@ library(linelist)
 
 
 ## global variables
-app_title   <- "Hospital Bed Occupancy Projections   "
+app_title   <- ""
 url_template <- "https://github.com/thibautjombart/covid19_bed_occupancy/blob/master/app/extra/data_model.xlsx?raw=true"
 
 
@@ -39,7 +39,7 @@ ui <- navbarPage(
   title = app_title,
   theme = "styling.css",
   position="fixed-top",
-  collapsible = TRUE,
+  collapsible = FALSE,
   
   ## WELCOME PANEL
   tabPanel("Welcome", 
