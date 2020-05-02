@@ -26,7 +26,7 @@ library(linelist)
 
 
 ## global variables
-app_title   <- ""
+app_title   <- "Hospital bed occupancy projections"
 url_template <- "https://github.com/thibautjombart/covid19_bed_occupancy/blob/master/app/extra/data_model.xlsx?raw=true"
 
 
@@ -36,7 +36,7 @@ url_template <- "https://github.com/thibautjombart/covid19_bed_occupancy/blob/ma
 
 ## Define UI for application
 ui <- navbarPage(
-  title = app_title,
+  title = NULL,
   theme = "styling.css",
   position="fixed-top",
   collapsible = FALSE,
@@ -54,7 +54,7 @@ ui <- navbarPage(
       
       ## LEFT PANEL: INPUTS
       sidebarPanel(
-        h2("Data and parameter inputs", style = sprintf("color:%s", cmmid_color)),
+        h2(app_title, style = sprintf("color:%s", cmmid_color)),
         
         
         ## Data inputs
