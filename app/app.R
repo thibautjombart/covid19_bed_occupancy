@@ -375,6 +375,9 @@ server <- function(input, output, session) {
         dates = data()$date,
         admissions = data()$n_admissions,
         doubling = doubling(),
+        R = NULL,  # generate from r_doubling, a vector of numbers
+        si = NULL, # generate from r_doubling, needs to be a distcrete
+        dispersion = input$dispersion,
         duration = input$simulation_duration,
         r_los = los()$r,
         reporting = input$assumed_reporting / 100,

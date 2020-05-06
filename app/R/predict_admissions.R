@@ -32,43 +32,62 @@
 predict_admissions <- function(date_start,
                                n_start,
                                doubling,
+                               R,
+                               si,
+                               dispersion,
                                duration,
                                reporting = 1) {
-
+  
   ## Sanity checks
   if (length(date_start) != 1L) stop("`date_start` must contain exactly one number")
   if (length(n_start) != 1L) stop("`n_start` must contain exactly one number")
   if (!all(is.finite(n_start))) stop("`n_start` is not a number")
   if (any(n_start < 1)) stop("`n_start` must be >= 1")
-
+  
   if (!all(is.finite(doubling))) stop("`doubling` is not a number")
-
+  
   if (!is.finite(duration)) stop("`duration` is not a number")
   if (duration < 1) stop("`duration` must be >= 1")
-
+  
   if (length(reporting) != 1L) stop("`reporting` must contain exactly one value")
   if (!is.finite(reporting)) stop("`reporting` is not a number")
   if (reporting <= 0) stop("`reporting` must be > 0")
   if (reporting > 1) stop("`reporting` must be <= 1")
   
-
-  ## Outline:
-
-  ## This function calculates future admissions using an exponential model. The
-  ## growth rate is calculated from the doubling time, using: r = log(2) / d
   
-  ## future dates and initial conditions
-  future_dates <- seq(date_start, length.out = duration, by = 1L)
-  initial_admissions <- round(n_start / reporting)
-
-  ## calculate growth rate from doubling times
-  r_values <- log(2) / doubling
-
-  ## calculate future admissions
-  future_admissions <- lapply(r_values,
-                              function(r)
-    round(initial_admissions * exp(r * (seq_len(duration) - 1))))
-
+  
+    
+    ## Outline:
+    
+    ## This function calculates future admissions using an exponential model. The
+    ## growth rate is calculated from the doubling time, using: r = log(2) / d
+    
+    ## future dates and initial conditions
+    future_dates <- seq(date_start, length.out = duration, by = 1L)
+    initial_admissions <- round(n_start / reporting)
+    
+    if (!is.null(doubling)){
+      ## calculate growth rate from doubling times
+      r_values <- log(2) / doubling
+      
+      ## calculate future admissions
+      future_admissions <- lapply(r_values,
+                                  function(r)
+                                    round(initial_admissions * exp(r * (seq_len(duration) - 1))))
+    } else {
+      
+      # use branching process
+      current_incidence <- incidence(dates = rep(date_start, initial_admissions))
+      future_admissions <- projections::project(x = current_incidence, 
+                                                R = R,
+                                                si = si,
+                                                n_sim = length(R), 
+                                                n_days = duration,
+                                                R_fix_within = TRUE,
+                                                model = "negbin",
+                                                size = dispersion)
+  } 
+  
   ## build output
   future_admissions <- matrix(unlist(future_admissions), ncol = length(doubling))
   out <- projections::build_projections(x = future_admissions,

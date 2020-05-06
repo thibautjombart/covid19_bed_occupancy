@@ -46,12 +46,20 @@
 
 run_model <- function(dates,
                       admissions,
-                      doubling,
+                      doubling = NULL,
+                      R = NULL,
+                      si = NULL,
+                      dispersion = 1,
                       duration,
                       r_los,
                       reporting = 1,
                       n_sim = 1) {
   ## check input
+  if (all(is.null(c(doubling, si, R)))){
+    msg <- "Must define either doubling times, `doubling`, or basic reproduction number, `R`, and serial interval, `si`"
+    stop(msg)
+  }
+  
   n <- length(dates)
   if (n != length(admissions)) {
     msg <- "`dates` and `admissions` have different length"
@@ -92,6 +100,9 @@ run_model <- function(dates,
   proj_admissions <- predict_admissions(date_start = last_date,
                                         n_start = last_admissions,
                                         doubling = doubling,
+                                        R = R,
+                                        si = si,
+                                        dispersion = dispersion,
                                         duration = duration,
                                         reporting = reporting)
 
