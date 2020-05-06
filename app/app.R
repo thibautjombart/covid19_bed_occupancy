@@ -236,6 +236,7 @@ ui <- navbarPage(
           
             br(),
             plotOutput("main_plot", width = "30%", height = "300px"),
+            plotOutput("admissions", width = "30%", height = "300px"),
             checkboxInput("show_table", "Show summary table?", FALSE),
             conditionalPanel(
               condition = sprintf("input.show_table == true"),
@@ -341,7 +342,6 @@ server <- function(input, output, session) {
     
     ggdata <- data()
     reporting <- input$assumed_reporting
-    simulation_duration <- input$simulation_duration
     plot_data(data = ggdata, reporting = reporting)
     
   })
@@ -384,7 +384,7 @@ server <- function(input, output, session) {
   
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
-    plot_beds(results(),
+    plot_beds(results()$beds,
               ribbon_color = slider_color,
               palette = cmmid_pal,
               title = "Projected bed occupancy")
@@ -396,10 +396,18 @@ server <- function(input, output, session) {
   
   ## summary tables
   output$main_table <- DT::renderDataTable({
-    summarise_beds(results())
+    summarise_beds(results()$admissions)
   })
   
-  
+  output$admissions <-
+    renderPlot({
+      ggdata    <- data()
+      reporting <- input$assumed_reporting
+      admissions <- results()$admissions
+      
+      plot_admissions(ggdata, admissions, reporting,
+                title = "Projected admissions")
+    }, width = 600)
   
   ## OTHERS
   

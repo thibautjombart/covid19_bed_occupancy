@@ -116,5 +116,7 @@ run_model <- function(dates,
                                           n_sim = n_sim))
 
   beds <- projections::merge_projections(beds)
-  beds
+  return(list(beds  = beds,
+              admissions = proj_admissions))
+              
 }
