@@ -8,7 +8,7 @@
 #' @author Sam Clifford
 #' 
 
-plot_data <- function(data, reporting = 100, 
+plot_admissions <- function(data, reporting = 100, 
                       title = NULL) {
     data$date <- as.Date(data$date)
     data$Status <- "Reported"
@@ -23,7 +23,7 @@ plot_data <- function(data, reporting = 100,
     }
     
     out_plot <- ggplot2::ggplot(data = data,
-                    ggplot2::aes(x = date, y = n_admissions)) +
+                                ggplot2::aes(x = date, y = n_admissions)) +
         ggplot2::geom_col(fill = cmmid_color, width = 0.8,
                           aes(alpha = Status)) +
         ggplot2::xlab("Date") +
@@ -36,19 +36,9 @@ plot_data <- function(data, reporting = 100,
         ggplot2::scale_x_date(date_label = "%d %b %y") +
         ggplot2::scale_y_continuous(breaks = int_breaks, limits = c(0, NA)) + 
         rotate_x +
-        large_txt 
+        large_txt
     
-    if (length(unique(data$Status) > 1)){
-        out_plot <- out_plot + ggplot2::theme(legend.position = "bottom")
-    } else {
-        out_plot <- out_plot + ggplot2::theme(legend.position = "none")
-    }
     
-    if (max(data$n_admissions == 1)){
-        out_plot <- out_plot + 
-            ggplot2::scale_y_continuous(breaks = c(0, 1),
-                                        limits = c(0, NA))  
-    }
     
-    out_plot
+        
 }

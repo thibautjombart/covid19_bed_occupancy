@@ -342,7 +342,7 @@ server <- function(input, output, session) {
     ggdata <- data()
     reporting <- input$assumed_reporting
     simulation_duration <- input$simulation_duration
-    plot_data(data = ggdata, reporting = reporting, simulation_duration)
+    plot_data(data = ggdata, reporting = reporting)
     
   })
   
