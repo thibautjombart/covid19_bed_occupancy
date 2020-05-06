@@ -9,6 +9,9 @@
 #' 
 
 plot_doubling_distribution <- function(x, title = NULL) {
+  x_q <- as.numeric(quantile(x, probs = c(0.01, 0.99)))
+  x <- x[x > x_q[1] & x < x_q[2]]
+  
   dat <- data.frame(x = x)  
   ggplot2::ggplot(data = dat,
                   ggplot2::aes(x = x)) +

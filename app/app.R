@@ -144,7 +144,7 @@ ui <- navbarPage(
             step = .1),
           sliderInput(
             "cv_los",
-            HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
+            HTML("Uncertainty as fraction of avg. (<i>c<sub>v,L</sub></i>)"),
             min = 0.01,
             max = 2,
             value = 0.1,
@@ -156,22 +156,35 @@ ui <- navbarPage(
         conditionalPanel(
           condition = "input.outputPanels == 'Doubling time'",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
-          p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. See the 'Inputs' tab for details on the doubling time distribution.",
+          p("Parameter inputs specifying the COVID-19 epidemic growth in terms of basic reproduction number and serial interval (and associated uncertainties). See the 'Inputs' tab for details on the serial interval distribution.",
             style = sprintf("color:%s", annot_color)),
           sliderInput(
-            "doubling_time",
-            "Average doubling time (days):",
+            inputId = "r0",
+            label = HTML("Average basic reproduction number, <i>R</i><sub>0</sub>"),
+            min=0.1, max=5, step=0.1, 
+            value=2.5),  
+          sliderInput(
+            "uncertainty_r0",
+            HTML("Uncertainty as fraction of avg. <i>R</i><sub>0</sub> (<i>c<sub>v,R<sub>0</sub></sub></i>)"),
+            min = 0,
+            max = 0.5,
+            value = 0.26,
+            step = 0.01
+          ),
+          sliderInput(
+            "serial_interval",
+            "Average serial interval (days):",
             min = 1,
             max = 20,
-            value = 7, 
+            value = 7.5, 
             step = 0.1
           ),
           sliderInput(
-            "uncertainty_doubling_time",
-            HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
+            "uncertainty_serial_interval",
+            HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,S</sub></i>)"),
             min = 0,
-            max = 0.5,
-            value = 0.1,
+            max = 2,
+            value = 0.45,
             step = 0.01
           )
         ),
@@ -229,11 +242,15 @@ ui <- navbarPage(
             br(),
             plotOutput("doubling_plot", width = "30%", height = "300px"),
             br(),
-            htmlOutput("doubling_ci")
+            htmlOutput("doubling_ci"),
+            br(),
+            htmlOutput("r0_ci"),
+            br(),
+            htmlOutput("serial_ci")
           ),
           tabPanel(
             "Main results",
-          
+            
             br(),
             plotOutput("main_plot", width = "30%", height = "300px"),
             checkboxInput("show_table", "Show summary table?", FALSE),
@@ -323,17 +340,21 @@ server <- function(input, output, session) {
       cv                    = input$cv_los)
   })
   
-  ## doubling time (returns a vector or r values)
+  ## doubling time (returns a vector of doubling time values)
   doubling <-  reactive({
-    r_doubling(n = input$number_simulations,
-               mean = input$doubling_time,
-               cv = input$uncertainty_doubling_time)
+    r_doubling(n       = input$number_simulations,
+               mean_si = input$serial_interval,
+               cv_si   = input$uncertainty_serial_interval,
+               mean_r0 = input$r0,
+               cv_r0   = input$uncertainty_r0)
   })
   ## same, but larger sample to plot distribution
   doubling_large <-  reactive({
     r_doubling(n = 1e5,
-               mean = input$doubling_time,
-               cv = input$uncertainty_doubling_time)
+               mean_si = input$serial_interval,
+               cv_si   = input$uncertainty_serial_interval,
+               mean_r0 = input$r0,
+               cv_r0   = input$uncertainty_r0)
   })
   
   
@@ -410,8 +431,8 @@ server <- function(input, output, session) {
                cv   = input$cv_los,
                p = c(0.025, 0.5, 0.975))
     #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
-    sprintf("<b>Median LoS:</b> %0.1f<br>
-            <b>95%% interval</b>: (%0.1f, %0.1f)<br>
+    sprintf("<b>Median LoS:</b> %0.1f days<br>
+            <b>95%% interval</b>: (%0.1f, %0.1f) days<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
             q$q[2], q$q[1], q$q[3], q$short_name,
             q$params_names[1], q$params[1],
@@ -419,24 +440,66 @@ server <- function(input, output, session) {
   })
   
   ## confidence interval for doubling time 
+  output$serial_ci <- reactive({
+    
+    if (input$uncertainty_serial_interval > 0){
+      
+      q <- q_doubling(mean = input$serial_interval, 
+                      cv   = input$uncertainty_serial_interval,
+                      p = c(0.025, 0.5, 0.975))
+      
+      
+      sprintf("<b>Median serial interval:</b> %0.1f days<br>
+            <b>95%% interval:</b> (%0.1f, %0.1f) days<br>
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$params_names[1], q$params[1],
+              q$params_names[2], q$params[2])
+    } else {
+      sprintf("<b>Fixed serial interval:</b> %0.1f days<br>",
+              input$serial_interval)
+    }
+  })
+  
   output$doubling_ci <- reactive({
     
-    if (input$uncertainty_doubling_time > 0){
+    x <- doubling_large()
+    q <- quantile(x, c(0.025, 0.5, 0.975))
     
-    q <- q_doubling(mean = input$doubling_time, 
-                    cv   = input$uncertainty_doubling_time,
-                    p = c(0.025, 0.5, 0.975))
+    flag <- sum(q < 0)
+    
+    flag_text <- switch(flag + 1, 
+                        "",
+                        "The lower bound of the doubling time distribution is negative. This indicates that the epidemic may be growing slowly and close to stable.",
+                        "The average doubling time is negative, indicating that the epidemic may be close to stable and decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.",
+                        "The doubling time is negative, indicating that the epidemic is decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.")
+  
     
     
-    sprintf("<b>Median doubling time:</b> %0.1f<br>
+    sprintf("<b>Median doubling time:</b> %0.1f days<br>
+            <b>95%% interval:</b> (%0.1f, %0.1f) days<br>
+            %s",
+            q[2], q[1], q[3], flag_text)
+    
+  })
+  
+  output$r0_ci <- reactive({
+    
+    if (input$uncertainty_r0 > 0){
+      
+      q <- q_r0(mean = input$r0, 
+                cv   = input$uncertainty_r0,
+                p = c(0.025, 0.5, 0.975))
+      
+      sprintf("<b>Median <i>R</i><sub>0</sub>:</b> %0.1f<br>
             <b>95%% interval:</b> (%0.1f, %0.1f)<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
-            q$q[2], q$q[1], q$q[3], q$short_name,
-            q$params_names[1], q$params[1],
-            q$params_names[2], q$params[2])
+              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$params_names[1], q$params[1],
+              q$params_names[2], q$params[2])
     } else {
-      sprintf("<b>Fixed doubling time:</b> %0.1f<br>",
-              input$doubling_time)
+      sprintf("<b>Fixed <i>R</i><sub>0</sub>:</b> %0.1f<br>",
+              input$r0)
     }
   })
   
