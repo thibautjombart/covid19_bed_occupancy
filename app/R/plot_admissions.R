@@ -37,13 +37,13 @@ plot_admissions <- function(data,
                               aes(y = `lower 95%`,
                                   xend = date,
                                   yend = `upper 95%`),
-                              lty = 3
+                              size = 1
         ) +
         ggplot2::geom_segment(data = projections,
                               aes(y = `lower 50%`,
                                   xend = date,
                                   yend = `upper 50%`),
-                              lty = 1
+                              size = 2
         ) +
         # ggplot2::geom_linerange(data = projections,
         #                         aes(ymin = `lower 50%`,

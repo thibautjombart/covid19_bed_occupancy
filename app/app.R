@@ -396,7 +396,7 @@ server <- function(input, output, session) {
   
   ## summary tables
   output$main_table <- DT::renderDataTable({
-    summarise_beds(results()$admissions)
+    summarise_beds(results()$beds)
   })
   
   output$admissions <-

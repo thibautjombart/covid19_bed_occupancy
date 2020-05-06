@@ -19,7 +19,7 @@ plot_data <- function(data, reporting = 100,
         unreported$n_admissions <- round(data$n_admissions*100/reporting - data$n_admissions)
         
         data <- rbind(data, unreported)
-        #data$Status <- factor(data$Status, levels = c("Unreported", "Reported", "Projected"))
+        data$Status <- factor(data$Status, levels = c("Unreported", "Reported"))
     }
     
     my_palette <- my_palette[names(my_palette) %in% unique(data$Status)]
