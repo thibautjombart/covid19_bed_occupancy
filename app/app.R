@@ -296,8 +296,9 @@ server <- function(input, output, session) {
   }
   
   )
-  
-  
+  # 
+  # observeEvent(eventExpr = data, 
+  #              {output$main_plot =renderPlot({})})
   
   
   ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
@@ -386,8 +387,7 @@ server <- function(input, output, session) {
   
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
-    plot_results(data = data(),
-                 results = results(),
+    plot_results(results = results(),
                  reporting = input$assumed_reporting)
     
   }, width = 600)

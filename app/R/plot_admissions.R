@@ -25,6 +25,13 @@ plot_admissions <- function(data,
     #                 Unreported = alpha(cmmid_color, 0.5),
     #                 Projected = "#00AEC7")
     
+    palette_to_use <- c("Reported", 
+                        "Unreported",
+                        "Projected")[
+                            c(TRUE,
+                              reporting < 100,
+                              TRUE)]
+    
     out_plot <- plot_data(data = data, 
                           reporting = reporting,
                           title = title)
@@ -37,21 +44,19 @@ plot_admissions <- function(data,
                               aes(y = `lower 95%`,
                                   xend = date,
                                   yend = `upper 95%`),
-                              size = 1
+                              size = 1,
+                              color = cmmid_pal(1)
         ) +
         ggplot2::geom_segment(data = projections,
                               aes(y = `lower 50%`,
                                   xend = date,
                                   yend = `upper 50%`),
-                              size = 2
+                              size = 2,
+                              color = cmmid_pal(1)
         ) +
-        # ggplot2::geom_linerange(data = projections,
-        #                         aes(ymin = `lower 50%`,
-        #                             ymax = `upper 50%`),
-        #                         size = 2) +
-        ggplot2::scale_fill_manual(values = my_palette,
-                                   name = "Reporting status",
-                                   limits = names(my_palette)) +
+        ggplot2::scale_fill_manual(values = my_palette[palette_to_use],
+                                   breaks = palette_to_use,
+                                   name = "Reporting status") +
         ggplot2::theme(legend.position = "bottom") +
         ggplot2::scale_y_continuous(limits = c(0, NA), breaks = int_breaks)
     

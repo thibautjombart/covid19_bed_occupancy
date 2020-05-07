@@ -80,6 +80,9 @@ run_model <- function(dates,
     msg <- "some `dates` are missing / invalid"
     stop(msg)
   }
+  
+  out <- list(data = data.frame(date = dates,
+                                n_admissions = admissions))
 
   ord <- order(dates)
   dates <- dates[ord]
@@ -116,7 +119,8 @@ run_model <- function(dates,
                                           n_sim = n_sim))
 
   beds <- projections::merge_projections(beds)
-  return(list(beds  = beds,
-              admissions = proj_admissions))
+  out$beds <- beds
+  out$admissions <- proj_admissions
+  return(out)
               
 }

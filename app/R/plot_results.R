@@ -11,8 +11,7 @@
 #' 
 #' @examples
 
-plot_results <- function(data, 
-                         results,
+plot_results <- function(results,
                          reporting = 100){
     
     beds_plot <- plot_beds(results$beds,
@@ -20,7 +19,7 @@ plot_results <- function(data,
                            palette = cmmid_pal,
                            title = "Projected bed occupancy")
     
-    admissions_plot <- plot_admissions(data, results$admissions, reporting,
+    admissions_plot <- plot_admissions(results$data, results$admissions, reporting,
                                        title = "Projected admissions")
     
     patchwork::wrap_plots(ncol = 1, beds_plot, admissions_plot)
