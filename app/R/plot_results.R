@@ -16,11 +16,14 @@ plot_results <- function(results,
     
     beds_plot <- plot_beds(results$beds,
                            ribbon_color = slider_color,
-                           palette = cmmid_pal,
-                           title = "Projected bed occupancy")
+                           palette = cmmid_pal) +
+        ggplot2::ggtitle(subtitle = "95% intervals shown as shaded ribbon",
+                         label = "Projected bed occupancy")
     
-    admissions_plot <- plot_admissions(results$data, results$admissions, reporting,
-                                       title = "Projected admissions")
+    admissions_plot <- plot_admissions(results$data, results$admissions, reporting) +
+        ggplot2::ggtitle(subtitle = "95% intervals shown as bars",
+                         label = "Projected admissions")
+    
     
     patchwork::wrap_plots(ncol = 1, beds_plot, admissions_plot)
     

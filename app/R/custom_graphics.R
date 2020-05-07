@@ -61,6 +61,6 @@ cmmid_pal <- function(n){
   
 }
 
-my_palette <- c(Unreported = alpha(cmmid_color, 0.5),
+my_palette <- c(Unreported = scales::alpha(cmmid_color, 0.5),
                 Reported = cmmid_color,
                 Projected = "#00AEC7")

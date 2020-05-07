@@ -44,21 +44,21 @@ plot_admissions <- function(data,
                               aes(y = `lower 95%`,
                                   xend = date,
                                   yend = `upper 95%`),
-                              size = 1,
-                              color = cmmid_pal(1)
+                              size = 1
         ) +
-        ggplot2::geom_segment(data = projections,
-                              aes(y = `lower 50%`,
-                                  xend = date,
-                                  yend = `upper 50%`),
-                              size = 2,
-                              color = cmmid_pal(1)
-        ) +
+        # ggplot2::geom_segment(data = projections,
+        #                       aes(y = `lower 50%`,
+        #                           xend = date,
+        #                           yend = `upper 50%`),
+        #                       size = 2,
+        #                       color = cmmid_pal(1)
+        # ) +
         ggplot2::scale_fill_manual(values = my_palette[palette_to_use],
                                    breaks = palette_to_use,
                                    name = "Reporting status") +
         ggplot2::theme(legend.position = "bottom") +
-        ggplot2::scale_y_continuous(limits = c(0, NA), breaks = int_breaks)
+        ggplot2::scale_y_continuous(limits = c(0, NA), breaks = int_breaks) +
+        ggplot2::scale_x_date(date_label = "%d %b %y")
     
     
 }
