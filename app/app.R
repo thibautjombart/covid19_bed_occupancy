@@ -158,34 +158,50 @@ ui <- navbarPage(
           h4("Description", style = sprintf("color:%s", cmmid_color)),
           p("Parameter inputs specifying the COVID-19 epidemic growth in terms of basic reproduction number and serial interval (and associated uncertainties). See the 'Inputs' tab for details on the serial interval distribution.",
             style = sprintf("color:%s", annot_color)),
-          sliderInput(
-            inputId = "r0",
-            label = HTML("Average basic reproduction number, <i>R</i><sub>0</sub>"),
-            min=0.1, max=5, step=0.1, 
-            value=2.5),  
-          sliderInput(
-            "uncertainty_r0",
-            HTML("Uncertainty as fraction of avg. <i>R</i><sub>0</sub> (<i>c<sub>v,R<sub>0</sub></sub></i>)"),
-            min = 0,
-            max = 0.5,
-            value = 0.26,
-            step = 0.01
-          ),
-          sliderInput(
-            "serial_interval",
-            "Average serial interval (days):",
-            min = 1,
-            max = 20,
-            value = 7.5, 
-            step = 0.1
-          ),
-          sliderInput(
-            "uncertainty_serial_interval",
-            HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,S</sub></i>)"),
-            min = 0,
-            max = 2,
-            value = 0.45,
-            step = 0.01
+          radioButtons("specifyepi", label = "How do you wish to specify the epidemic growth?",
+                          choices = c("Branching process",
+                                      "Doubling time"),
+                          selected = "Branching process"),
+          conditionalPanel(
+            condition = "input.specifyepi == 'Branching process'",
+            sliderInput(
+              inputId = "r0",
+              label = HTML("Average basic reproduction number, <i>R</i><sub>0</sub>"),
+              min=0.1, max=5, step=0.1, 
+              value=2.5),  
+            sliderInput(
+              "uncertainty_r0",
+              HTML("Uncertainty as fraction of avg. <i>R</i><sub>0</sub> (<i>c<sub>v,R<sub>0</sub></sub></i>)"),
+              min = 0,
+              max = 0.5,
+              value = 0.26,
+              step = 0.01
+            ),
+            sliderTextInput(
+              "dispersion",
+              HTML("Dispersion of <i>R</i><sub>0</sub>"),
+              choices = c("0.1", "0.54"),
+              selected = "0.54"
+            ),
+            sliderInput(
+              "serial_interval",
+              "Average serial interval (days):",
+              min = 1,
+              max = 20,
+              value = 7.5, 
+              step = 0.1
+            ),
+            sliderInput(
+              "uncertainty_serial_interval",
+              HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,S</sub></i>)"),
+              min = 0,
+              max = 2,
+              value = 0.45,
+              step = 0.01
+            )),
+          conditionalPanel(
+            condition = "input.specifyepi == 'Doubling time'",
+            HTML("nothing yet")
           )
         ),
         
@@ -367,6 +383,17 @@ server <- function(input, output, session) {
     
   })
   
+  si <- reactive({
+    make_si(mean = input$serial_interval,
+            cv   = input$uncertainty_serial_interval)
+  })
+  
+  R <- reactive({
+    make_r0(n    = input$number_simulations,
+            mean = input$r0,
+            cv   = input$uncertainty_r0)
+  })
+  
   ## main results
   results <- eventReactive(
     input$run,
@@ -374,10 +401,10 @@ server <- function(input, output, session) {
       run_model(
         dates = data()$date,
         admissions = data()$n_admissions,
-        doubling = doubling(),
-        R = NULL,  # generate from r_doubling, a vector of numbers
-        si = NULL, # generate from r_doubling, needs to be a distcrete
-        dispersion = input$dispersion,
+        doubling = ifelse(test = input$specifyepi == "Doubling time" , doubling(), NULL),
+        R = R(),  
+        si = si(),
+        dispersion = as.numeric(input$dispersion),
         duration = input$simulation_duration,
         r_los = los()$r,
         reporting = input$assumed_reporting / 100,
@@ -476,7 +503,7 @@ server <- function(input, output, session) {
                         "The lower bound of the doubling time distribution is negative. This indicates that the epidemic may be growing slowly and close to stable.",
                         "The average doubling time is negative, indicating that the epidemic may be close to stable and decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.",
                         "The doubling time is negative, indicating that the epidemic is decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.")
-  
+    
     
     
     sprintf("<b>Median doubling time:</b> %0.1f days<br>

@@ -48,7 +48,7 @@ run_model <- function(dates,
                       admissions,
                       doubling = NULL,
                       R = NULL,
-                      si = NULL,
+                      si = NULL, # a distcrete object
                       dispersion = 1,
                       duration,
                       r_los,
