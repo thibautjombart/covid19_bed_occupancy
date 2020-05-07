@@ -23,6 +23,7 @@ library(ggplot2)
 library(invgamma)
 library(markdown)
 library(linelist)
+library(patchwork) # for alignment of main results plot
 
 
 ## global variables
@@ -235,8 +236,7 @@ ui <- navbarPage(
             "Main results",
           
             br(),
-            plotOutput("main_plot", width = "30%", height = "300px"),
-            plotOutput("admissions", width = "30%", height = "300px"),
+            plotOutput("main_plot", width = "30%", height = "600px"),
             checkboxInput("show_table", "Show summary table?", FALSE),
             conditionalPanel(
               condition = sprintf("input.show_table == true"),
@@ -296,6 +296,8 @@ server <- function(input, output, session) {
   }
   
   )
+  
+  
   
   
   ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
@@ -384,10 +386,10 @@ server <- function(input, output, session) {
   
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
-    plot_beds(results()$beds,
-              ribbon_color = slider_color,
-              palette = cmmid_pal,
-              title = "Projected bed occupancy")
+    plot_results(data = data(),
+                 results = results(),
+                 reporting = input$assumed_reporting)
+    
   }, width = 600)
   
   
@@ -399,15 +401,6 @@ server <- function(input, output, session) {
     summarise_beds(results()$beds)
   })
   
-  output$admissions <-
-    renderPlot({
-      ggdata    <- data()
-      reporting <- input$assumed_reporting
-      admissions <- results()$admissions
-      
-      plot_admissions(ggdata, admissions, reporting,
-                title = "Projected admissions")
-    }, width = 600)
   
   ## OTHERS
   

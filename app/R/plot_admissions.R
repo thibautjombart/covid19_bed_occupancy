@@ -52,7 +52,8 @@ plot_admissions <- function(data,
         ggplot2::scale_fill_manual(values = my_palette,
                                    name = "Reporting status",
                                    limits = names(my_palette)) +
-        ggplot2::theme(legend.position = "bottom")
+        ggplot2::theme(legend.position = "bottom") +
+        ggplot2::scale_y_continuous(limits = c(0, NA), breaks = int_breaks)
     
     
 }
