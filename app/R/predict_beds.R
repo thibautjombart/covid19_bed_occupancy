@@ -29,7 +29,7 @@
 ##                          doubling = c(3.5,5, 6.1, 4.6),
 ##                          duration = 14) 
 ##  x
- 
+
 ##  ## make toy duration of hospitalisation (exponential distribution)
 ##  r_duration <- function(n = 1) rexp(n, .2)
 
@@ -54,13 +54,13 @@ predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
     r_los <- r_los$r
   }
   if (!is.function(r_los)) stop("`r_los` must be a function")
-
+  
   if (!is.finite(n_sim)) stop("`n_sim` is not a number")
   if (n_sim[1] < 1) stop("`n_sim` must be >= 1")
-
+  
   
   ## Outline:
-
+  
   ## We take a vector of dates and incidence of admissions, and turn this into a
   ## vector of admission dates, whose length is sum(n_admissions). We will
   ## simulate for each date of admission a duration of stay, and a corresponding
@@ -68,14 +68,13 @@ predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
   ## counted (summing up all cases) for each day. To account for stochasticity
   ## in duration of stay, this process can be replicated `n_sim` times,
   ## resulting in `n_sim` predictions of bed needs over time.
-
+  
   
   admission_dates <- rep(dates, n_admissions)
   n <- length(admission_dates)
   last_date <- max(dates)
   out <- vector(n_sim, mode = "list")
   
-
   for (j in seq_len(n_sim)) {
     los <- r_los(n)
     list_dates_beds <- lapply(seq_len(n),
@@ -83,18 +82,25 @@ predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
                                               length.out = los[i],
                                               by = 1L))
     ## Note: unlist() doesn't work with Date objects
+    
+    
     dates_beds <- do.call(c, list_dates_beds)
     beds_days <- incidence::incidence(dates_beds)
     if (!is.null(last_date)) {
       to_keep <- incidence::get_dates(beds_days) <= last_date
       beds_days <- beds_days[to_keep, ]
     }
-
-    out[[j]] <- projections::build_projections(
-                                 x = beds_days$counts,
-                                 dates = incidence::get_dates(beds_days))
+    
+    get_beds_days <- incidence::get_dates(beds_days)
+    
+    if (!is.null(get_beds_days)){
+      
+      out[[j]] <- projections::build_projections(
+        x = beds_days$counts,
+        dates = get_beds_days)
+    }
   }
-
+  
   projections::merge_projections(out)
- 
+  
 }

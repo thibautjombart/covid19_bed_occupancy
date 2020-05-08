@@ -44,7 +44,7 @@ predict_admissions <- function(date_start,
   if (!all(is.finite(n_start))) stop("`n_start` is not a number")
   if (any(n_start < 1)) stop("`n_start` must be >= 1")
   
-  if (!all(is.finite(doubling))) stop("`doubling` is not a number")
+  if (!is.null(doubling) & !all(is.finite(doubling))) stop("`doubling` is not a number")
   
   if (!is.finite(duration)) stop("`duration` is not a number")
   if (duration < 1) stop("`duration` must be >= 1")
@@ -74,24 +74,28 @@ predict_admissions <- function(date_start,
       future_admissions <- lapply(r_values,
                                   function(r)
                                     round(initial_admissions * exp(r * (seq_len(duration) - 1))))
+      
+      ## build output
+      future_admissions <- matrix(unlist(future_admissions), ncol = length(doubling))
+      out <- projections::build_projections(x = future_admissions,
+                                            date = future_dates)
     } else {
       
       # use branching process
       current_incidence <- incidence(dates = rep(date_start, initial_admissions))
-      future_admissions <- projections::project(x = current_incidence, 
-                                                R = R,
-                                                si = si,
-                                                n_sim = length(R), 
-                                                n_days = duration,
-                                                R_fix_within = TRUE,
-                                                model = "negbin",
-                                                size = dispersion)
-  } 
+      out <- projections::project(x = current_incidence, 
+                                  R = R,
+                                  si = si,
+                                  n_sim = length(R), 
+                                  n_days = duration,
+                                  R_fix_within = TRUE,
+                                  model = "negbin",
+                                  size = dispersion)
+    } 
   
-  ## build output
-  future_admissions <- matrix(unlist(future_admissions), ncol = length(doubling))
-  out <- projections::build_projections(x = future_admissions,
-                                        date = future_dates)
+   
+    
+  
   out
 }
 

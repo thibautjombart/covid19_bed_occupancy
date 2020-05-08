@@ -216,7 +216,7 @@ ui <- navbarPage(
             "Forecast period (days):",
             min = 1,
             max = 21,
-            value = 7,
+            value = 20,
             step = 1
           ),
           sliderInput(
@@ -398,10 +398,16 @@ server <- function(input, output, session) {
   results <- eventReactive(
     input$run,
     if (!is.null(data())) {
+      
+      if(input$specifyepi == "Doubling time"){
+        doubling_ <- doubling()} else {
+          doubling_ <- NULL
+        }
+      
       run_model(
         dates = data()$date,
         admissions = data()$n_admissions,
-        doubling = ifelse(test = input$specifyepi == "Doubling time" , doubling(), NULL),
+        doubling = doubling_,
         R = R(),  
         si = si(),
         dispersion = as.numeric(input$dispersion),
