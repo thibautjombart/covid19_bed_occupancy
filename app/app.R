@@ -201,7 +201,22 @@ ui <- navbarPage(
             )),
           conditionalPanel(
             condition = "input.specifyepi == 'Doubling time'",
-            HTML("nothing yet")
+            sliderInput(
+              "doubling_time",
+              "Average doubling time (days):",
+              min = 1,
+              max = 20,
+              value = 7, 
+              step = 0.1
+            ),
+            sliderInput(
+              "uncertainty_doubling_time",
+              HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,T</sub></i>)"),
+              min = 0,
+              max = 1,
+              value = 0.1,
+              step = 0.01
+            )
           )
         ),
         
@@ -216,7 +231,7 @@ ui <- navbarPage(
             "Forecast period (days):",
             min = 1,
             max = 21,
-            value = 20,
+            value = 7,
             step = 1
           ),
           sliderInput(
@@ -359,18 +374,14 @@ server <- function(input, output, session) {
   ## doubling time (returns a vector of doubling time values)
   doubling <-  reactive({
     r_doubling(n       = input$number_simulations,
-               mean_si = input$serial_interval,
-               cv_si   = input$uncertainty_serial_interval,
-               mean_r0 = input$r0,
-               cv_r0   = input$uncertainty_r0)
+               mean    = input$doubling_time,
+               cv      = input$uncertainty_doubling_time)
   })
   ## same, but larger sample to plot distribution
   doubling_large <-  reactive({
     r_doubling(n = 1e5,
-               mean_si = input$serial_interval,
-               cv_si   = input$uncertainty_serial_interval,
-               mean_r0 = input$r0,
-               cv_r0   = input$uncertainty_r0)
+               mean    = input$doubling_time,
+               cv      = input$uncertainty_doubling_time)
   })
   
   
