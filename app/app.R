@@ -445,7 +445,9 @@ server <- function(input, output, session) {
   ## graph for the distribution of length of hospital stay (LoS)
   output$doubling_plot <- renderPlot(
     plot_doubling_distribution(
-      doubling_large(), "Epidemic doubling time"
+      doubling_large(), title =  "Epidemic doubling time", 
+      x = "Days", 
+      y = "Density"
     ), width = 600
   )
   

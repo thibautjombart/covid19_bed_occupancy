@@ -8,19 +8,21 @@
 #' @author Sam Clifford
 #' 
 
-plot_doubling_distribution <- function(x, title = NULL) {
-  x_q <- as.numeric(quantile(x, probs = c(0.01, 0.99)))
-  x <- x[x > x_q[1] & x < x_q[2]]
+plot_doubling_distribution <- function(v, trim = TRUE, ...) {
   
-  dat <- data.frame(x = x)  
+  if (trim){
+    q <- quantile(v, c(0.001, 0.999))
+    v <- v[v < q[2] & v > q[1]]
+  }
+  
+  dat <- data.frame(x = v)  
   ggplot2::ggplot(data = dat,
                   ggplot2::aes(x = x)) +
     ggplot2::geom_histogram(fill = cmmid_color,
                             col = "white",
-                            bins = 30) +
-    ggplot2::xlab("Doubling time (days)") +
-    ggplot2::ylab("Frequency") +
-    ggplot2::ggtitle(title) +
+                            bins = 30,
+                            aes(y = ..density..)) +
+    ggplot2::labs(...) +
     ggplot2::theme_bw() +
     large_txt
 }
