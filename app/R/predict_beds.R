@@ -48,8 +48,8 @@ predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
   if (!length(dates)) stop("`dates` is empty")
 
   if (!is.finite(n_admissions[1])) stop("`n_admissions` is not a number")
-  if (n_admissions[1] < 1) stop("`n_admissions` must be >= 1")
-
+  #browser()
+  
   if (inherits(r_los, "distcrete")) {
     r_los <- r_los$r
   }
@@ -57,6 +57,14 @@ predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
   
   if (!is.finite(n_sim)) stop("`n_sim` is not a number")
   if (n_sim[1] < 1) stop("`n_sim` must be >= 1")
+  
+  # check if we have no new admissions
+  # if we do, return 0 bed usage
+  if (all(n_admissions < 1)) {
+    empty_proj <- projections::build_projections(x = rep(0, length(dates)), dates = dates)
+    return(projections::merge_projections(lapply(X = 1:n_sim, FUN = function(x){empty_proj})))
+  }
+  
   
   
   ## Outline:
