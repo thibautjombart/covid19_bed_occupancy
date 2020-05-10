@@ -61,6 +61,6 @@ plot_secondary <- function(R, dispersion){
         ggplot2::xlab("Number of cases") +
         ggplot2::ylab("Density") +
         ggplot2::scale_x_continuous(limits = c(NA, q)) +
-        ggplot2::ggtitle("Secondary cases generated\nby each case") +
+        ggplot2::ggtitle("Secondary cases generated") +
         large_txt 
 }

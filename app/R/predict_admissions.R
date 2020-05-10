@@ -66,7 +66,7 @@ predict_admissions <- function(date_start,
     future_dates <- seq(date_start, length.out = duration, by = 1L)
     initial_admissions <- round(n_start / reporting)
     
-    if (!is.null(doubling)){
+    if (!is.null(doubling) & length(doubling) > 0){
       ## calculate growth rate from doubling times
       r_values <- log(2) / doubling
       

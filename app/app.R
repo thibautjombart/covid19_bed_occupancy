@@ -202,9 +202,14 @@ ui <- navbarPage(
             )),
           conditionalPanel(
             condition = "input.specifyepi == 'Doubling time'",
+            radioButtons(inputId = "doublehalf",
+              label = "The number of cases is:",
+              choiceNames = c("Doubling", "Halving"),
+              choiceValues = c(1, -1)
+            ),
             sliderInput(
               "doubling_time",
-              "Average doubling time (days):",
+              "Average time (days):",
               min = 1,
               max = 20,
               value = 7, 
@@ -212,7 +217,7 @@ ui <- navbarPage(
             ),
             sliderInput(
               "uncertainty_doubling_time",
-              HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,T</sub></i>)"),
+              HTML("Uncertainty as fraction of avg. time (<i>c<sub>v,T</sub></i>)"),
               min = 0,
               max = 1,
               value = 0.1,
@@ -443,7 +448,7 @@ server <- function(input, output, session) {
       run_model(
         dates = data()$date,
         admissions = data()$n_admissions,
-        doubling = doubling_,
+        doubling = as.numeric(input$doublehalf)*doubling_,
         R = R()$R0,  
         si = si(),
         dispersion = as.numeric(input$dispersion),
@@ -457,7 +462,13 @@ server <- function(input, output, session) {
     ignoreNULL = FALSE
   )
   
-  
+  output$doublehalftext <- reactive({
+    if (input$doublehalf == 1){
+      "doubling"
+    } else {
+      "halving"
+    }
+  })
   
   ## PLOTS  
   ## graph for the distribution of length of hospital stay (LoS)
@@ -501,12 +512,14 @@ server <- function(input, output, session) {
   )
   
   ## graph for the distribution of length of hospital stay (LoS)
-  output$doubling_plot <- renderPlot(
+  output$doubling_plot <- renderPlot({
+    
     plot_doubling_distribution(
-      doubling_large(), title =  "Epidemic doubling time", 
+      doubling_large(),
+      title = sprintf("Epidemic %s time", dhlabel(input$doublehalf)), 
       x = "Days", 
-      y = "Density"
-    ), width = 600
+      y = "Density")
+  }, width = 600
   )
   
   
@@ -583,9 +596,10 @@ server <- function(input, output, session) {
     
     
     
-    sprintf("<b>Median doubling time:</b> %0.1f days<br>
+    sprintf("<b>Median %s time:</b> %0.1f days<br>
             <b>95%% interval:</b> (%0.1f, %0.1f)<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+            HTML(dhlabel(input$doublehalf)),
             q$q[2], q$q[1], q$q[3], q$short_name,
             q$params_names[1], q$params[1],
             q$params_names[2], q$params[2])
