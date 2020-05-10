@@ -7,6 +7,7 @@ summarise_beds <- function(x) {
   summary_function <- function(x) {
     c(q_025 = round(quantile(x, 0.025)),
       q_25 = round(quantile(x, 0.25)),
+      q_50 = round(quantile(x, 0.5)),
       q_75 = round(quantile(x, 0.75)),
       q_95 = round(quantile(x, 0.975)))
   }
@@ -24,6 +25,7 @@ summarise_beds <- function(x) {
   colnames(summary_table) <- c("Date",
                                "lower 95%",
                                "lower 50%",
+                               "Median",
                                "upper 50%",
                                "upper 95%")
   summary_table

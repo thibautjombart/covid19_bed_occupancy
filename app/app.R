@@ -307,7 +307,7 @@ ui <- navbarPage(
             "Main results",
             
             br(),
-            plotOutput("main_plot", width = "30%", height = "300px"),
+            plotOutput("main_plot", width = "30%", height = "600px"),
             checkboxInput("show_table", "Show summary table?", FALSE),
             conditionalPanel(
               condition = sprintf("input.show_table == true"),
@@ -368,6 +368,9 @@ server <- function(input, output, session) {
   }
   
   )
+  # 
+  # observeEvent(eventExpr = data, 
+  #              {output$main_plot =renderPlot({})})
   
   
   ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
@@ -413,8 +416,7 @@ server <- function(input, output, session) {
     
     ggdata <- data()
     reporting <- input$assumed_reporting
-    simulation_duration <- input$simulation_duration
-    plot_data(data = ggdata, reporting = reporting, simulation_duration)
+    plot_data(data = ggdata, reporting = reporting)
     
   })
   
@@ -525,10 +527,9 @@ server <- function(input, output, session) {
   
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
-    plot_beds(results(),
-              ribbon_color = slider_color,
-              palette = cmmid_pal,
-              title = "Projected bed occupancy")
+    plot_results(results = results(),
+                 reporting = input$assumed_reporting)
+    
   }, width = 600)
   
   
@@ -537,9 +538,8 @@ server <- function(input, output, session) {
   
   ## summary tables
   output$main_table <- DT::renderDataTable({
-    summarise_beds(results())
+    summarise_beds(results()$beds)
   })
-  
   
   
   ## OTHERS
