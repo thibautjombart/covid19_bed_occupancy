@@ -23,7 +23,8 @@ library(ggplot2)
 library(invgamma)
 library(markdown)
 library(linelist)
-
+library(patchwork)
+library(fitdistrplus)
 
 ## global variables
 app_title   <- "Hospital bed occupancy projections"
@@ -159,9 +160,9 @@ ui <- navbarPage(
           p("Parameter inputs specifying the COVID-19 epidemic growth in terms of basic reproduction number and serial interval (and associated uncertainties). See the 'Inputs' tab for details on the serial interval distribution.",
             style = sprintf("color:%s", annot_color)),
           radioButtons("specifyepi", label = "How do you wish to specify the epidemic growth?",
-                          choices = c("Branching process",
-                                      "Doubling time"),
-                          selected = "Branching process"),
+                       choices = c("Branching process",
+                                   "Doubling time"),
+                       selected = "Branching process"),
           conditionalPanel(
             condition = "input.specifyepi == 'Branching process'",
             sliderInput(
@@ -271,13 +272,31 @@ ui <- navbarPage(
             "Doubling time",
             
             br(),
-            plotOutput("doubling_plot", width = "30%", height = "300px"),
-            br(),
-            htmlOutput("doubling_ci"),
-            br(),
-            htmlOutput("r0_ci"),
-            br(),
-            htmlOutput("serial_ci")
+            
+            conditionalPanel(condition = "input.specifyepi == 'Doubling time'",
+                             plotOutput("doubling_plot", width = "30%", height = "300px"),
+                             br(),
+                             htmlOutput("doubling_ci")
+            ),
+            # need to amend this panel to have three fluidrows and two columns each,
+            # plot in left col, summary on right
+            conditionalPanel(condition = "input.specifyepi == 'Branching process'",
+                             
+                             fluidRow(
+                               column(6, plotOutput("r0_plot", height = "200px")),
+                               column(6, br(), br(), htmlOutput("r0_ci"))),
+                             
+                             fluidRow(
+                               column(6, plotOutput("secondary_plot", height = "200px")),
+                               column(6, br(), br(), htmlOutput("secondary_ci"))),
+                             br(),
+                             fluidRow(
+                               column(6, plotOutput("serial_plot", height = "200px")),
+                               column(6, br(), br(), htmlOutput("serial_ci")))
+            )
+            
+            
+            
           ),
           tabPanel(
             "Main results",
@@ -310,6 +329,7 @@ ui <- navbarPage(
            fluidPage(style="padding-left: 40px; padding-right: 40px; padding-bottom: 40px;", 
                      includeMarkdown("include/ack.md")))
 )
+
 
 
 
@@ -384,7 +404,6 @@ server <- function(input, output, session) {
                cv      = input$uncertainty_doubling_time)
   })
   
-  
   output$data_plot <- renderPlot({
     
     ggdata <- data()
@@ -405,6 +424,12 @@ server <- function(input, output, session) {
             cv   = input$uncertainty_r0)
   })
   
+  R_large <-  reactive({
+    make_r0(n    = 1e5,
+            mean = input$r0,
+            cv   = input$uncertainty_r0)
+  })
+  
   ## main results
   results <- eventReactive(
     input$run,
@@ -419,7 +444,7 @@ server <- function(input, output, session) {
         dates = data()$date,
         admissions = data()$n_admissions,
         doubling = doubling_,
-        R = R(),  
+        R = R()$R0,  
         si = si(),
         dispersion = as.numeric(input$dispersion),
         duration = input$simulation_duration,
@@ -438,8 +463,41 @@ server <- function(input, output, session) {
   ## graph for the distribution of length of hospital stay (LoS)
   output$los_plot <- renderPlot(
     plot_los_distribution(
-      los(), "Length of stay in hospital"
-    ), width = 600
+      los(), 
+      title = "Length of stay in hospital",
+      x     = "Days in hospital",
+      y     = "Density"
+    ), width = "100%"
+  )
+  
+  output$r0_plot <- renderPlot(
+    plot_r0(
+      R_large()
+    ), width = 300, height = 200
+      #function() {
+      #0.6*session$clientData$output_r0_plot_width
+    #}
+  )
+  
+  output$secondary_plot <- renderPlot(
+    plot_secondary(
+      R_large(),
+      dispersion = input$dispersion
+    ), width = 300, height = 200
+  )
+  
+  # output$secondary_plot <- renderPlot(
+  #   plot_branching(R = R_large(),
+  #                  dispersion = as.numeric(input$dispersion)
+  #   ), width = 300
+  # )
+  
+  output$serial_plot <- renderPlot({
+    plot_los_distribution(los = si(), 
+                          title = "Serial interval", 
+                          x = "Days to secondary case",
+                          y = "Density")
+  }, width = 300, height = 200
   )
   
   ## graph for the distribution of length of hospital stay (LoS)
@@ -550,6 +608,22 @@ server <- function(input, output, session) {
       sprintf("<b>Fixed <i>R</i><sub>0</sub>:</b> %0.1f<br>",
               input$r0)
     }
+  })
+  
+  output$secondary_ci <- reactive({
+    
+    
+    q <- q_secondary(R_large(),
+                     input$dispersion,
+                     p = c(0.025, 0.5, 0.975))
+    
+    sprintf("<b>Median secondary cases:</b> %0.1f<br>
+            <b>95%% interval:</b> (%0.1f, %0.1f)<br>
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.2f)",
+            q$q[2], q$q[1], q$q[3], q$short_name,
+            q$params_names[1], q$params[1],
+            q$params_names[2], q$params[2])
+    
   })
   
 }

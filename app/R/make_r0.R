@@ -8,5 +8,5 @@ make_r0 <- function(n, mean, cv) {
                      scale = R0_parms$scale)
     }
     
-    R0
+    return(list(R0 = R0, R0_parms = R0_parms))
 }
