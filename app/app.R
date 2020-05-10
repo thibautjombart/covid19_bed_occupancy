@@ -155,14 +155,14 @@ ui <- navbarPage(
         
         ## Epidemic growth inputs
         conditionalPanel(
-          condition = "input.outputPanels == 'Doubling time'",
+          condition = "input.outputPanels == 'Epidemic Parameters'",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
           p("Parameter inputs specifying the COVID-19 epidemic growth in terms of basic reproduction number and serial interval (and associated uncertainties). See the 'Inputs' tab for details on the serial interval distribution.",
             style = sprintf("color:%s", annot_color)),
           radioButtons("specifyepi", label = "How do you wish to specify the epidemic growth?",
                        choices = c("Branching process",
                                    "Doubling time"),
-                       selected = "Branching process"),
+                       selected = "Doubling time"),
           conditionalPanel(
             condition = "input.specifyepi == 'Branching process'",
             sliderInput(
@@ -264,12 +264,12 @@ ui <- navbarPage(
             "Length of Stay",
             
             br(),
-            plotOutput("los_plot", width = "30%", height = "300px"),
+            plotOutput("los_plot", width = "100%", height = "300px"),
             br(),
             htmlOutput("los_ci")
           ),
           tabPanel(
-            "Doubling time",
+            "Epidemic Parameters",
             
             br(),
             
@@ -467,7 +467,7 @@ server <- function(input, output, session) {
       title = "Length of stay in hospital",
       x     = "Days in hospital",
       y     = "Density"
-    ), width = "100%"
+    )
   )
   
   output$r0_plot <- renderPlot(
@@ -570,23 +570,27 @@ server <- function(input, output, session) {
   
   output$doubling_ci <- reactive({
     
-    x <- doubling_large()
-    q <- quantile(x, c(0.025, 0.5, 0.975))
+    q <- q_doubling(mean = input$doubling_time,
+                    cv = input$uncertainty_doubling_time, p = c(0.025, 0.5, 0.975))
     
-    flag <- sum(q < 0)
-    
-    flag_text <- switch(flag + 1, 
-                        "",
-                        "The lower bound of the doubling time distribution is negative. This indicates that the epidemic may be growing slowly and close to stable.",
-                        "The average doubling time is negative, indicating that the epidemic may be close to stable and decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.",
-                        "The doubling time is negative, indicating that the epidemic is decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.")
+    # 
+    # 
+    # flag_text <- switch(flag + 1, 
+    #                     "",
+    #                     "The lower bound of the doubling time distribution is negative. This indicates that the epidemic may be growing slowly and close to stable.",
+    #                     "The average doubling time is negative, indicating that the epidemic may be close to stable and decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.",
+    #                     "The doubling time is negative, indicating that the epidemic is decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.")
     
     
     
     sprintf("<b>Median doubling time:</b> %0.1f days<br>
-            <b>95%% interval:</b> (%0.1f, %0.1f) days<br>
-            %s",
-            q[2], q[1], q[3], flag_text)
+            <b>95%% interval:</b> (%0.1f, %0.1f)<br>
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+            q$q[2], q$q[1], q$q[3], q$short_name,
+            q$params_names[1], q$params[1],
+            q$params_names[2], q$params[2])
+    
+    
     
   })
   
