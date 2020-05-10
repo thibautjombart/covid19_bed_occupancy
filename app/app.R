@@ -23,7 +23,6 @@ library(ggplot2)
 library(invgamma)
 library(markdown)
 library(linelist)
-library(patchwork)
 library(fitdistrplus)
 
 ## global variables
@@ -499,12 +498,6 @@ server <- function(input, output, session) {
     ), width = 300, height = 200
   )
   
-  # output$secondary_plot <- renderPlot(
-  #   plot_branching(R = R_large(),
-  #                  dispersion = as.numeric(input$dispersion)
-  #   ), width = 300
-  # )
-  
   output$serial_plot <- renderPlot({
     plot_los_distribution(los = si(), 
                           title = "Serial interval", 
@@ -586,15 +579,6 @@ server <- function(input, output, session) {
     q <- q_doubling(mean = input$doubling_time,
                     cv = input$uncertainty_doubling_time, p = c(0.025, 0.5, 0.975))
     
-    # 
-    # 
-    # flag_text <- switch(flag + 1, 
-    #                     "",
-    #                     "The lower bound of the doubling time distribution is negative. This indicates that the epidemic may be growing slowly and close to stable.",
-    #                     "The average doubling time is negative, indicating that the epidemic may be close to stable and decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.",
-    #                     "The doubling time is negative, indicating that the epidemic is decreasing towards extinction and this time should be interpreted as a <i>halving</i> time.")
-    
-    
     
     sprintf("<b>Median %s time:</b> %0.1f days<br>
             <b>95%% interval:</b> (%0.1f, %0.1f)<br>
@@ -603,9 +587,6 @@ server <- function(input, output, session) {
             q$q[2], q$q[1], q$q[3], q$short_name,
             q$params_names[1], q$params[1],
             q$params_names[2], q$params[2])
-    
-    
-    
   })
   
   output$r0_ci <- reactive({

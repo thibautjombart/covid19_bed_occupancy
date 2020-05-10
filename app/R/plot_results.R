@@ -14,10 +14,7 @@
 plot_results <- function(results,
                          reporting = 100){
     
-    # beds_q_df      <- as.data.frame(t(beds_q))
-    # beds_q_df$Date <- as.Date(rownames(beds_q_df))
-    # beds_q_df$var  <- "Bed occupancy"
-    
+   
     n_data <- nrow(results$data)
     
     beds  <- summarise_beds(results$beds)
@@ -88,19 +85,5 @@ plot_results <- function(results,
         ggplot2::scale_y_continuous(limits = c(0, NA), breaks = int_breaks) +
         ggplot2::scale_x_date(date_label = "%d %b %y") +
         large_txt + rotate_x 
-    
-    
-    # beds_plot <- plot_beds(results$beds,
-    #                        ribbon_color = slider_color,
-    #                        palette = cmmid_pal) +
-    #     ggplot2::ggtitle(subtitle = "95% intervals shown as shaded ribbon",
-    #                      label = "Projected bed occupancy")
-    # 
-    # admissions_plot <- plot_admissions(results$data, results$admissions, reporting) +
-    #     ggplot2::ggtitle(subtitle = "95% intervals shown as bars",
-    #                      label = "Projected admissions")
-    # 
-    # 
-    # patchwork::wrap_plots(ncol = 1, beds_plot, admissions_plot)
-    
+   
 }

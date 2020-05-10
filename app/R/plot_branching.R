@@ -8,13 +8,6 @@
 #' 
 #' @author Sam Clifford
 
-plot_branching <- function(R, dispersion){
-    
-    r0_plot <- plot_r0(R)
-    s_plot <- plot_secondary(R, dispersion)
-    
-    patchwork::wrap_plots(r0_plot, s_plot, ncol = 1)
-}
 
 plot_r0 <- function(R){
     
