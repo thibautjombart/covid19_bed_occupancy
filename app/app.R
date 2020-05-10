@@ -23,6 +23,7 @@ library(ggplot2)
 library(invgamma)
 library(markdown)
 library(linelist)
+library(shinyWidgets)
 library(fitdistrplus)
 
 ## global variables
@@ -49,6 +50,7 @@ ui <- navbarPage(
   ## MAIN SIMULATOR PANEL
   tabPanel(
     "Simulator",
+    shinyWidgets::chooseSliderSkin(skin = "Flat", color = "#00AEC7"),
     sidebarLayout(
       position = "left",
       
