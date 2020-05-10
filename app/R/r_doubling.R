@@ -6,8 +6,9 @@
 #'
 
 r_doubling <- function(n, mean, cv) {
-    ## parameterised in terms of an inverse gamma to avoid truncating at 0
-    
+  ## parameterised in terms of an inverse gamma to avoid truncating at 0
+  
+  # convert the doubling time to an inverse gamma distribution
   if (cv == 0){
     return(rep(x = mean, times = n))
   } else {
@@ -15,6 +16,5 @@ r_doubling <- function(n, mean, cv) {
       n = n,
       shape = 2 + 1/cv^2,
       rate = mean*(1 + 1/cv^2))    
-    }
-    
+  }
 }
