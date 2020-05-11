@@ -27,9 +27,9 @@ The forecasting approach can be summarised as follows; for each simulation:
    currently done by:
 <div> n<sub>aug</sub> = n<sub>reported</sub> / %<sub>reported</sub> </div>
  
-2. Use a log-linear model, parametrised via the doubling time (drawn from an
-   inverse Gamma distribution, with user-specified mean and coefficient of
-   variation), to simulate future daily admissions trajectories.
+2. Simulate future daily admissions trajectories according to one of the two approaches:
+    a. Use a log-linear model, parameterised via the doubling (or halving) time (drawn from an inverse Gamma distribution, with user-specified mean and coefficient of variation) for exponential growth (or decay)
+    b. Use a branching process, parameterised via the basic reproduction number, its dispersion, and the serial interval for successive generations. 
 
 3. For each admission, simulate length of stay in hospital from the specified
    distribution.
@@ -40,9 +40,10 @@ The forecasting approach can be summarised as follows; for each simulation:
 
 ## Caveats
 
-* The current model assumes exponential growth. This is generally a reasonable
+* The current model assumes exponential growth as its default. This is generally a reasonable
   approximation at the beginning of an epidemic however will become less
-  appropriate as growth slows towards the peak.
+  appropriate as growth slows towards the peak. At this point, it may be more appropriate
+  to switch to the branching process. 
 
 * User inputted data only contributes to bed requirements and any trend in user
   data does not impact on the assumed exponential growth from the final time

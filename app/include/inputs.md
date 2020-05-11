@@ -54,13 +54,17 @@ Currently available options are:
   values from the values of &mu; and &sigma;). Note that the distribution is generated so that LoS
   must be positive.
 
-* **Zhou et al non-critical care**: discretised Weibull (shape: 2, scale: 13) targeting a median of 11
+* **Rees and Nightingale et al. non-critical care**: discretised Weibull (shape: 1.2, scale: 6.9) resulting from a systematic review of length of stay for general (non-ICU) admissions outside of China.
+
+* **Rees and Nightingale et al. critical care**: discretised Weibull (shape: 1.5, scale: 8.7) resulting from a systematic review of length of stay for ICU admissions outside of China.
+
+* **Zhou et al. non-critical care**: discretised Weibull (shape: 2, scale: 13) targeting a median of 11
     days, IQR 7-14, as reported for general hospitalisation in <a
 	href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext">Zhou
 	et al., 2020</a>:
 
 
-* **Zhou et al critical care**: discretised Weibull (shape: 2, scale: 10) targeting a median of 8
+* **Zhou et al. critical care**: discretised Weibull (shape: 2, scale: 10) targeting a median of 8
     days, IQR 4-12, as reported for hospitalisation in critical care in <a
 	href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30566-3/fulltext">Zhou
 	et al., 2020</a>:
@@ -69,15 +73,23 @@ Currently available options are:
   
 ## Growth parameters
 
-* **Assumed doubling time (days)** This is the estimated (mean) time taken for the epidemic to double in size, and serves as a measure of transmission intensity.
-    + Default: 7
+### Doubling/halving time
+
+* **Assumed doubling/halving time (days)** This is the estimated (mean) time taken for the epidemic to double (or halve) in size, and serves as a measure of transmission intensity.
+    + Default: 7.7
     + Plausible ranges: 1.8 - 9.3. See [Muniz-Rodriguez et al 2020](https://www.medrxiv.org/content/10.1101/2020.02.05.20020750v4.full.pdf), [Zhao et al 2020](https://www.medrxiv.org/content/medrxiv/early/2020/02/29/2020.02.26.20028449.full.pdf), [Wu et al 2020](https://www.nature.com/articles/s41591-020-0822-7), [Li et al 2020](https://www.nejm.org/doi/full/10.1056/NEJMoa2001316), [Cheng et al 2020](https://link.springer.com/content/pdf/10.1007/s15010-020-01401-y.pdf) and [Granozio 2020](https://arxiv.org/ftp/arxiv/papers/2003/2003.08661.pdf) for references. 
 * **Uncertainty in doubling time (coefficient of variation)**: the sampling
   distribution for the doubling time is an inverse gamma distribution
   parameterised in terms of the mean doubling time (defined by the user) and the
   coefficient of variation (i.e. &sigma;/&mu;) which are then used for moment-matching
   to determine appropriate values of the distribution's shape and rate parameters (&alpha;, &beta;).
-    + Default: &sigma;/&mu; = 0.1
+    + Default: &sigma;/&mu; = 0.33
+
+The default values here are drawn from the early dynamics reported by <a href="https://www.nejm.org/doi/full/10.1056/NEJMoa2001316">Li et al. (2020)</a>.
+
+When "halving" is selected, the epidemic is considered to be decreasing in intensity by exponential decay in case numbers rather than increasing when characterised by a doubling time.
+
+### Branching process
 
 
 
