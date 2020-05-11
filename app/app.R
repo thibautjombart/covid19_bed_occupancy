@@ -128,7 +128,7 @@ ui <- navbarPage(
             "los",
             "Length of hospital stay (LoS) distribution",
             choices = unique(los_parameters$name),
-            selected = "Custom"
+            selected = 1
           ),
           ## Custom LoS distribution
           ## Discretised Gamma param as mean and cv
@@ -213,7 +213,7 @@ ui <- navbarPage(
               "Average time (days):",
               min = 1,
               max = 20,
-              value = 7, 
+              value = 7.7, 
               step = 0.1
             ),
             sliderInput(
@@ -221,7 +221,7 @@ ui <- navbarPage(
               HTML("Uncertainty as fraction of avg. time (<i>c<sub>v,T</sub></i>)"),
               min = 0,
               max = 1,
-              value = 0.1,
+              value = 0.33,
               step = 0.01
             )
           )

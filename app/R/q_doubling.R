@@ -15,7 +15,7 @@ q_doubling <- function(mean, cv, p=c(0.025, 0.975)) {
         q <- invgamma::qinvgamma(p=p, shape = params$shape, rate = params$rate)    
     }
     
-    short_name <- "Inv-&Gamma;"
+    short_name <- "&Gamma;<sup>-1</sup>"
     params_names <- c("&alpha;", "&beta;")
     
     return(list(short_name = short_name,
