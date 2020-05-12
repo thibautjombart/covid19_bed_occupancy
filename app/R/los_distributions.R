@@ -29,10 +29,10 @@ weibull_mucv2shapescale <- function(mean, cv){
 ## we want to avoid having 0 days LoS, so what we do is actually:
 ## - generate a discretised Gamma with (mean - 1)
 ## - add 1 to simulated LoS
-los_dist <- function(distribution = "gamma", mean, cv) {
+los_dist <- function(distribution = "gamma", q) {
   
   if (distribution == "gamma"){
-    params <- epitrix::gamma_mucv2shapescale(mean - 1, cv)
+    params <- gamma_q2shapescale(q, p = c(0.25, 0.75))
     auxil <- distcrete::distcrete("gamma",
                                   shape = params$shape,
                                   scale = params$scale,
@@ -50,23 +50,36 @@ los_dist <- function(distribution = "gamma", mean, cv) {
   
   if (distribution == "weibull"){
     
-    
-    
-    params <- weibull_mucv2shapescale(mean, cv)
+    params <- weibull_q2shapescale(q, p = c(0.25, 0.75))
     auxil <- distcrete::distcrete(distribution,
                                   shape = params$shape,
                                   scale = params$scale,
                                   w = 0.5, interval = 1)
     
-    r <- function(n) auxil$r(n)
+    r <- function(n) auxil$r(n) + 1
     d <- function(x) {
-      auxil$d(x)
+      out <- auxil$d(x - 1)
+      out[x < 1] <- 0
+      out
     }
     q <- function(x) {
-      auxil$q(x)
+      auxil$q(x) + 1
     }
     
   }
   
   list(r = r, d = d, q = q)
+}
+
+los_params <- function(distribution = "gamma", q) {
+  
+  if (distribution == "gamma"){
+    params <- gamma_q2shapescale(q, p = c(0.25, 0.75))
+  }
+  
+  if (distribution == "weibull"){
+    params <- weibull_q2shapescale(q, p = c(0.25, 0.75))
+  }
+  
+  as.list(params)
 }
