@@ -231,6 +231,8 @@ ui <- navbarPage(
         conditionalPanel(
           condition = "input.outputPanels == 'Main results'",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
+          p("Median and 95% intervals for projected bed occupancy and daily number of new cases.",
+            style = sprintf("color:%s", annot_color)),
           p("Parameter inputs specifying the number and durations of the simulations.",
             style = sprintf("color:%s", annot_color)),
           sliderInput(

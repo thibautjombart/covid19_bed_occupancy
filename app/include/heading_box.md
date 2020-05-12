@@ -9,7 +9,7 @@
 <br>
 
 Forecast bed occupancy for COVID-19 patients using recent data on admission and
-an exponential growth model. Click on the <i>simulator</i> tab to use the app. All
+an exponential growth model. Click on the <i>Simulator</i> tab to use the app. All
 inputs are provided using the left panel. Other tabs provide further
 information:
 

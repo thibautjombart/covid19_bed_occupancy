@@ -28,13 +28,13 @@ The forecasting approach can be summarised as follows; for each simulation:
 <div> n<sub>aug</sub> = n<sub>reported</sub> / %<sub>reported</sub> </div>
  
 2. Simulate future daily admissions trajectories according to one of the two approaches:
-    a. Use a log-linear model, parameterised via the doubling (or halving) time (drawn from an inverse Gamma distribution, with user-specified mean and coefficient of variation) for exponential growth (or decay)
-    b. Use a branching process, parameterised via the basic reproduction number, its dispersion, and the serial interval for successive generations. 
+    - Use a log-linear model, parameterised via the doubling (or halving) time for exponential growth (or decay)
+    - Use a branching process, parameterised via the basic reproduction number, its dispersion, and the serial interval for successive generations. 
 
 3. For each admission, simulate length of stay in hospital from the specified
    distribution.
 
-4. Count beds for each day simulation.
+4. Count beds for each day of the simulation.
 
 
 
@@ -55,7 +55,7 @@ The forecasting approach can be summarised as follows; for each simulation:
   etc.
 
 
-### References
+## References
 
 Jombart et al. 2020 "Forecasting critical care bed requirements for COVID-19 patients
 in England". CMMID post, first online
