@@ -43,13 +43,12 @@
 ## plot(beds)
 
 predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
-
+  
   ## sanity checks
   if (!length(dates)) stop("`dates` is empty")
-
-  if (!is.finite(n_admissions[1])) stop("`n_admissions` is not a number")
-  #browser()
   
+  if (!is.finite(n_admissions[1])) stop("`n_admissions` is not a number")
+
   if (inherits(r_los, "distcrete")) {
     r_los <- r_los$r
   }
@@ -91,21 +90,30 @@ predict_beds <- function(n_admissions, dates, r_los, n_sim = 10) {
                                               by = 1L))
     ## Note: unlist() doesn't work with Date objects
     
+    # what to do when date has length 0?
     
     dates_beds <- do.call(c, list_dates_beds)
-    beds_days <- incidence::incidence(dates_beds)
-    if (!is.null(last_date)) {
-      to_keep <- incidence::get_dates(beds_days) <= last_date
-      beds_days <- beds_days[to_keep, ]
-    }
     
-    get_beds_days <- incidence::get_dates(beds_days)
-    
-    if (!is.null(get_beds_days)){
+    if (length(dates_beds) == 0){
+      out[[j]] <- projections::build_projections(x = rep(0, length(dates)), dates = dates)
+    } else {
       
-      out[[j]] <- projections::build_projections(
-        x = beds_days$counts,
-        dates = get_beds_days)
+      beds_days <- incidence::incidence(dates_beds)
+      if (!is.null(last_date)) {
+        to_keep <- incidence::get_dates(beds_days) <= last_date
+        beds_days <- beds_days[to_keep, ]
+      }
+      
+      get_beds_days <- incidence::get_dates(beds_days)
+      
+      if (!is.null(get_beds_days)){
+        
+        out[[j]] <- projections::build_projections(
+          x = beds_days$counts,
+          dates = get_beds_days)
+      } else {
+        out[[j]] <- projections::build_projections(x = rep(0, length(dates)), dates = dates)
+      }
     }
   }
   
