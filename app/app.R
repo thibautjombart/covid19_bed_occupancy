@@ -122,13 +122,12 @@ ui <- navbarPage(
           condition = sprintf("input.outputPanels == 'Length of Stay'"),
           #"Length of stay in hospital",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
-          p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients. See the 'Inputs' tab for details on these distributions.",
+          p("Specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients by the inter-quartile range (IQR, 25%-75% range). See the 'Inputs' tab for details on these distributions.",
             style = sprintf("color:%s", annot_color)),
           selectInput(
             "los",
             "Length of hospital stay (LoS) distribution",
-            choices = unique(los_parameters$name),
-            selected = 1
+            choices = unique(los_parameters$name)
           ),
           ## Custom LoS distribution
           ## Discretised Gamma param as mean and cv
@@ -138,19 +137,12 @@ ui <- navbarPage(
                        choices = unique(los_parameters$los_dist),
                        selected = "gamma"),
           sliderInput(
-            "mean_los",
-            "Average LoS (in days)",
-            min = 1.1,
+            "los_quantiles",
+            "LoS IQR (in days)",
+            min = 1,
             max = 20,
-            value = 7,
-            step = .1),
-          sliderInput(
-            "cv_los",
-            HTML("Uncertainty as fraction of avg. (<i>c<sub>v,L</sub></i>)"),
-            min = 0.01,
-            max = 2,
-            value = 0.1,
-            step = .01)),
+            value = c(7, 14),
+            step = .1)),
         
         
         
@@ -365,12 +357,9 @@ server <- function(input, output, session) {
   observe({
     default=input$los
     
-    updateSliderInput(session, "mean_los",
-                      value = c(los_parameters[los_parameters$name == default, "mean_los"]))
-    
-    updateSliderInput(session, "cv_los",
-                      value = c(los_parameters[los_parameters$name == default, "cv_los"]))
-    
+    updateSliderInput(session, "los_quantiles",
+                      value = as.numeric(los_parameters[los_parameters$name == default, c("los_25", "los_75")]))
+
     updateRadioButtons(session, "los_dist",
                        selected = c(los_parameters[los_parameters$name == default, "los_dist"]))
     
@@ -405,8 +394,7 @@ server <- function(input, output, session) {
   los <- reactive({
     los_dist(
       distribution          = input$los_dist,
-      mean                  = input$mean_los,
-      cv                    = input$cv_los)
+      q                     = input$los_quantiles)
   })
   
   ## doubling time (returns a vector of doubling time values)
@@ -550,18 +538,31 @@ server <- function(input, output, session) {
   ## OTHERS
   
   ## confidence interval for length of stay
+  # rework this
+  los_params_values <- reactive({
+    los_params(distribution = input$los_dist,
+               q = input$los_quantiles)
+  })
+  
   output$los_ci <- reactive({
     q <- q_los(distribution = input$los_dist,
-               mean = input$mean_los, 
-               cv   = input$cv_los,
+               params = los_params_values(),
                p = c(0.025, 0.5, 0.975))
-    #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
-    sprintf("<b>Median LoS:</b> %0.1f days<br>
+    
+    if (q$q[3] != q$q[1]){
+      sprintf("<b>Median LoS:</b> %0.1f days<br>
             <b>95%% interval</b>: (%0.1f, %0.1f) days<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
-            q$q[2], q$q[1], q$q[3], q$short_name,
-            q$params_names[1], q$params[1],
-            q$params_names[2], q$params[2])
+              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$params_names[1], q$params[1],
+              q$params_names[2], q$params[2])
+    } else {
+      sprintf("<b>Fixed LoS:</b> %0.1f days<br>",
+              q$q[2])
+    }
+    
+    #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
+    
   })
   
   ## confidence interval for doubling time 

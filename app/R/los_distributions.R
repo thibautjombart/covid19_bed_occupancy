@@ -29,44 +29,72 @@ weibull_mucv2shapescale <- function(mean, cv){
 ## we want to avoid having 0 days LoS, so what we do is actually:
 ## - generate a discretised Gamma with (mean - 1)
 ## - add 1 to simulated LoS
-los_dist <- function(distribution = "gamma", mean, cv) {
+los_dist <- function(distribution = "gamma", q) {
   
   if (distribution == "gamma"){
-    params <- epitrix::gamma_mucv2shapescale(mean - 1, cv)
+    if (all(q == min(q))){
+      params <- epitrix::gamma_mucv2shapescale(mu = min(q), cv = 1e-08)
+    } else {
+      params <- gamma_q2shapescale(q, p = c(0.25, 0.75))
+    }
     auxil <- distcrete::distcrete("gamma",
                                   shape = params$shape,
                                   scale = params$scale,
                                   w = 0.5, interval = 1)
-    r <- function(n) auxil$r(n) + 1
+    r <- function(n) auxil$r(n)
     d <- function(x) {
-      out <- auxil$d(x - 1)
-      out[x < 1] <- 0
+      out <- auxil$d(x)
+      #out[x < 1] <- 0
       out
     }
     q <- function(x) {
-      1 + auxil$q(x)
+      auxil$q(x)
     }
   }
   
   if (distribution == "weibull"){
     
+    if (all(q == min(q))){
+      params <- list(shape = Inf, scale = min(q))
+    } else {
+      params <- weibull_q2shapescale(q, p = c(0.25, 0.75))  
+    }
     
-    
-    params <- weibull_mucv2shapescale(mean, cv)
     auxil <- distcrete::distcrete(distribution,
                                   shape = params$shape,
                                   scale = params$scale,
                                   w = 0.5, interval = 1)
     
-    r <- function(n) auxil$r(n)
+    r <- function(n) auxil$r(n) 
     d <- function(x) {
-      auxil$d(x)
+      out <- auxil$d(x)
+      #out[x < 1] <- 0
+      out
     }
     q <- function(x) {
-      auxil$q(x)
+      auxil$q(x) 
     }
     
   }
   
   list(r = r, d = d, q = q)
+}
+
+los_params <- function(distribution = "gamma", q) {
+  
+  if (all(q == min(q))){
+    params <- epitrix::gamma_mucv2shapescale(mu = min(q), cv = 1e-08)
+  } else {
+    params <- gamma_q2shapescale(q, p = c(0.25, 0.75))
+  }
+  
+  if (distribution == "weibull"){
+    if (all(q == min(q))){
+      params <- list(shape = Inf, scale = min(q))
+    } else {
+      params <- weibull_q2shapescale(q, p = c(0.25, 0.75))
+    }
+  }
+  
+  as.list(params)
 }

@@ -95,13 +95,13 @@ run_model <- function(dates,
   ord <- order(dates)
   dates <- dates[ord]
   admissions <- admissions[ord]
-  last_date <- dates[n]
-  last_admissions <- admissions[n]
+  last_date <- tail(dates, 1)
+  last_admissions <- tail(admissions,1)
   
   
   ## get projected admissions from the most recent date
-  proj_admissions <- predict_admissions(date_start = last_date,
-                                        n_start = last_admissions,
+  proj_admissions <- predict_admissions(dates = dates,
+                                        n_admissions = admissions,
                                         doubling = doubling,
                                         R = R,
                                         si = si,

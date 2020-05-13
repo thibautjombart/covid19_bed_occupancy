@@ -29,8 +29,8 @@
 #' x
 #' 
 
-predict_admissions <- function(date_start,
-                               n_start,
+predict_admissions <- function(dates,
+                               n_admissions,
                                doubling,
                                R,
                                si,
@@ -39,10 +39,10 @@ predict_admissions <- function(date_start,
                                reporting = 1) {
   
   ## Sanity checks
-  if (length(date_start) != 1L) stop("`date_start` must contain exactly one number")
-  if (length(n_start) != 1L) stop("`n_start` must contain exactly one number")
-  if (!all(is.finite(n_start))) stop("`n_start` is not a number")
-  if (any(n_start < 1)) stop("`n_start` must be >= 1")
+  if (length(dates) < 1L) stop("`dates` must contain at least one number")
+  if (length(n_admissions) < 1L) stop("`n_admissions` must contain at least one number")
+  if (!all(is.finite(n_admissions))) stop("`n_admissions` are not all numeric and finite")
+  #if (any(n_start < 1)) stop("`n_admissions` must be >= 1") # i'm not sure this is necessary
   
   if (!is.null(doubling) & !all(is.finite(doubling))) stop("`doubling` is not a number")
   
@@ -54,47 +54,45 @@ predict_admissions <- function(date_start,
   if (reporting <= 0) stop("`reporting` must be > 0")
   if (reporting > 1) stop("`reporting` must be <= 1")
   
+  ## Outline:
+  
+  ## This function calculates future admissions using an exponential model. The
+  ## growth rate is calculated from the doubling time, using: r = log(2) / d
+  
+  ## future dates and initial conditions
+  future_dates       <- seq(tail(dates,1), length.out = duration, by = 1L)
+  all_admissions     <- round(n_admissions / reporting)
+  initial_admissions <- tail(all_admissions, 1) # this is for the doubling process
+  
+  if (!is.null(doubling) & length(doubling) > 0){
+    ## calculate growth rate from doubling times
+    r_values <- log(2) / doubling
+    
+    ## calculate future admissions
+    future_admissions <- lapply(r_values,
+                                function(r)
+                                  round(initial_admissions * exp(r * (seq_len(duration) - 1))))
+    
+    ## build output
+    future_admissions <- matrix(unlist(future_admissions), ncol = length(doubling))
+    out <- projections::build_projections(x = future_admissions,
+                                          date = future_dates)
+  } else {
+    
+    # use branching process
+    current_incidence <- incidence::incidence(dates = rep(dates, n_admissions))
+    out <- projections::project(x = current_incidence, 
+                                R = R,
+                                si = si,
+                                n_sim = length(R), 
+                                n_days = duration,
+                                R_fix_within = TRUE,
+                                model = "negbin",
+                                size = dispersion)
+  } 
   
   
-    
-    ## Outline:
-    
-    ## This function calculates future admissions using an exponential model. The
-    ## growth rate is calculated from the doubling time, using: r = log(2) / d
-    
-    ## future dates and initial conditions
-    future_dates <- seq(date_start, length.out = duration, by = 1L)
-    initial_admissions <- round(n_start / reporting)
-    
-    if (!is.null(doubling) & length(doubling) > 0){
-      ## calculate growth rate from doubling times
-      r_values <- log(2) / doubling
-      
-      ## calculate future admissions
-      future_admissions <- lapply(r_values,
-                                  function(r)
-                                    round(initial_admissions * exp(r * (seq_len(duration) - 1))))
-      
-      ## build output
-      future_admissions <- matrix(unlist(future_admissions), ncol = length(doubling))
-      out <- projections::build_projections(x = future_admissions,
-                                            date = future_dates)
-    } else {
-      
-      # use branching process
-      current_incidence <- incidence(dates = rep(date_start, initial_admissions))
-      out <- projections::project(x = current_incidence, 
-                                  R = R,
-                                  si = si,
-                                  n_sim = length(R), 
-                                  n_days = duration,
-                                  R_fix_within = TRUE,
-                                  model = "negbin",
-                                  size = dispersion)
-    } 
   
-   
-    
   
   out
 }
