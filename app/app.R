@@ -179,19 +179,19 @@ ui <- navbarPage(
               value = 0.26,
               step = 0.01
             ),
-            sliderTextInput(
-              "dispersion",
-              HTML("Dispersion of <i>R</i><sub>0</sub>"),
-              choices = c("0.1", "0.54"),
-              selected = "0.54"
+            # sliderTextInput(
+            #   "dispersion",
+            #   HTML("Dispersion of <i>R</i><sub>0</sub>"),
+            #   choices = c("0.1", "0.54"),
+            #   selected = "0.54"
+            # ),
+            radioButtons(inputId = "dispersion",
+                         label = HTML("Dispersion of <i>R</i><sub>0</sub>"),
+              choiceNames = c("0.1 (Endo et al.)",
+                              "0.54 (Riou and Althaus)"),
+              choiceValues = c(0.1, 0.54),
+              selected = 0.54
             ),
-            ## radioButtons(
-            ##   "dispersion",
-            ##   HTML("Dispersion of <i>R</i><sub>0</sub>"),
-            ##   choices =  list("0.1 (Endo et al.)" = "0.1",
-            ##                   "0.54 (Riou and Althaus)" = "0.54"),
-            ##   selected = "0.54"
-            ## ),
             sliderInput(
               "serial_interval",
               "Average serial interval (days):",
@@ -502,11 +502,12 @@ server <- function(input, output, session) {
     #}
   )
   
-  output$secondary_plot <- renderPlot(
+  output$secondary_plot <- renderPlot({
+
     plot_secondary(
       R_large(),
-      dispersion = input$dispersion
-    ), width = 300, height = 200
+      dispersion = as.numeric(input$dispersion)
+    )}, width = 300, height = 200
   )
   
   output$serial_plot <- renderPlot({
@@ -624,7 +625,7 @@ server <- function(input, output, session) {
     
     
     q <- q_secondary(R_large(),
-                     input$dispersion,
+                     as.numeric(input$dispersion),
                      p = c(0.025, 0.5, 0.975))
     
     sprintf("<b>Median secondary cases:</b> %0.1f<br>
