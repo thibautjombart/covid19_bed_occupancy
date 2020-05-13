@@ -162,8 +162,8 @@ ui <- navbarPage(
             style = sprintf("color:%s", annot_color)),
           radioButtons("specifyepi", label = "How do you wish to specify the epidemic growth?",
                        choices = c("Branching process",
-                                   "Doubling time"),
-                       selected = "Doubling time"),
+                                   "Doubling/halving time"),
+                       selected = "Doubling/halving time"),
           conditionalPanel(
             condition = "input.specifyepi == 'Branching process'",
             sliderInput(
@@ -185,6 +185,13 @@ ui <- navbarPage(
               choices = c("0.1", "0.54"),
               selected = "0.54"
             ),
+            ## radioButtons(
+            ##   "dispersion",
+            ##   HTML("Dispersion of <i>R</i><sub>0</sub>"),
+            ##   choices =  list("0.1 (Endo et al.)" = "0.1",
+            ##                   "0.54 (Riou and Althaus)" = "0.54"),
+            ##   selected = "0.54"
+            ## ),
             sliderInput(
               "serial_interval",
               "Average serial interval (days):",
@@ -202,7 +209,7 @@ ui <- navbarPage(
               step = 0.01
             )),
           conditionalPanel(
-            condition = "input.specifyepi == 'Doubling time'",
+            condition = "input.specifyepi == 'Doubling/halving time'",
             radioButtons(inputId = "doublehalf",
               label = "The number of cases is:",
               choiceNames = c("Doubling", "Halving"),
@@ -281,7 +288,7 @@ ui <- navbarPage(
             
             br(),
             
-            conditionalPanel(condition = "input.specifyepi == 'Doubling time'",
+            conditionalPanel(condition = "input.specifyepi == 'Doubling/halving time'",
                              plotOutput("doubling_plot", width = "30%", height = "300px"),
                              br(),
                              htmlOutput("doubling_ci")
@@ -445,7 +452,7 @@ server <- function(input, output, session) {
     input$run,
     if (!is.null(data())) {
       
-      if(input$specifyepi == "Doubling time"){
+      if(input$specifyepi == "Doubling/halving time"){
         doubling_ <- doubling()} else {
           doubling_ <- NULL
         }
