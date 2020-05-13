@@ -63,15 +63,31 @@ predict_admissions <- function(dates,
   future_dates       <- seq(tail(dates,1), length.out = duration, by = 1L)
   all_admissions     <- round(n_admissions / reporting)
   initial_admissions <- tail(all_admissions, 1) # this is for the doubling process
+
   
   if (!is.null(doubling) & length(doubling) > 0){
     ## calculate growth rate from doubling times
     r_values <- log(2) / doubling
+    dates_num <- as.numeric(dates)
+    tail_date <- tail(dates_num,1)
     
     ## calculate future admissions
     future_admissions <- lapply(r_values,
-                                function(r)
-                                  round(initial_admissions * exp(r * (seq_len(duration) - 1))))
+                                function(r){
+                                  # fit a model for the doubling/halving rate to recent data
+                                  # use this to get expected number of cases on final day of admissions
+                                  model <- stats::glm(all_admissions ~ 1, 
+                                                      offset = r*dates_num,
+                                                      family = "poisson")
+                                  admissions0 <- as.numeric(
+                                    stats::predict.glm(object = model,
+                                                       newdata = data.frame(
+                                                         dates_num = tail_date,
+                                                         r = r), 
+                                                       type = "response"))
+                                  # end fit a model
+                                  round(admissions0 * exp(r * (seq_len(duration) - 1)))
+                                })
     
     ## build output
     future_admissions <- matrix(unlist(future_admissions), ncol = length(doubling))
