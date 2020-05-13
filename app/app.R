@@ -540,13 +540,21 @@ server <- function(input, output, session) {
     q <- q_los(distribution = input$los_dist,
                params = los_params_values(),
                p = c(0.025, 0.5, 0.975))
-    #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
-    sprintf("<b>Median LoS:</b> %0.1f days<br>
+    
+    if (q$q[3] != q$q[1]){
+      sprintf("<b>Median LoS:</b> %0.1f days<br>
             <b>95%% interval</b>: (%0.1f, %0.1f) days<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
-            q$q[2], q$q[1], q$q[3], q$short_name,
-            q$params_names[1], q$params[1],
-            q$params_names[2], q$params[2])
+              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$params_names[1], q$params[1],
+              q$params_names[2], q$params[2])
+    } else {
+      sprintf("<b>Fixed LoS:</b> %0.1f days<br>",
+              q$q[2])
+    }
+    
+    #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
+    
   })
   
   ## confidence interval for doubling time 
