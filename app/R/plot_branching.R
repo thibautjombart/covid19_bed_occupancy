@@ -11,16 +11,21 @@
 
 plot_r0 <- function(R){
     
-    q <- qgamma(p = c(0.0001, 0.9999),
-                shape = R$R0_parms$shape,
-                scale = R$R0_parms$scale)
+    
     
     if (sd(R$R0) == 0){
-        r0_plot <- ggplot2::ggplot(data = data.frame(R = unique(R$R0))) +
-            ggplot2::geom_segment(aes(x = R, xend = R),
-                                  y = 0, yend = 1,
-                                  color = cmmid_color)
+        r0_plot <- ggplot2::ggplot(data = data.frame(R = unique(R$R0),
+                                                     y = 1)) +
+            ggplot2::geom_segment(aes(x = R,
+                                      xend = R,
+                                      y = 0*y,
+                                      yend = y),
+                              size = 4,
+                              color = cmmid_color)
     } else {
+        q <- qgamma(p = c(0.0001, 0.9999),
+                    shape = R$R0_parms$shape,
+                    scale = R$R0_parms$scale)
         
         r0_plot <- ggplot2::ggplot(data = data.frame(R = q),
                                    aes(x = R)) +
