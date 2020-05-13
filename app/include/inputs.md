@@ -1,5 +1,5 @@
 
-## Data
+## Admissions data
 
 ### Minimum data: admissions on a single day
 
@@ -71,19 +71,19 @@ Currently available options are:
 
 The default option is the non-critical setting from non-China studies published by [Rees and Nightingale et al.  (2020)](https://doi.org/10.1101/2020.04.30.20084780)
   
-## Growth parameters
+## Epidemic growth parameters
 
 ### Doubling/halving time
 
 * **Assumed doubling/halving time (days)** This is the estimated (mean) time taken for the epidemic to double (or halve) in size, and serves as a measure of transmission intensity.
     + Default: 7.7
     + Plausible ranges: 1.8 - 9.3. See [Muniz-Rodriguez et al 2020](https://doi.org/10.3201/eid2608.200219), [Zhao et al 2020](https://www.medrxiv.org/content/medrxiv/early/2020/02/29/2020.02.26.20028449.full.pdf), [Wu et al 2020](https://www.nature.com/articles/s41591-020-0822-7), [Li et al 2020](https://www.nejm.org/doi/full/10.1056/NEJMoa2001316), [Cheng et al 2020](https://link.springer.com/content/pdf/10.1007/s15010-020-01401-y.pdf) and [Granozio 2020](https://arxiv.org/ftp/arxiv/papers/2003/2003.08661.pdf) for references. 
-* **Uncertainty in doubling time (coefficient of variation)**: the sampling
-  distribution for the doubling time is an inverse gamma distribution
-  parameterised in terms of the mean doubling time (defined by the user) and the
-  coefficient of variation (i.e. &sigma;/&mu;) which are then used for moment-matching
+* **Uncertainty in doubling/halving time (coefficient of variation)**: the sampling
+  distribution for the doubling/halving time is an inverse gamma distribution
+  parameterised in terms of the mean doubling/havling time (defined by the user) and the
+  coefficient of variation (i.e. <i>c<sub>v,T</sub> = &sigma;/&mu;</i>) which are then used for moment-matching
   to determine appropriate values of the distribution's shape and rate parameters (&alpha;, &beta;).
-    + Default: &sigma;/&mu; = 0.33
+    + Default: <i>c<sub>v,T</sub></i> = 0.33
 
 The default values here are drawn from the early dynamics reported by <a href="https://www.nejm.org/doi/full/10.1056/NEJMoa2001316">Li et al. (2020)</a>.
 
@@ -119,6 +119,12 @@ The default value is for <i>R</i><sub>0</sub> to have an average of 2.5 and <i>c
 
 ## References
 
-Zhou, Fei, et al. "Clinical Course and Risk Factors for Mortality of Adult Inpatients with COVID-19 in Wuhan, China: a Retrospective Cohort Study." _The Lancet_, 2020. <a href="https://doi.org/10.1016/s0140-6736(20)30566-3">doi:10.1016/s0140-6736(20)30566-3</a>.
+Endo, A., et al. "Estimating the overdispersion in COVID-19 transmission using outbreak sizes outside China [version 1; peer review: 1 approved]", _Wellcome Open Research_, 2020. https://doi.org/10.12688/wellcomeopenres.15842.1
 
+Li, Q., et al. "Early Transmission Dynamics in Wuhan, China, of Novel Coronavirus–Infected Pneumonia." _NEJM_, 2020. https://doi.org/10.1056/NEJMoa2001316
 
+Rees, E. M., Nightingale, E. S., et al. "COVID-19 length of hospital stay: a systematic review and data synthesis." _medR&chi;iv_, 2020. https://doi.org/10.1101/2020.04.30.20084780
+
+Riou, J. and Althaus, C. "Pattern of early human-to-human transmission of Wuhan 2019 novel coronavirus (2019-nCoV), December 2019 to January 2020", _Euro Surveillance_, 2020. https://doi.org/10.2807/1560-7917.ES.2020.25.4.2000058
+
+Zhou, Fei, et al. "Clinical Course and Risk Factors for Mortality of Adult Inpatients with COVID-19 in Wuhan, China: a Retrospective Cohort Study." _The Lancet_, 2020. <a href="https://doi.org/10.1016/s0140-6736(20)30566-3">doi:10.1016/s0140-6736(20)30566-3</a>
