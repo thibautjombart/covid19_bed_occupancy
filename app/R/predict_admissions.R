@@ -69,7 +69,7 @@ predict_admissions <- function(dates,
     ## calculate growth rate from doubling times
     r_values <- log(2) / doubling
     dates_num <- as.numeric(dates)
-    tail_date <- tail(dates,1)
+    tail_date <- tail(dates_num,1)
     
     ## calculate future admissions
     future_admissions <- lapply(r_values,
