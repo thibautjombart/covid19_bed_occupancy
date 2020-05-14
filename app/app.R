@@ -310,7 +310,7 @@ ui <- navbarPage(
             
             br(),
             plotOutput("main_plot", width = "30%", height = "600px"),
-            checkboxInput("show_table", "Show summary table?", FALSE),
+            checkboxInput("show_table", "Show bed occupancy summary table?", FALSE),
             conditionalPanel(
               condition = sprintf("input.show_table == true"),
               DT::dataTableOutput("main_table", width = "50%"))
