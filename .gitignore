@@ -5,3 +5,5 @@ report_outputs
 .Rproj.user
 
 .DS_Store
+
+*.dcf
