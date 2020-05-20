@@ -659,7 +659,9 @@ server <- function(input, output, session) {
                                 Sys.time(), 
                                 sep = "_"),
                           ".csv")
-      return(gsub(" ", "_", withSpace))
+      withSpace <- gsub(" ", "_", withSpace)
+      withSpace <- gsub(":", "-", withSpace)
+      return(withSpace)
     },
     content = function(file) {
       write.csv(x = summarise_beds(results()$beds), 
@@ -675,7 +677,9 @@ server <- function(input, output, session) {
                                 Sys.time(), 
                                 sep = "_"),
                           ".png")
-      return(gsub(" ", "_", withSpace))
+      withSpace <- gsub(" ", "_", withSpace)
+      withSpace <- gsub(":", "-", withSpace)
+      return(withSpace)
     },
     content = function(file) {
       device <- function(..., width, height){
