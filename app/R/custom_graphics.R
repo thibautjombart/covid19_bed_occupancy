@@ -60,3 +60,7 @@ cmmid_pal <- function(n){
   colorRampPalette(colors = c("#388a68","#0D5257"))(n)
   
 }
+
+my_palette <- c(Unreported = scales::alpha(cmmid_color, 0.5),
+                Reported = cmmid_color,
+                Projected = "#00AEC7")

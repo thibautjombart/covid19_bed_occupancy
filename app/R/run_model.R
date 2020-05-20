@@ -46,12 +46,20 @@
 
 run_model <- function(dates,
                       admissions,
-                      doubling,
+                      doubling = NULL,
+                      R = NULL,
+                      si = NULL, # a distcrete object
+                      dispersion = 1,
                       duration,
                       r_los,
                       reporting = 1,
                       n_sim = 1) {
   ## check input
+  if (all(is.null(c(doubling, si, R)))){
+    msg <- "Must define either doubling times, `doubling`, or basic reproduction number, `R`, and serial interval, `si`"
+    stop(msg)
+  }
+  
   n <- length(dates)
   if (n != length(admissions)) {
     msg <- "`dates` and `admissions` have different length"
@@ -80,18 +88,24 @@ run_model <- function(dates,
     msg <- "some `dates` are missing / invalid"
     stop(msg)
   }
+  
+  out <- list(data = data.frame(date = dates,
+                                n_admissions = admissions))
 
   ord <- order(dates)
   dates <- dates[ord]
   admissions <- admissions[ord]
-  last_date <- dates[n]
-  last_admissions <- admissions[n]
+  last_date <- tail(dates, 1)
+  last_admissions <- tail(admissions,1)
   
   
   ## get projected admissions from the most recent date
-  proj_admissions <- predict_admissions(date_start = last_date,
-                                        n_start = last_admissions,
+  proj_admissions <- predict_admissions(dates = dates,
+                                        n_admissions = admissions,
                                         doubling = doubling,
+                                        R = R,
+                                        si = si,
+                                        dispersion = dispersion,
                                         duration = duration,
                                         reporting = reporting)
 
@@ -116,5 +130,8 @@ run_model <- function(dates,
                                           n_sim = n_sim))
 
   beds <- projections::merge_projections(beds)
-  beds
+  out$beds <- beds
+  out$admissions <- proj_admissions
+  return(out)
+              
 }

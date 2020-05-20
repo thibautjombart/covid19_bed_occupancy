@@ -23,7 +23,8 @@ library(ggplot2)
 library(invgamma)
 library(markdown)
 library(linelist)
-
+library(shinyWidgets)
+library(fitdistrplus)
 
 ## global variables
 app_title   <- "Hospital bed occupancy projections"
@@ -49,6 +50,7 @@ ui <- navbarPage(
   ## MAIN SIMULATOR PANEL
   tabPanel(
     "Simulator",
+    shinyWidgets::chooseSliderSkin(skin = "Flat", color = "#00AEC7"),
     sidebarLayout(
       position = "left",
       
@@ -120,13 +122,12 @@ ui <- navbarPage(
           condition = sprintf("input.outputPanels == 'Length of Stay'"),
           #"Length of stay in hospital",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
-          p("Parameter inputs specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients. See the 'Inputs' tab for details on these distributions.",
+          p("Specifying the distribution of the length of hospital stay (LoS) for COVID-19 patients by the inter-quartile range (IQR, 25%-75% range). See the 'Inputs' tab for details on these distributions.",
             style = sprintf("color:%s", annot_color)),
           selectInput(
             "los",
             "Length of hospital stay (LoS) distribution",
-            choices = unique(los_parameters$name),
-            selected = "Custom"
+            choices = unique(los_parameters$name)
           ),
           ## Custom LoS distribution
           ## Discretised Gamma param as mean and cv
@@ -136,43 +137,92 @@ ui <- navbarPage(
                        choices = unique(los_parameters$los_dist),
                        selected = "gamma"),
           sliderInput(
-            "mean_los",
-            "Average LoS (in days)",
-            min = 1.1,
+            "los_quantiles",
+            "LoS IQR (in days)",
+            min = 1,
             max = 20,
-            value = 7,
-            step = .1),
-          sliderInput(
-            "cv_los",
-            HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
-            min = 0.01,
-            max = 2,
-            value = 0.1,
-            step = .01)),
+            value = c(7, 14),
+            step = .1)),
         
         
         
         ## Epidemic growth inputs
         conditionalPanel(
-          condition = "input.outputPanels == 'Doubling time'",
+          condition = "input.outputPanels == 'Epidemic Parameters'",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
-          p("Parameter inputs specifying the COVID-19 epidemic growth as doubling time and associated uncertainty. See the 'Inputs' tab for details on the doubling time distribution.",
+          p("Parameter inputs specifying the COVID-19 epidemic growth in terms of basic reproduction number and serial interval (and associated uncertainties). See the 'Inputs' tab for details on the serial interval distribution.",
             style = sprintf("color:%s", annot_color)),
-          sliderInput(
-            "doubling_time",
-            "Average doubling time (days):",
-            min = 1,
-            max = 20,
-            value = 7, 
-            step = 0.1
-          ),
-          sliderInput(
-            "uncertainty_doubling_time",
-            HTML("Uncertainty as fraction of avg. (<i>c<sub>v</sub></i>)"),
-            min = 0,
-            max = 0.5,
-            value = 0.1,
-            step = 0.01
+          radioButtons("specifyepi", label = "How do you wish to specify the epidemic growth?",
+                       choices = c("Branching process",
+                                   "Doubling/halving time"),
+                       selected = "Doubling/halving time"),
+          conditionalPanel(
+            condition = "input.specifyepi == 'Branching process'",
+            sliderInput(
+              inputId = "r0",
+              label = HTML("Average basic reproduction number, <i>R</i><sub>0</sub>"),
+              min=0.1, max=5, step=0.1, 
+              value=2.5),  
+            sliderInput(
+              "uncertainty_r0",
+              HTML("Uncertainty as fraction of avg. <i>R</i><sub>0</sub> (<i>c<sub>v,R<sub>0</sub></sub></i>)"),
+              min = 0,
+              max = 0.5,
+              value = 0.26,
+              step = 0.01
+            ),
+            # sliderTextInput(
+            #   "dispersion",
+            #   HTML("Dispersion of <i>R</i><sub>0</sub>"),
+            #   choices = c("0.1", "0.54"),
+            #   selected = "0.54"
+            # ),
+            radioButtons(inputId = "dispersion",
+                         label = HTML("Dispersion of <i>R</i><sub>0</sub>"),
+              choiceNames = c("0.1 (Endo et al.)",
+                              "0.54 (Riou and Althaus)"),
+              choiceValues = c(0.1, 0.54),
+              selected = 0.54
+            ),
+            sliderInput(
+              "serial_interval",
+              "Average serial interval (days):",
+              min = 1,
+              max = 20,
+              value = 7.5, 
+              step = 0.1
+            ),
+            sliderInput(
+              "uncertainty_serial_interval",
+              HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,S</sub></i>)"),
+              min = 0,
+              max = 2,
+              value = 0.45,
+              step = 0.01
+            )),
+          conditionalPanel(
+            condition = "input.specifyepi == 'Doubling/halving time'",
+            radioButtons(inputId = "doublehalf",
+              label = "The number of cases is:",
+              choiceNames = c("Doubling", "Halving"),
+              choiceValues = c(1, -1)
+            ),
+            sliderInput(
+              "doubling_time",
+              "Average time (days):",
+              min = 1,
+              max = 20,
+              value = 7.7, 
+              step = 0.1
+            ),
+            sliderInput(
+              "uncertainty_doubling_time",
+              HTML("Uncertainty as fraction of avg. time (<i>c<sub>v,T</sub></i>)"),
+              min = 0,
+              max = 1,
+              value = 0.33,
+              step = 0.01
+            )
           )
         ),
         
@@ -180,6 +230,8 @@ ui <- navbarPage(
         conditionalPanel(
           condition = "input.outputPanels == 'Main results'",
           h4("Description", style = sprintf("color:%s", cmmid_color)),
+          p("Median and 95% intervals for projected bed occupancy and daily number of new cases.",
+            style = sprintf("color:%s", annot_color)),
           p("Parameter inputs specifying the number and durations of the simulations.",
             style = sprintf("color:%s", annot_color)),
           sliderInput(
@@ -219,24 +271,46 @@ ui <- navbarPage(
             "Length of Stay",
             
             br(),
-            plotOutput("los_plot", width = "30%", height = "300px"),
+            plotOutput("los_plot", width = "100%", height = "300px"),
             br(),
             htmlOutput("los_ci")
           ),
           tabPanel(
-            "Doubling time",
+            "Epidemic Parameters",
             
             br(),
-            plotOutput("doubling_plot", width = "30%", height = "300px"),
-            br(),
-            htmlOutput("doubling_ci")
+            
+            conditionalPanel(condition = "input.specifyepi == 'Doubling/halving time'",
+                             plotOutput("doubling_plot", width = "30%", height = "300px"),
+                             br(),
+                             htmlOutput("doubling_ci")
+            ),
+            # need to amend this panel to have three fluidrows and two columns each,
+            # plot in left col, summary on right
+            conditionalPanel(condition = "input.specifyepi == 'Branching process'",
+                             
+                             fluidRow(
+                               column(6, plotOutput("r0_plot", height = "200px")),
+                               column(6, br(), br(), htmlOutput("r0_ci"))),
+                             
+                             fluidRow(
+                               column(6, plotOutput("secondary_plot", height = "200px")),
+                               column(6, br(), br(), htmlOutput("secondary_ci"))),
+                             br(),
+                             fluidRow(
+                               column(6, plotOutput("serial_plot", height = "200px")),
+                               column(6, br(), br(), htmlOutput("serial_ci")))
+            )
+            
+            
+            
           ),
           tabPanel(
             "Main results",
-          
+            
             br(),
-            plotOutput("main_plot", width = "30%", height = "300px"),
-            checkboxInput("show_table", "Show summary table?", FALSE),
+            plotOutput("main_plot", width = "30%", height = "600px"),
+            checkboxInput("show_table", "Show bed occupancy summary table?", FALSE),
             conditionalPanel(
               condition = sprintf("input.show_table == true"),
               DT::dataTableOutput("main_table", width = "50%"))
@@ -267,6 +341,7 @@ ui <- navbarPage(
 
 
 
+
 #################
 ## SERVER SIDE ##
 #################
@@ -282,12 +357,9 @@ server <- function(input, output, session) {
   observe({
     default=input$los
     
-    updateSliderInput(session, "mean_los",
-                      value = c(los_parameters[los_parameters$name == default, "mean_los"]))
-    
-    updateSliderInput(session, "cv_los",
-                      value = c(los_parameters[los_parameters$name == default, "cv_los"]))
-    
+    updateSliderInput(session, "los_quantiles",
+                      value = as.numeric(los_parameters[los_parameters$name == default, c("los_25", "los_75")]))
+
     updateRadioButtons(session, "los_dist",
                        selected = c(los_parameters[los_parameters$name == default, "los_dist"]))
     
@@ -295,6 +367,9 @@ server <- function(input, output, session) {
   }
   
   )
+  # 
+  # observeEvent(eventExpr = data, 
+  #              {output$main_plot =renderPlot({})})
   
   
   ## GENERAL PROCESSING OF INPUTS: INTERNAL CONSTRUCTS
@@ -319,41 +394,64 @@ server <- function(input, output, session) {
   los <- reactive({
     los_dist(
       distribution          = input$los_dist,
-      mean                  = input$mean_los,
-      cv                    = input$cv_los)
+      q                     = input$los_quantiles)
   })
   
-  ## doubling time (returns a vector or r values)
+  ## doubling time (returns a vector of doubling time values)
   doubling <-  reactive({
-    r_doubling(n = input$number_simulations,
-               mean = input$doubling_time,
-               cv = input$uncertainty_doubling_time)
+    r_doubling(n       = input$number_simulations,
+               mean    = input$doubling_time,
+               cv      = input$uncertainty_doubling_time)
   })
   ## same, but larger sample to plot distribution
   doubling_large <-  reactive({
     r_doubling(n = 1e5,
-               mean = input$doubling_time,
-               cv = input$uncertainty_doubling_time)
+               mean    = input$doubling_time,
+               cv      = input$uncertainty_doubling_time)
   })
-  
   
   output$data_plot <- renderPlot({
     
     ggdata <- data()
     reporting <- input$assumed_reporting
-    simulation_duration <- input$simulation_duration
-    plot_data(data = ggdata, reporting = reporting, simulation_duration)
+    plot_data(data = ggdata, reporting = reporting)
     
+  })
+  
+  si <- reactive({
+    make_si(mean = input$serial_interval,
+            cv   = input$uncertainty_serial_interval)
+  })
+  
+  R <- reactive({
+    make_r0(n    = input$number_simulations,
+            mean = input$r0,
+            cv   = input$uncertainty_r0)
+  })
+  
+  R_large <-  reactive({
+    make_r0(n    = 1e5,
+            mean = input$r0,
+            cv   = input$uncertainty_r0)
   })
   
   ## main results
   results <- eventReactive(
     input$run,
     if (!is.null(data())) {
+      
+      if(input$specifyepi == "Doubling/halving time"){
+        doubling_ <- doubling()} else {
+          doubling_ <- NULL
+        }
+      
       run_model(
         dates = data()$date,
         admissions = data()$n_admissions,
-        doubling = doubling(),
+        doubling = as.numeric(input$doublehalf)*doubling_,
+        R = R()$R0,  
+        si = si(),
+        dispersion = as.numeric(input$dispersion),
         duration = input$simulation_duration,
         r_los = los()$r,
         reporting = input$assumed_reporting / 100,
@@ -364,30 +462,67 @@ server <- function(input, output, session) {
     ignoreNULL = FALSE
   )
   
-  
+  output$doublehalftext <- reactive({
+    if (input$doublehalf == 1){
+      "doubling"
+    } else {
+      "halving"
+    }
+  })
   
   ## PLOTS  
   ## graph for the distribution of length of hospital stay (LoS)
   output$los_plot <- renderPlot(
     plot_los_distribution(
-      los(), "Length of stay in hospital"
-    ), width = 600
+      los(), 
+      title = "Length of stay in hospital",
+      x     = "Days in hospital",
+      y     = "Density"
+    )
+  )
+  
+  output$r0_plot <- renderPlot(
+    plot_r0(
+      R_large()
+    ), width = 300, height = 200
+      #function() {
+      #0.6*session$clientData$output_r0_plot_width
+    #}
+  )
+  
+  output$secondary_plot <- renderPlot({
+
+    plot_secondary(
+      R_large(),
+      dispersion = as.numeric(input$dispersion)
+    )}, width = 300, height = 200
+  )
+  
+  output$serial_plot <- renderPlot({
+    plot_los_distribution(los = si(), 
+                          title = "Serial interval", 
+                          x = "Days to secondary case",
+                          y = "Density")
+  }, width = 300, height = 200
   )
   
   ## graph for the distribution of length of hospital stay (LoS)
-  output$doubling_plot <- renderPlot(
+  output$doubling_plot <- renderPlot({
+    
     plot_doubling_distribution(
-      doubling_large(), "Epidemic doubling time"
-    ), width = 600
+      doubling_large(),
+      title = sprintf("Epidemic %s time", dhlabel(input$doublehalf)), 
+      x = "Days", 
+      y = "Density")
+  }, width = 600
   )
   
   
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
-    plot_beds(results(),
-              ribbon_color = slider_color,
-              palette = cmmid_pal,
-              title = "Projected bed occupancy")
+    plot_results(results = results(),
+                 reporting = input$assumed_reporting)
+    
   }, width = 600)
   
   
@@ -396,48 +531,111 @@ server <- function(input, output, session) {
   
   ## summary tables
   output$main_table <- DT::renderDataTable({
-    summarise_beds(results())
+    summarise_beds(results()$beds)
   })
-  
   
   
   ## OTHERS
   
   ## confidence interval for length of stay
+  # rework this
+  los_params_values <- reactive({
+    los_params(distribution = input$los_dist,
+               q = input$los_quantiles)
+  })
+  
   output$los_ci <- reactive({
     q <- q_los(distribution = input$los_dist,
-               mean = input$mean_los, 
-               cv   = input$cv_los,
+               params = los_params_values(),
                p = c(0.025, 0.5, 0.975))
-    #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
-    sprintf("<b>Median LoS:</b> %0.1f<br>
-            <b>95%% interval</b>: (%0.1f, %0.1f)<br>
+    
+    if (q$q[3] != q$q[1]){
+      sprintf("<b>Median LoS:</b> %0.1f days<br>
+            <b>95%% interval</b>: (%0.1f, %0.1f) days<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$params_names[1], q$params[1],
+              q$params_names[2], q$params[2])
+    } else {
+      sprintf("<b>Fixed LoS:</b> %0.1f days<br>",
+              q$q[2])
+    }
+    
+    #sprintf("<b>LoS distribution:</b> %s(%0.1f, %0.1f)", )
+    
+  })
+  
+  ## confidence interval for doubling time 
+  output$serial_ci <- reactive({
+    
+    if (input$uncertainty_serial_interval > 0){
+      
+      q <- q_doubling(mean = input$serial_interval, 
+                      cv   = input$uncertainty_serial_interval,
+                      p = c(0.025, 0.5, 0.975))
+      
+      
+      sprintf("<b>Median serial interval:</b> %0.1f days<br>
+            <b>95%% interval:</b> (%0.1f, %0.1f) days<br>
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$params_names[1], q$params[1],
+              q$params_names[2], q$params[2])
+    } else {
+      sprintf("<b>Fixed serial interval:</b> %0.1f days<br>",
+              input$serial_interval)
+    }
+  })
+  
+  output$doubling_ci <- reactive({
+    
+    q <- q_doubling(mean = input$doubling_time,
+                    cv = input$uncertainty_doubling_time, p = c(0.025, 0.5, 0.975))
+    
+    
+    sprintf("<b>Median %s time:</b> %0.1f days<br>
+            <b>95%% interval:</b> (%0.1f, %0.1f)<br>
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+            HTML(dhlabel(input$doublehalf)),
             q$q[2], q$q[1], q$q[3], q$short_name,
             q$params_names[1], q$params[1],
             q$params_names[2], q$params[2])
   })
   
-  ## confidence interval for doubling time 
-  output$doubling_ci <- reactive({
+  output$r0_ci <- reactive({
     
-    if (input$uncertainty_doubling_time > 0){
-    
-    q <- q_doubling(mean = input$doubling_time, 
-                    cv   = input$uncertainty_doubling_time,
-                    p = c(0.025, 0.5, 0.975))
-    
-    
-    sprintf("<b>Median doubling time:</b> %0.1f<br>
+    if (input$uncertainty_r0 > 0){
+      
+      q <- q_r0(mean = input$r0, 
+                cv   = input$uncertainty_r0,
+                p = c(0.025, 0.5, 0.975))
+      
+      sprintf("<b>Median <i>R</i><sub>0</sub>:</b> %0.1f<br>
             <b>95%% interval:</b> (%0.1f, %0.1f)<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
+              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$params_names[1], q$params[1],
+              q$params_names[2], q$params[2])
+    } else {
+      sprintf("<b>Fixed <i>R</i><sub>0</sub>:</b> %0.1f<br>",
+              input$r0)
+    }
+  })
+  
+  output$secondary_ci <- reactive({
+    
+    
+    q <- q_secondary(R_large(),
+                     as.numeric(input$dispersion),
+                     p = c(0.025, 0.5, 0.975))
+    
+    sprintf("<b>Median secondary cases:</b> %0.1f<br>
+            <b>95%% interval:</b> (%0.1f, %0.1f)<br>
+            <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.2f)",
             q$q[2], q$q[1], q$q[3], q$short_name,
             q$params_names[1], q$params[1],
             q$params_names[2], q$params[2])
-    } else {
-      sprintf("<b>Fixed doubling time:</b> %0.1f<br>",
-              input$doubling_time)
-    }
+    
   })
   
 }
