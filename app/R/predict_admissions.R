@@ -71,13 +71,17 @@ predict_admissions <- function(dates,
     dates_num <- as.numeric(dates)
     tail_date <- tail(dates_num,1)
     
+    dates_weights <- pmin(1, exp(-log(2)/7*(tail_date - dates_num - 7)))
+    
+    
     ## calculate future admissions
     future_admissions <- lapply(r_values,
                                 function(r){
                                   # fit a model for the doubling/halving rate to recent data
                                   # use this to get expected number of cases on final day of admissions
                                   model <- stats::glm(all_admissions ~ 1, 
-                                                      offset = r*dates_num,
+                                                      weights = dates_weights,
+                                                      offset = I(r*dates_num),
                                                       family = "poisson")
                                   admissions0 <- as.numeric(
                                     stats::predict.glm(object = model,
@@ -86,7 +90,7 @@ predict_admissions <- function(dates,
                                                          r = r), 
                                                        type = "response"))
                                   # end fit a model
-                                  round(admissions0 * exp(r * (seq_len(duration) - 1)))
+                                  round(admissions0 * exp(r * (seq_len(duration) )))
                                 })
     
     ## build output
