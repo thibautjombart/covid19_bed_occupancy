@@ -93,7 +93,7 @@ plot_results <- function(results,
         results_plot <- results_plot +
             ggplot2::annotate("text", 
                               x = min(results$data$Date),
-                              y = Inf, label = sprintf("Uploaded data shorter than %s", warning_text),
+                              y = Inf, label = sprintf("Warning: Uploaded data\nshorter than %s", warning_text),
                               hjust=0, vjust=1.25, col = "#FE5000", cex=6,
                               fontface = "bold", alpha = 0.8)
         
