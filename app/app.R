@@ -314,7 +314,7 @@ ui <- navbarPage(
             checkboxInput("show_table", "Show bed occupancy summary table?", FALSE),
             conditionalPanel(
               condition = sprintf("input.show_table == true"),
-              downloadButton("downloadData", "Download data"),
+              downloadButton("downloadData", "Download bed occupancy summary table"),
               br(),
               DT::dataTableOutput("main_table", width = "50%"))
           )
