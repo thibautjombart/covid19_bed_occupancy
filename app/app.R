@@ -189,7 +189,7 @@ ui <- navbarPage(
               "Average serial interval (days):",
               min = 1,
               max = 20,
-              value = 7.5, 
+              value = 4.7, 
               step = 0.1
             ),
             sliderInput(
@@ -197,7 +197,7 @@ ui <- navbarPage(
               HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,S</sub></i>)"),
               min = 0,
               max = 2,
-              value = 0.45,
+              value = 0.62,
               step = 0.01
             )),
           conditionalPanel(
