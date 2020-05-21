@@ -42,6 +42,7 @@ plot_r0 <- function(R){
         ggplot2::ylab("Density") + 
         ggplot2::theme_bw() +
         ggplot2::ggtitle("Basic reproduction number") +
+        ggplot2::geom_vline(xintercept = 1, lty = 2, alpha = 0.25) +
         large_txt 
     
 }
