@@ -18,10 +18,10 @@ plot_r_distribution <- function(los, title = NULL) {
   ggplot2::ggplot(data = dat,
                   ggplot2::aes(x = days, y = y)) +
     ggplot2::geom_col(fill = cmmid_color, width = 0.8) +
-      ggplot2::xlab("Days in hospital") +
-      ggplot2::ylab("Density") +
-      ggplot2::ggtitle(title) +
-      ggplot2::theme_bw() +
-      ggplot2::scale_x_continuous(breaks = int_breaks) +
-  large_txt 
+    ggplot2::xlab("Days in hospital") +
+    ggplot2::ylab("Density") +
+    ggplot2::ggtitle(title) +
+    ggplot2::theme_bw() +
+    ggplot2::scale_x_continuous(breaks = int_breaks) +
+    large_txt 
 }
