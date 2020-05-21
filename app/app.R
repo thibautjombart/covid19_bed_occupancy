@@ -520,8 +520,20 @@ server <- function(input, output, session) {
   
   ## main plot: predictions of bed occupancy
   output$main_plot <- renderPlot({
+    if (input$specifyepi == "Branching process"){
+      time <- input$serial_interval
+      warning_text <- "serial interval"
+    } 
+    
+    if (input$specifyepi == "Doubling/halving time"){
+      time <- input$doubling_time
+      warning_text <- paste(dhlabel(input$doublehalf), "time")
+    }
+    
     plot_results(results = results(),
-                 reporting = input$assumed_reporting)
+                 reporting = input$assumed_reporting,
+                 time = time,
+                 warning_text = warning_text)
     
   }, width = 600)
   
