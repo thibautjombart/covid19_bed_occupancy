@@ -79,9 +79,9 @@ predict_admissions <- function(dates,
                                 function(r){
                                   # fit a model for the doubling/halving rate to recent data
                                   # use this to get expected number of cases on final day of admissions
-                                  model <- stats::glm(all_admissions ~ 1, 
-                                                      weights = dates_weights,
-                                                      offset = I(r*dates_num),
+                                  model <- stats::glm(tail(all_admissions, 14) ~ 1, 
+                                                      weights = 1 + 0*tail(dates_weights, 14),
+                                                      offset = I(r*tail(dates_num, 14)),
                                                       family = "poisson")
                                   admissions0 <- as.numeric(
                                     stats::predict.glm(object = model,
