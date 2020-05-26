@@ -11,7 +11,7 @@ los_parameters <- do.call(
             data.frame(los_25 = 10,
                        los_75 = 19,
                        los_dist = "weibull"),
-        `Zhou General (China)` = 
+        `Zhou non-ICU (China)` = 
             data.frame(los_25 = 7,
                        los_75 = 14,
                        los_dist = "weibull"),
