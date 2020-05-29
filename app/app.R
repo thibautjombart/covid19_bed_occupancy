@@ -189,7 +189,7 @@ ui <- navbarPage(
               "Average serial interval (days):",
               min = 1,
               max = 20,
-              value = 7.5, 
+              value = 4.7, 
               step = 0.1
             ),
             sliderInput(
@@ -197,7 +197,7 @@ ui <- navbarPage(
               HTML("Uncertainty as fraction of avg. serial interval (<i>c<sub>v,S</sub></i>)"),
               min = 0,
               max = 2,
-              value = 0.45,
+              value = 0.62,
               step = 0.01
             )),
           conditionalPanel(
@@ -310,9 +310,12 @@ ui <- navbarPage(
             
             br(),
             plotOutput("main_plot", width = "30%", height = "600px"),
+            downloadButton("downloadPlot", "Download figure"),
             checkboxInput("show_table", "Show bed occupancy summary table?", FALSE),
             conditionalPanel(
               condition = sprintf("input.show_table == true"),
+              downloadButton("downloadData", "Download bed occupancy summary table"),
+              br(),
               DT::dataTableOutput("main_table", width = "50%"))
           )
           
@@ -519,9 +522,26 @@ server <- function(input, output, session) {
   
   
   ## main plot: predictions of bed occupancy
-  output$main_plot <- renderPlot({
+    
+  main_plot_reactive <- reactive({
+    if (input$specifyepi == "Branching process"){
+      time <- input$serial_interval
+      warning_text <- "serial interval"
+    } 
+    
+    if (input$specifyepi == "Doubling/halving time"){
+      time <- input$doubling_time
+      warning_text <- paste(dhlabel(input$doublehalf), "time")
+    }
+    
     plot_results(results = results(),
-                 reporting = input$assumed_reporting)
+                 reporting = input$assumed_reporting,
+                 time = time,
+                 warning_text = warning_text)
+  })
+  
+  output$main_plot <- renderPlot({
+    main_plot_reactive()
     
   }, width = 600)
   
@@ -578,7 +598,9 @@ server <- function(input, output, session) {
       sprintf("<b>Median serial interval:</b> %0.1f days<br>
             <b>95%% interval:</b> (%0.1f, %0.1f) days<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.1f)",
-              q$q[2], q$q[1], q$q[3], q$short_name,
+              q$q[2],
+              q$q[1], q$q[3],
+              q$short_name,
               q$params_names[1], q$params[1],
               q$params_names[2], q$params[2])
     } else {
@@ -632,11 +654,55 @@ server <- function(input, output, session) {
     sprintf("<b>Median secondary cases:</b> %0.1f<br>
             <b>95%% interval:</b> (%0.1f, %0.1f)<br>
             <b>Distribution:</b> %s(<i>%s</i>=%0.1f, <i>%s</i>=%0.2f)",
-            q$q[2], q$q[1], q$q[3], q$short_name,
+            q$q[2], 
+            q$q[1], q$q[3], 
+            q$short_name,
             q$params_names[1], q$params[1],
             q$params_names[2], q$params[2])
     
   })
+  
+  
+  ## DOWNLOADABLES
+  
+  output$downloadData <- downloadHandler(
+    contentType = "text/csv",
+    filename = function() {
+      withSpace <- paste0(paste(input$specifyepi,
+                                Sys.time(), 
+                                sep = "_"),
+                          ".csv")
+      withSpace <- gsub(" ", "_", withSpace)
+      withSpace <- gsub(":", "-", withSpace)
+      return(withSpace)
+    },
+    content = function(file) {
+      write.csv(x = summarise_beds(results()$beds), 
+                file = file, row.names = FALSE)
+    }
+  )
+  
+  output$downloadPlot <- downloadHandler(
+    contentType = "image/png",
+    
+    filename = function() {
+      withSpace <- paste0(paste(input$specifyepi,
+                                Sys.time(), 
+                                sep = "_"),
+                          ".png")
+      withSpace <- gsub(" ", "_", withSpace)
+      withSpace <- gsub(":", "-", withSpace)
+      return(withSpace)
+    },
+    content = function(file) {
+      device <- function(..., width, height){
+        grDevices::png(..., width = width, height = height,
+                       res = 600, units = "in")}
+      plot_to_save <- main_plot_reactive()
+      ggplot2::ggsave(filename = file, plot = plot_to_save,
+                      device = device, dpi = 300, width = 7, height = 7)
+    }
+  )
   
 }
 

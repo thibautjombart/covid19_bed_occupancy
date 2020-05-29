@@ -12,9 +12,11 @@
 #' @examples
 
 plot_results <- function(results,
-                         reporting = 100){
+                         reporting = 100,
+                         time = 7,
+                         warning_text = NULL){
     
-   
+    
     n_data <- nrow(results$data)
     
     beds  <- summarise_beds(results$beds)
@@ -47,8 +49,9 @@ plot_results <- function(results,
                               TRUE)]
     
     
-    ggplot2::ggplot(
-        mapping = aes(x = Date)) +
+    results_plot <-
+        ggplot2::ggplot(
+            mapping = aes(x = Date)) +
         ggplot2::geom_col(data = cases,
                           aes(fill = Status,
                               y = Median),
@@ -85,5 +88,17 @@ plot_results <- function(results,
         ggplot2::scale_y_continuous(limits = c(0, NA), breaks = int_breaks) +
         ggplot2::scale_x_date(date_label = "%d %b %y") +
         large_txt + rotate_x 
-   
+    
+    if (n_data < time){
+        results_plot <- results_plot +
+            ggplot2::annotate("text", 
+                              x = min(results$data$Date),
+                              y = Inf, label = sprintf("Warning: Uploaded data\nshorter than %s", warning_text),
+                              hjust=0, vjust=1.25, col = "#FE5000", cex=6,
+                              fontface = "bold", alpha = 0.8)
+        
+    }
+    
+    results_plot
+    
 }

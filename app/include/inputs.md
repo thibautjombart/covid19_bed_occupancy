@@ -30,6 +30,9 @@ columns:
   
 * **n_admissions**: number of new admissions on these days
 
+We recommend using at least two weeks of data as this covers a typical length of
+stay as well as two doubling periods or serial intervals.
+
 To avoid data entry issues, we recommend using our 
 <a href="https://github.com/thibautjombart/covid19_bed_occupancy/blob/master/app/extra/data_model.xlsx?raw=true"> data template</a>.
 
@@ -88,6 +91,8 @@ The default option is the non-critical setting from non-China studies published 
 The default values here are drawn from the early dynamics reported by <a href="https://www.nejm.org/doi/full/10.1056/NEJMoa2001316">Li et al. (2020)</a>.
 
 When "halving" is selected, the epidemic is considered to be decreasing in intensity by exponential decay in case numbers rather than increasing when characterised by a doubling time.
+
+The log-linear model samples the doubling/halving time for each simulation and uses at most the last two weeks of provided data to project from the expected number of cases on the most recent day. In this way, we account for the recent history of admissions and not just the most recent day's admissions.
 
 ### Branching process
 
